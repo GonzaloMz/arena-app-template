@@ -1,0 +1,87 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package arena.backend.service;
+
+import arena.backend.model.AbstractEntity;
+import arena.backend.model.EntityUpdater;
+import arena.backend.model.$1;
+import arena.backend.repository.$1Repository;
+import javax.transaction.Transactional;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+/**
+ *
+ * @author gonzalo
+ */
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+public class $1ServiceTest {
+	
+	@Autowired
+	$1Service $2Service;
+	
+	@Autowired
+	$1Repository $2Repository;
+	
+	private ArenaServiceTest<$1> tester;
+	
+	
+	public class $1Updater implements EntityUpdater{
+
+		@Override
+		public void update(AbstractEntity ent) {
+		}
+
+		@Override
+		public void verify(AbstractEntity ent) {
+		}
+	
+	}
+	
+	public $1ServiceTest() {
+	}
+	
+	@BeforeClass
+	public static void setUpClass() {
+		
+	}
+	
+	@AfterClass
+	public static void tearDownClass() {
+	}
+	
+	@Before
+	public void setUp() {
+		this.tester = new ArenaServiceTest<$1>($2Repository, $2Service, new $1TitleUpdater());
+	}
+	
+	@After
+	public void tearDown() {
+	}
+
+	@Test
+	public void saveAndGetAllTest(){
+		this.tester.serviceCreateGetAllTest();
+	}
+	
+	@Test
+	public void updateAndGetTest(){
+		this.tester.serviceUpdateGetTest();
+	}
+	
+}
+

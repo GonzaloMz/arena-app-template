@@ -1,0 +1,10 @@
+package app.backend.model;
+
+import javax.persistence.Entity;
+import arena.backend.model.AbstractEntity;
+
+@Entity
+public class {ENTITY} extends AbstractEntity {
+
+	
+}

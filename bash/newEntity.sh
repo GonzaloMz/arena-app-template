@@ -1,0 +1,20 @@
+#!/bin/bash
+
+TEMPLATES=${0/"/newEntity.sh"/""}
+
+CONTROLLER_FILENAME=controller/$1Controller.java
+SERVICE_FILENAME=service/$1Service.java
+REPOSITORY_FILENAME=repository/$1Repository.java
+ENTITY_FILENAME=model/$1.java
+cp -n $TEMPLATES/CONTROLLER.template $CONTROLLER_FILENAME
+cp -n $TEMPLATES/SERVICE.template $SERVICE_FILENAME
+cp -n $TEMPLATES/REPOSITORY.template $REPOSITORY_FILENAME
+cp -n $TEMPLATES/ENTITY.template $ENTITY_FILENAME
+sed -i -e "s/{ENTITY}/$1/g" $CONTROLLER_FILENAME
+sed -i -e "s/{ENTITY_LOWER}/$2/g" $CONTROLLER_FILENAME
+sed -i -e "s/{ENTITY}/$1/g" $SERVICE_FILENAME
+sed -i -e "s/{ENTITY_LOWER}/$2/g" $SERVICE_FILENAME
+sed -i -e "s/{ENTITY}/$1/g" $REPOSITORY_FILENAME
+sed -i -e "s/{ENTITY_LOWER}/$2/g" $REPOSITORY_FILENAME
+sed -i -e "s/{ENTITY}/$1/g" $ENTITY_FILENAME
+sed -i -e "s/{ENTITY_LOWER}/$2/g" $ENTITY_FILENAME

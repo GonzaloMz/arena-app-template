@@ -1,0 +1,51 @@
+$theme-colors: () !default;
+
+$theme-colors: (
+    "primary": #454165,
+    "danger": #ff4136,
+    "warning": #f9cd00,
+    "success": #61b83c
+);
+@import "../node_modules/bootstrap-material-design/scss/core";
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+button[class^="arena-"][ class$="-button"]{
+	@extend .btn;
+	@extend .btn-raised;
+}
+
+.arena-open-create-modal-button {
+	@extend .btn-primary, .btn-lg;	
+}
+
+.arena-open-search-modal-button	{
+	@extend .btn-secondary, .btn-sm, .float-right;
+}
+
+.arena-list-item-level-1{
+	@extend .card;
+	@extend .p-2;
+}
+
+.arena-fieldset-mode-edit, .arena-fieldset-mode-view{
+	@extend .form-group;
+}
+
+.arena-form-control {
+	@extend .form-control;	
+}
+
+.arena-container-mode-edit:not(:hover) .arena-open-search-modal-button{
+		@extend .d-none;
+}	
+
+.arena-modal {
+	@extend .w-100;
+	max-width:unset;
+}
+
+
+.top-actions-bar{
+    background-color: #454165;
+    width: 100%;
+}

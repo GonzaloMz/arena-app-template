@@ -1,0 +1,10 @@
+package app.backend.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import app.backend.model.{ENTITY};
+
+public interface {ENTITY}Repository extends JpaRepository<{ENTITY}, Long>, JpaSpecificationExecutor<{ENTITY}>{
+
+}
