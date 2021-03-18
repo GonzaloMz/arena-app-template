@@ -46,6 +46,43 @@ var loadingShape = function loadingShape(name) {
   return action;
 };
 
+var validate = function validate(expression, type, value) {
+  console.log("validate");
+  console.log(expression, type, value);
+  if (!value) return true;
+
+  switch (type) {
+    case 'string':
+      var match = value.match(expression);
+      return match !== null && match !== undefined;
+
+    case 'number':
+      return evaluateNumber(expression, value);
+  }
+};
+
+var evaluateNumber = function evaluateNumber(expression, value) {
+  if (expression.indexOf(',') > 0) {
+    var ranges = expression.split(',');
+
+    for (range in ranges) {
+      if (evaluateRange(range, value)) return true;
+    }
+  }
+
+  return evaluateRange(range, value);
+};
+
+var evaluateRange = function evaluateRange(range, value) {
+  var limits = range.split(';');
+  if (range === "" || !limits || limits.length > 2 || limits[0] === "" || limits.length === 2 && limits[1] < limits[0]) throw new Error("Invalid range: " + range);
+  var index = range.indexOf(';');
+  if (index === -1) return value === Number(limits[0]);
+  if (index === 0) return value <= Number(limits[0]);
+  if (index === range.length - 1) return value >= Number(limits[0]);
+  return value >= limits[0] && value <= limis[1];
+};
+
 var ArenaField = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(ArenaField, _React$Component);
 
@@ -58,10 +95,36 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
       if (_this.state.value) return 'bmd-label-static';else return 'bmd-label-placeholder';
     };
 
-    _this.onChange = function (e) {
+    _this.setAcepted = function (acepted) {
+      if (acepted === _this.state.acepted) return;
+
       _this.setState({
-        value: e.target.value
+        acepted: acepted
       });
+    };
+
+    _this.setValue = function (value) {
+      var valid = true;
+      var valueIsRequired = false;
+
+      if (_this.props.regEx) {
+        if (!validate(_this.props.regEx, _this.props.jsType, value)) valid = false;
+      }
+
+      if (_this.props.required && !value) valueIsRequired = true;
+
+      _this.setState({
+        valid: valid,
+        value: value
+      });
+
+      if (_this.props.setValidationStatus) _this.props.setValidationStatus(_this.props.name, valid && !valueIsRequired);
+    };
+
+    _this.onChange = function (e) {
+      var value = e.target.value;
+
+      _this.setValue(value);
     };
 
     _this.onFocus = function (e) {
@@ -71,8 +134,8 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.onBlur = function (e) {
-      if (_this.state.previous !== e.target.value) {
-        _this.props.update(_this.props.name, _this.state.value);
+      if (_this.state.valid && _this.state.previous !== e.target.value) {
+        _this.props.update(_this.props.name, _this.state.value, _this.setAcepted);
       }
     };
 
@@ -126,7 +189,11 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
       }
     };
 
-    _this.getClassName = function (prefix) {
+    _this.getClassName = function (prefix, extraClass) {
+      if (extraClass === void 0) {
+        extraClass = "";
+      }
+
       var _this$props2 = _this.props,
           name = _this$props2.name,
           parentController = _this$props2.parentController,
@@ -135,18 +202,24 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
           parentType = _this$props2.parentType,
           level = _this$props2.level,
           mode = _this$props2.mode;
-      return prefix + "name-" + name + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode;
+      return prefix + "name-" + name + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode + " " + extraClass;
     };
 
     var _type = props.type;
     _this.state = {
       value: props.value,
-      id: _type + "." + props.name
+      id: _type + "." + props.name,
+      valid: true,
+      acepted: true
     };
     return _this;
   }
 
   var _proto = ArenaField.prototype;
+
+  _proto.componentDidMount = function componentDidMount() {
+    this.setValue(this.props.value);
+  };
 
   _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
     if (this.props.value !== prevProps.value) {
@@ -165,6 +238,9 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
         parentController = _this$props3.parentController,
         name = _this$props3.name;
     var textKey = parentController + "." + name + ".label";
+    var invalidKey = parentController + "." + name + ".invalid";
+    var rejectedKey = parentController + "." + name + ".rejected";
+    var requiredKey = parentController + "." + name + ".required";
     return /*#__PURE__*/React.createElement("div", {
       className: this.getClassName('arena-field-')
     }, /*#__PURE__*/React.createElement("fieldset", {
@@ -172,13 +248,18 @@ var ArenaField = /*#__PURE__*/function (_React$Component) {
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: this.state.id,
       className: this.getClassName('arena-label-')
-    }, componentMapper.t(textKey)), _extends({}, this.input())));
+    }, componentMapper.t(textKey)), _extends({}, this.input())), this.props.required && !this.state.value && /*#__PURE__*/React.createElement("div", {
+      className: this.getClassName('arena-required-')
+    }, componentMapper.t(requiredKey)), !this.state.valid && /*#__PURE__*/React.createElement("div", {
+      className: this.getClassName('arena-error-invalid-')
+    }, componentMapper.t(invalidKey)), !this.state.acepted && /*#__PURE__*/React.createElement("div", {
+      className: this.getClassName('arena-error-rejected-')
+    }, componentMapper.t(rejectedKey)));
   };
 
   return ArenaField;
 }(React.Component);
 
-var api = 'http://localhost:8080';
 var CONTAINER_MODE = {
   edit: "edit",
   view: "view",
@@ -30222,15 +30303,39 @@ var ArenaCreateContainer = /*#__PURE__*/function (_React$Component) {
     _this = _React$Component.call(this, props) || this;
 
     _this.create = function () {
-      fetch(api + "/" + _this.props.controller, {
+      fetch(_this.props.componentMapper.api + "/" + _this.props.controller, {
         method: 'POST',
         body: JSON.stringify(_this.state.entity),
         headers: {
           'Content-Type': 'application/json'
         }
       }).then(function (res) {
-        return res.json().then(_this.props.onCreate);
+        res.json().then(_this.props.onCreate);
+
+        _this.onClose();
       });
+    };
+
+    _this.setValidationStatus = function (field, valid) {
+      if (_this.state.validations[field] === valid) return;
+
+      var validations = _extends({}, _this.state.validations);
+
+      validations[field] = valid;
+
+      var isValid = _this.entityIsValid(validations);
+
+      _this.setState({
+        validations: validations,
+        isValid: isValid
+      });
+    };
+
+    _this.entityIsValid = function (validations) {
+      if (Object.keys(validations).filter(function (e) {
+        return validations[e] === false;
+      }).length) return false;
+      return true;
     };
 
     _this.componentDidMount = function () {
@@ -30239,8 +30344,15 @@ var ArenaCreateContainer = /*#__PURE__*/function (_React$Component) {
       });
     };
 
+    _this.onClose = function () {
+      return _this.setState(_extends({}, ArenaCreateContainerInitialState, {
+        entity: _this.props.template.entity
+      }));
+    };
+
     _this.state = ArenaCreateContainerInitialState;
     _this.state.entity = props.template.entity;
+    _this.state.validations = {};
     console.log(props.template);
     return _this;
   }
@@ -30267,16 +30379,12 @@ var ArenaCreateContainer = /*#__PURE__*/function (_React$Component) {
       }
     }, componentMapper.t(controller + ".create")), /*#__PURE__*/React.createElement(Modal, {
       open: open,
-      onClose: function onClose() {
-        return _this2.setState(_extends({}, ArenaCreateContainerInitialState, {
-          entity: _this2.props.template.entity
-        }));
-      },
+      onClose: this.onClose,
       center: true,
       classNames: modalClassNames('create')
     }, /*#__PURE__*/React.createElement("div", {
       className: "pt-4"
-    }, open && /*#__PURE__*/React.createElement(ConnectedContainer$1, _extends({}, this.props, {
+    }, /*#__PURE__*/React.createElement(ConnectedContainer$1, _extends({}, this.props, {
       update: undefined,
       level: 1,
       id: undefined,
@@ -30288,18 +30396,19 @@ var ArenaCreateContainer = /*#__PURE__*/function (_React$Component) {
       },
       mode: CONTAINER_MODE.dummy,
       shapeConfiguration: this.props.template.shapeConfiguration,
-      componentMapper: this.props.componentMapper
+      componentMapper: this.props.componentMapper,
+      setValidationStatus: this.setValidationStatus
     })), /*#__PURE__*/React.createElement("button", {
-      type: "button",
       className: getClassNameBasic('arena-create-', this.props, '-button'),
-      onClick: this.create
+      onClick: this.create,
+      disabled: !this.state.isValid
     }, componentMapper.t(controller + ".create")))));
   };
 
   return ArenaCreateContainer;
 }(React.Component);
 
-var findEntities = function findEntities(controller, example) {
+var findEntities = function findEntities(api, controller, example) {
   var url = new URL(api + "/" + controller + "/search");
   var params = {};
   Object.keys(example).forEach(function (key) {
@@ -30323,8 +30432,37 @@ var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
     _this = _React$Component.call(this, props) || this;
 
     _this.addItem = function (item) {
+      var entities = [item].concat(_this.state.entities);
+
+      var containerClassName = _this.getClassName('arena-list-item-');
+
+      var rows = entities.map(function (entity) {
+        console.log("ArenaListContainer - rows", entity);
+        var selectedClass = "";
+        if (_this.props.mode === CONTAINER_MODE.select) selectedClass = _this.isSelected(entity) ? "selected" : "not-selected";
+        var href = _this.props.shapeConfiguration.itemHref ? _this.props.shapeConfiguration.itemHref(entity) : undefined;
+        return /*#__PURE__*/React.createElement(ArenaListItemWrapper, {
+          className: classnames(containerClassName, selectedClass),
+          onClick: function onClick() {
+            return _this.onItemClick(entity);
+          },
+          href: href
+        }, /*#__PURE__*/React.createElement(ConnectedContainer$1, _extends({
+          shapeConfiguration: _this.props.shapeConfiguration,
+          className: getClassNameBasic("arena-list-container-", _this.props, "-item"),
+          controller: _this.props.controller,
+          name: _this.props.name,
+          type: _this.props.superType,
+          mode: _this.state.mode,
+          level: _this.props.level,
+          entity: entity,
+          componentMapper: _this.props.componentMapper
+        }, _this.state.mappedComponent.props)));
+      });
+
       _this.setState({
-        entities: [item].concat(_this.state.entities)
+        entities: entities,
+        rows: rows
       });
     };
 
@@ -30366,7 +30504,7 @@ var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
     if (!props.shape && !props.loadingOwnShape) {
       _this.props.loadingShape(props.controller);
 
-      fetch(api + "/" + props.controller + "/shape").then(function (res) {
+      fetch(props.componentMapper.api + "/" + props.controller + "/shape").then(function (res) {
         console.log(res);
         res.json().then(function (response) {
           _this.props.shapeLoaded(props.controller, response);
@@ -30377,6 +30515,7 @@ var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
     _this.state = {};
     _this.state.example = props.example;
     _this.state.mode = props.mode ? props.mode : 'view';
+    _this.state.mappedComponent = _this.props.componentMapper.getComponent(_this.props.name, _this.props.controller, _this.props.parentController, _this.props.type, _this.props.superType, _this.props.parentType, _this.props.level);
     return _this;
   }
 
@@ -30386,7 +30525,7 @@ var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
     var _this2 = this;
 
     if (this.props.ids && this.props.ids.length > 0) {
-      fetch(api + "/" + this.props.controller + "?ids=" + this.props.ids).then(function (res) {
+      fetch(this.props.componentMapper.api + "/" + this.props.controller + "?ids=" + this.props.ids).then(function (res) {
         return res.json().then(function (response) {
           _this2.setState({
             entities: response
@@ -30403,55 +30542,29 @@ var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
           });
         });
       } else {
-        this.setState({
+        if (this.props.entities) this.setState({
           entities: this.props.entities
+        });else this.setState({
+          entities: []
         });
       }
     }
   };
 
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (prevProps.entities !== this.props.entities) this.componentDidMount();
-  };
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {};
 
   _proto.render = function render() {
-    var _this3 = this;
-
     if (!this.state.entities) {
       if (this.props.mode === CONTAINER_MODE.edit) return this.getCreateContainer();else return null;
     }
 
-    var mappedComponent = this.props.componentMapper.getComponent(this.props.name, this.props.controller, this.props.parentController, this.props.type, this.props.superType, this.props.parentType, this.props.level);
     if (this.props.level < 0) return null;
-    var containerClassName = this.getClassName('arena-list-item-');
     var t = this.props.componentMapper.t;
-    var rows = this.state.entities.map(function (entity) {
-      var selectedClass = "";
-      if (_this3.props.mode === CONTAINER_MODE.select) selectedClass = _this3.isSelected(entity) ? "selected" : "not-selected";
-      var href = _this3.props.shapeConfiguration.itemHref ? _this3.props.shapeConfiguration.itemHref(entity) : undefined;
-      return /*#__PURE__*/React.createElement(ArenaListItemWrapper, {
-        className: classnames(containerClassName, selectedClass),
-        onClick: function onClick() {
-          return _this3.onItemClick(entity);
-        },
-        href: href
-      }, /*#__PURE__*/React.createElement(ConnectedContainer$1, _extends({
-        shapeConfiguration: _this3.props.shapeConfiguration,
-        className: getClassNameBasic("arena-list-container-", _this3.props, "-item"),
-        controller: _this3.props.controller,
-        name: _this3.props.name,
-        type: _this3.props.superType,
-        mode: _this3.state.mode,
-        level: _this3.props.level,
-        entity: entity,
-        componentMapper: _this3.props.componentMapper
-      }, mappedComponent.props)));
-    });
     return /*#__PURE__*/React.createElement("div", {
       className: this.getClassName('arena-list-')
     }, /*#__PURE__*/React.createElement("h2", null, t(this.props.controller + ".listLabel")), this.props.template && this.props.shapeConfiguration && this.props.shapeConfiguration.showCreate && this.getCreateContainer(), /*#__PURE__*/React.createElement("div", {
       className: this.getClassName('arena-list-rows-')
-    }, [].concat(rows)), this.props.mode === CONTAINER_MODE.select && this.props.entities.length > 0 && /*#__PURE__*/React.createElement("button", {
+    }, [].concat(this.state.rows)), this.props.mode === CONTAINER_MODE.select && this.props.entities.length > 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: getClassNameBasic('arena-end-selection-', this.props, '-button'),
       onClick: this.props.onSelectFinish
@@ -30504,7 +30617,7 @@ var ArenaSearchContainer = /*#__PURE__*/function (_React$Component) {
     _this.state = ArenaSearchContainerInitialState;
 
     _this.find = function () {
-      findEntities(_this.props.controller, _this.state.example).then(function (res) {
+      findEntities(_this.props.componentMapper.api, _this.props.controller, _this.state.example).then(function (res) {
         return res.json().then(function (entities) {
           _this.setState({
             entities: entities
@@ -30606,7 +30719,8 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
 
     _this.fetchEntity = function () {
       if (_this.props.id) {
-        fetch(api + "/" + _this.props.controller + "/" + _this.props.id).then(function (res) {
+        console.log("ArenaContainer - fetchEntity", "by id", _this.props.id);
+        fetch(_this.props.componentMapper.api + "/" + _this.props.controller + "/" + _this.props.id).then(function (res) {
           return res.json().then(function (response) {
             _this.setState({
               entity: response
@@ -30614,13 +30728,15 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
           });
         });
       } else {
+        console.log("ArenaContainer - fetchEntity", "from props", _this.props.entity);
+
         _this.setState({
           entity: _this.props.entity
         });
       }
     };
 
-    _this.update = function (field, newValue) {
+    _this.update = function (field, newValue, setAcepted) {
       var entity = {
         id: _this.state.entity.id
       };
@@ -30638,14 +30754,16 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
         return;
       }
 
-      fetch(api + "/" + _this.props.controller, {
+      fetch(_this.props.componentMapper.api + "/" + _this.props.controller, {
         method: 'POST',
         body: JSON.stringify(entity),
         headers: {
           'Content-Type': 'application/json'
         }
       }).then(function (res) {
-        return res.json().then(function (entity) {
+        if (setAcepted) setAcepted(res.status !== 400);
+        if (res.status >= 500) alert("Server error: " + res.status);
+        if (res.status === 200) res.json().then(function (entity) {
           _this.setState({
             entity: entity
           });
@@ -30667,12 +30785,12 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
       return prefix + "name-" + name + " " + prefix + "controller-" + controller + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode;
     };
 
-    console.log(props);
+    console.log("ArenaContainer", props);
 
     if (!props.shape && !props.loadingOwnShape) {
       _this.props.loadingShape(props.controller);
 
-      fetch(api + "/" + props.controller + "/shape").then(function (res) {
+      fetch(props.componentMapper.api + "/" + props.controller + "/shape").then(function (res) {
         console.log(res);
         res.json().then(function (response) {
           _this.props.shapeLoaded(props.controller, response);
@@ -30695,7 +30813,7 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
   };
 
   _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (prevProps.id !== this.props.id) this.fetchEntity();
+    if (prevProps.id !== this.props.id || prevProps.entity !== this.props.entity) this.fetchEntity();
     if (prevProps.controller !== this.props.controller) this.fetchTemplates();
   };
 
@@ -30762,6 +30880,7 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
                 parentType: _this2.props.type,
                 shapeConfiguration: _this2.props.shapeConfiguration[fieldName],
                 componentMapper: _this2.props.componentMapper,
+                required: field.required,
                 update: function update(value) {
                   _this2.update(fieldName, value);
                 }
@@ -30794,7 +30913,11 @@ var ArenaContainer = /*#__PURE__*/function (_React$Component) {
               update: _this2.update,
               level: _this2.props.level - 1,
               componentMapper: _this2.props.componentMapper,
-              parentController: _this2.props.controller
+              parentController: _this2.props.controller,
+              regEx: field.regEx,
+              jsType: field.jsType,
+              required: field.required,
+              setValidationStatus: _this2.props.setValidationStatus
             }));
           }
         }
@@ -33968,6 +34091,10 @@ var RouteListContainer = function RouteListContainer(props) {
       controller = _props$match$params2.controller;
   var search = props.location.search;
   var values = queryString.parse(search);
+  var screenName = values.screenName;
+  var template = {};
+  if (screenName) template.entity = props.componentMapper.templatesMap(screenName);
+  if (!template.entity) template.entity = {};
   var filterName = values.filterName;
   if (!filterName) filterName = controller;
   var filter = props.componentMapper.filtersMap[filterName];
@@ -34126,7 +34253,7 @@ var toDeep = function toDeep(obj, defaultReturn, path) {
   return toDeep(obj[path[0]], defaultReturn, path.slice(1));
 };
 
-var Mapper = function Mapper(parentComponentsMap, templatesMap, componentsMap, screenConfigurationMap, shapeConfigurationMap, filtersMap, componentsTypeMap, textMap) {
+var Mapper = function Mapper(parentComponentsMap, templatesMap, componentsMap, screenConfigurationMap, shapeConfigurationMap, filtersMap, componentsTypeMap, textMap, apiUrl) {
   var _this = this;
 
   if (parentComponentsMap === void 0) {
@@ -34217,6 +34344,8 @@ var Mapper = function Mapper(parentComponentsMap, templatesMap, componentsMap, s
     return toDeep(_this.textMap, key, key.split('.'));
   };
 
+  if (!apiUrl) throw new Error("Api url must not be undefined.");
+  this.api = apiUrl;
   this.parentComponentsMap = parentComponentsMap;
   this.templatesMap = templatesMap;
   this.componentsMap = componentsMap;

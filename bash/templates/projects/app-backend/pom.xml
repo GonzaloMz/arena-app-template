@@ -30,6 +30,8 @@
       <groupId>arena</groupId>
       <artifactId>backend</artifactId>
       <version>[0.0.0,)</version>	
+      <scope>system</scope>
+      <systemPath>{ARENA_BACKEND_REPOSITORY}/arena-backend.jar</systemPath>
     </dependency>
     <dependency>
     <groupId>org.hsqldb</groupId>
