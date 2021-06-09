@@ -1,0 +1,34 @@
+version: "3.2"
+services:
+  arena-backend: 
+    build: ./realestate-backend/
+    command: /backend/start-db.sh 
+    ports:
+      - "1312:8080"
+      - "9001:9001"
+    volumes:
+      - ~/.m2:/root/.m2
+      - ./realestate-backend:/backend
+    working_dir: /backend
+    networks:
+      arena_net:
+        ipv4_address: 192.169.2.2
+  arena-frontend:
+    build: ./realestate-frontend
+    command: sh -c "npm start "
+    ports:
+      - "2312:3000"
+    volumes:
+      - ../arena-frontend:/arena-frontend
+      - ./realestate-frontend/:/frontend/realestate-frontend
+    working_dir: /frontend/realestate-frontend
+    networks:
+      arena_net:
+        ipv4_address: 192.169.2.1
+    stdin_open: true
+networks:
+  arena_net:
+      ipam:
+          driver: default
+          config:
+              - subnet: 192.169.0.0/16
