@@ -11,10 +11,12 @@ import { screenConfigurationMap } from './ScreenMapper.js';
 import { shapeConfigurationMap } from './ShapeMapper.js';
 import { textMap } from './TextMapper.js';
 import { filtersMap } from './FiltersMap.js';
-import './custom.scss';
 import 'bootstrap/dist/js/bootstrap.min.js';
+import '@algolia/autocomplete-theme-classic';
+import './custom.scss';
 
 import { BrowserRouter as Router, Redirect, Switch, Route} from 'react-router-dom'
+import Menu from './Menu';
 		
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -30,15 +32,40 @@ const componentMapper = new ArenaMapper(
 	filtersMap,
 	componentsTypeMap,
 	textMap.es,
-	"http://localhost:1312/"
+	// "http://localhost:1312/"
+	"http://192.168.0.16:1312/"
 );
+
+
 
 console.log(componentMapper);
 ReactDOM.render(
 	<Provider store={store}>
+
 		<Router>
+			<Menu options={[
+				{
+					label: "Nueva Tasación",
+					href: "/create-appointment"
+				},{
+					label: "Tasaciones Pendientes",
+					href: "/pending-appointments"
+				},{
+				// 	label: "Tasaciones en Progreso",
+				// 	href: "/build/listContainer/view/appointment"
+				// },{
+					label: "Tasaciones Realizadas",
+					href: "/assessments"
+				},{
+					label: "Propiedades Disponibles",
+					href: "/build/listContainer/view/estate"
+				}
+			]}></Menu>
 			<Switch>
+				<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
 				<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
+				<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
+				<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
 				<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
 			</Switch>
 		</Router>

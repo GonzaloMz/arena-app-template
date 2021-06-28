@@ -1,7 +1,7 @@
 $theme-colors: () !default;
 
 $theme-colors: (
-    "primary": #454165,
+    "primary": #dd6401,
     "danger": #ff4136,
     "warning": #f9cd00,
     "success": #61b83c
@@ -12,6 +12,9 @@ $theme-colors: (
 button[class^="arena-"][ class$="-button"]{
 	@extend .btn;
 	@extend .btn-raised;
+	text-transform: none;
+	font-family: Raleway;
+	font-weight: 450;
 }
 
 .arena-open-create-modal-button {
@@ -21,18 +24,26 @@ button[class^="arena-"][ class$="-button"]{
 .arena-open-search-modal-button	{
 	@extend .btn-secondary, .btn-sm, .float-right;
 }
+.radius{
 
-.arena-list-item-level-1{
+	border-radius: 3px;
+}
+.arena-list-item-wrapper{
 	@extend .card;
-	@extend .p-2;
+	// @extend .p-2;
+	@extend .radius;
+	max-width: 450px;
+	@extend .my-3;
+	@extend .mx-auto;
 }
 
 .arena-fieldset-mode-edit, .arena-fieldset-mode-view{
 	@extend .form-group;
 }
 
-.arena-form-control {
-	@extend .form-control;	
+ .arena-edit-field {
+	@extend .form-control;
+	@extend .my-1;	
 }
 
 .arena-container-mode-edit:not(:hover) .arena-open-search-modal-button{
@@ -49,3 +60,159 @@ button[class^="arena-"][ class$="-button"]{
     background-color: #454165;
     width: 100%;
 }
+
+:root {
+	--aa-icon-color-rgb: 221, 100, 1;
+	--aa-primary-color-rgb:223, 101, 1;
+	--aa-panel-border-color-rgb: 221, 100, 1;
+	
+	--aa-selected-color-rgb:221, 100, 1;
+	--aa-icon-color-alpha: 0.25;
+	--aa-primary-color-alpha:0.25;
+	--aa-panel-border-color-alpha:0.25;
+	--aa-background-color-alpha:0.95;
+	--aa-selected-color-alpha:0.25;
+}
+
+  
+.aa-Panel{
+	position: absolute;
+	z-index: 1000000;
+}
+
+.aa-InputWrapper {
+	@extend .pr-1;
+}
+
+.arena-field-mode-VIEW {
+	display: flex;
+
+}
+
+.tingle-modal {
+	overflow-y: scroll;
+}
+
+.arena-list-item-wrapper{
+	@extend .container;
+	.arena-text.label {
+		display: none;
+	}
+	.arena-field-value{
+		@extend .col;
+	}
+
+	.appointment-container{
+		.arena-container-default-render{
+			@extend .row;
+		}
+	}
+}
+
+:not(.arena-list-item-wrapper) > .arena-container{
+
+	.arena-default-render-wrapper{
+		.arena-container > div > .arena-text.label {
+			font-family: 'Roboto Cn';
+			// font-size: 8.3pt;
+			border-bottom: black 1px solid;
+			// @extend .card-header
+			@extend .my-2;
+		}
+	}
+}
+
+.arena-list-container .arena-controller-appointment .arena-text.label{
+	display: none;
+}
+.list, .create{
+	font-family: Raleway !important;
+	@extend .h1;
+	@extend .mx-auto;
+	max-width: 368px;
+	&.label{
+		@extend .text-left;
+		@extend .mt-2;
+		@extend .mb-0;
+		@extend .pl-1;
+	}
+	&.sublabel{
+		@extend .text-right;
+		@extend .my-0;
+		@extend .pr-1;
+	}
+}
+.create.label{
+	@extend .h3;
+	@extend.text-center;
+}
+
+ 
+ input {
+	 @extend .pt-2;
+	 @extend .pl-2;
+}
+
+
+.user-name{
+	width: 100%;
+	@extend .p-2;
+	background-color: map-get($theme-colors, "secondary");
+	color: map-get($theme-colors, "light");
+	@extend .text-center;
+	@extend .radius;
+	font-weight: bold;
+}
+// .user-phone{
+// 	float: left;
+// 	width: 50%;
+// }
+// .arena-field-name-estateType{
+// 	float: left;
+// 	width: 50%
+// }
+.arena-controller-appointment {
+	.arena-container-default-render {
+		.arena-field-name-appointmentDate.arena-field-mode-VIEW {
+			display: none;
+		}
+		// width: 80%;
+		// float: left;
+	}
+}
+.arena-controller-assessment  {
+	.arena-field-name-appointment{
+		@extend .d-none;
+	}
+}
+
+// ::-webkit-input-placeholder, ::-moz-placeholder, ::-ms-input-placeholder, ::-moz-placeholder{
+
+// 	font-size:8.3pt !important;
+// 	vertical-align:middle;
+// // }
+// ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+// 	font-family: 'Roboto';
+// 	font-size: 6.8pt !important;
+// 	color: #AAA;
+// 	transform:translate3d(0,-40px,0);
+//   }
+//   ::-moz-placeholder { /* Firefox 19+ */
+// 	font-family: 'Roboto';
+// 	font-size: 6.8pt !important;
+// 	@extend .m-auto;
+// 	vertical-align: middle !important;
+//   }
+//   ::-ms-input-placeholder { /* IE 10+ */
+// 	font-family: 'Roboto';
+// 	font-size: 6.8pt !important;
+// 	@extend .m-auto;
+// 	vertical-align: middle !important;
+//   }
+//   ::-moz-placeholder { /* Firefox 18- */
+// 	font-family: 'Roboto';
+// 	font-size: 6.8pt !important;
+// 	top: 10px;
+// 	padding-top: 10px;
+// 	margin-top: 10px;
+//   }

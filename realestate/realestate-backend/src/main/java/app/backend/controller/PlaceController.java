@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/place")
-public class PlaceController extends ArenaController<Place>{
+public class PlaceController extends ArenaController<Place,Place>{
 		
 	@Autowired
 	private PlaceService placeService;
 
 	@Override
-	public ArenaService<Place> getService() {
+	public ArenaService<Place,Place> getService() {
 		return this.placeService;
 	}
 
