@@ -38,8 +38,9 @@ public class UserService extends ArenaService<User,User>{
 
 	@Override
 	public List<User> searchInLine(String query) {
-		// TODO Auto-generated method stub
-		return userRepository.findAll();
+		if (query.contains("@"))
+			return userRepository.findByEmailLike(query);
+		return userRepository.findByPhoneLikeOrEmailLike(query, query);
 	}
 	
 }

@@ -93,20 +93,66 @@ button[class^="arena-"][ class$="-button"]{
 	overflow-y: scroll;
 }
 
+.background-dark-color-ligth{
+	background-color:  map-get($theme-colors, "dark");
+	color: map-get($theme-colors, "light");
+}
+
 .arena-list-item-wrapper{
-	@extend .container;
+	cursor: pointer;
+	
+	font-family: 'Roboto';
 	.arena-text.label {
 		display: none;
 	}
-	.arena-field-value{
-		@extend .col;
+	.arena-field-value, .place-level-1{
+		@extend .px-1;
+		@extend .py-2
 	}
+	.float-left-width-50{
+		@extend .float-left;
+		@extend .w-50;
+	}
+	.arena-field-name-estateType{
+		@extend .float-left-width-50;
+	}
+	.appointment-user-container {
+		.arena-field-name-name{
+			font-family: 'Roboto Cn';
+			font-size: medium; 
+			@extend .w-100;
+			@extend .text-center;
+			@extend .background-dark-color-ligth;
+			@extend .radius;
+			span.arena-field-value{
+				@extend .w-100;
 
-	.appointment-container{
-		.arena-container-default-render{
-			@extend .row;
+			}
+		}
+		.arena-field-name-phone {
+			@extend .float-left-width-50;
 		}
 	}
+	.appointment-date{
+		@extend .position-absolute;
+		@extend .p-2;
+		@extend .mr-2;
+		@extend .badge, .rounded-pill;
+		@extend .background-dark-color-ligth;
+			top:50%;
+		right: 0;
+
+	}
+	
+	// .arena-field-value{
+	// 	@extend .col;
+	// }
+
+	// .appointment-container{
+	// 	.arena-container-default-render{
+	// 		@extend .row;
+	// 	}
+	// }
 }
 
 :not(.arena-list-item-wrapper) > .arena-container{
@@ -129,6 +175,7 @@ button[class^="arena-"][ class$="-button"]{
 	font-family: Raleway !important;
 	@extend .h1;
 	@extend .mx-auto;
+	color:  map-get($theme-colors, "dark");
 	max-width: 368px;
 	&.label{
 		@extend .text-left;

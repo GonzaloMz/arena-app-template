@@ -14,8 +14,6 @@ public class User extends AbstractEntity  implements AbstractDataTransferObject 
 
 	private String name;
 	
-	private String lastName;
-	
 	private String email;
 	
 	private String phone;
@@ -39,14 +37,6 @@ public class User extends AbstractEntity  implements AbstractDataTransferObject 
 	@Required
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
 	}
 
 	public String getPhone() {

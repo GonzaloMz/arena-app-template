@@ -29,11 +29,5 @@ public class AppointmentDTO extends AppointmentFieldsDTO implements AbstractData
 	public void setPlaceId(Place placeId) {
 		this.placeId = placeId;
 	}
-	
-
-	
-	
-	
-	
 
 }

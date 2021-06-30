@@ -7,32 +7,32 @@ export const parentComponentsMap = {
         userId: {
             1: {
                 mode : ()=> 'HIDE',
-                render:{
-                    beforeRender: ({entity})=>(
-                        <div className="user-level-1">
-                            <div class="user-name">{`${entity.name} ${entity.lastName}`}</div>
-                        </div>
-                    ),
-                    // afterRender: ({entity})=>(
-                    //     <div className="user-level-1">
-                    //         <span class="user-phone">{entity.phone}</span>
-                    //     </div>
-                    // )
-                }
+                // render:{
+                //     beforeRender: ({entity})=>(
+                //         <div className="user-level-1">
+                //             <div class="user-name">{`${entity.name} ${entity.lastName}`}</div>
+                //         </div>
+                //     ),
+                //     // afterRender: ({entity})=>(
+                //     //     <div className="user-level-1">
+                //     //         <span class="user-phone">{entity.phone}</span>
+                //     //     </div>
+                //     // )
+                // }
             }
         },
-        placeId: {
-            1: {
-                mode : ()=> 'HIDE',
-                render:{
-                    beforeRender: ({entity})=>(
-                        <div className="place-level-1">
-                            <span className="place-address">{entity.formattedAddress} </span>
-                        </div>
-                    )
-                }
-            }
-        },
+        // placeId: {
+        //     1: {
+        //         mode : ()=> 'HIDE',
+        //         render:{
+        //             beforeRender: ({entity})=>(
+        //                 <div className="place-level-1">
+        //                     <span className="place-address">{entity.formattedAddress} </span>
+        //                 </div>
+        //             )
+        //         }
+        //     }
+        // },
 
     }
 }

@@ -42,7 +42,7 @@ export const textMap = {
             },
             name:{
                 label: "Nombre",
-                placeholder: "Ingrese el nombre de la persona"
+                placeholder: "Ingrese el nombre y apellido de la persona"
             },
             phone:{
                 label: "Teléfono",
@@ -99,7 +99,8 @@ export const textMap = {
                             DUPLEX: 'Duplex', 
                             TRIPLEX: 'Triplex', 
                             COCHERA: 'Cochera', 
-                            GALPON: 'Galpón'
+                            GALPON: 'Galpón',
+                            null: 'No definido'
                         },
                         EstateOperations:{
                             SALE: 'Venta',

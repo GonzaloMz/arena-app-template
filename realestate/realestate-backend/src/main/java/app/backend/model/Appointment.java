@@ -12,7 +12,7 @@ public class Appointment extends AppointmentFieldsDTO{
 	
 	private Long userId;
 
-	@Key(type = Place.class, allowInLineCreate = true)
+	@Key(type = Place.class, allowInLineEdit = true, allowInLineCreate = true)
 	public Long getPlaceId() {
 		return placeId;
 	}

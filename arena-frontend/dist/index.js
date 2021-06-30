@@ -2,9 +2,12 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var React = require('react');
 var React__default = _interopDefault(React);
-var reactRedux = require('react-redux');
-var reactRouter = require('react-router');
 var redux = require('redux');
+var reactRedux = require('react-redux');
+var tingle = _interopDefault(require('tingle.js'));
+var Autosuggest = _interopDefault(require('react-autosuggest'));
+var reactRouterDom = require('react-router-dom');
+require('tingle.js/dist/tingle.css');
 
 function _extends() {
   _extends = Object.assign || function (target) {
@@ -24,34 +27,318 @@ function _extends() {
   return _extends.apply(this, arguments);
 }
 
-function _inheritsLoose(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-  subClass.__proto__ = superClass;
+var createEntityRequestById = function createEntityRequestById(endpoint, controller, id) {
+  return {
+    type: types.ENTITY_REQUEST,
+    endpoint: endpoint,
+    controller: controller,
+    id: id
+  };
+};
+var createEntityReleaseById = function createEntityReleaseById(controller, id) {
+  return {
+    type: types.ENTITY_RELEASE,
+    controller: controller,
+    id: id
+  };
+};
+var createEntityLoad = function createEntityLoad(controller, entity) {
+  return {
+    type: types.ENTITY_LOAD,
+    controller: controller,
+    entity: entity
+  };
+};
+var createShapeLoad = function createShapeLoad(controller, shape) {
+  return {
+    type: types.SHAPE_LOAD,
+    controller: controller,
+    entity: shape
+  };
+};
+var createEntityUpdate = function createEntityUpdate(endpoint, controller, id, fieldName, value) {
+  return {
+    type: types.ENTITY_UPDATE,
+    endpoint: endpoint,
+    controller: controller,
+    id: id,
+    field: fieldName,
+    value: value
+  };
+};
+var createFullEntityUpdate = function createFullEntityUpdate(endpoint, controller, entity, callback) {
+  return {
+    type: types.ENTITY_UPDATE,
+    endpoint: endpoint,
+    controller: controller,
+    entity: entity,
+    callback: callback
+  };
+};
+var createShapeRequest = function createShapeRequest(endpoint, controller) {
+  return {
+    type: types.SHAPE_REQUEST,
+    endpoint: endpoint,
+    controller: controller
+  };
+};
+var types = {
+  ENTITY_REQUEST: 'ENTITY_REQUEST',
+  ENTITY_LOAD: 'ENTITY_LOAD',
+  ENTITY_RELEASE: 'ENTITY_RELEASE',
+  SHAPE_REQUEST: 'SHAPE_REQUEST',
+  SHAPE_LOAD: 'SHAPE_LOAD',
+  ENTITY_UPDATE: 'ENTITY_UPDATE'
+};
+
+var buildControllerReducer = function buildControllerReducer(controller) {
+  return function (state, action) {
+    if (state === void 0) {
+      state = {
+        controller: controller
+      };
+    }
+
+    if (!action.controller || action.controller !== controller) return state;
+    var storageKey = getStorageKey(action.id !== undefined ? action.id : action.entity ? action.entity.id : undefined);
+    var newStorageEntry = {};
+
+    switch (action.type) {
+      case types.SHAPE_LOAD:
+        return _extends({}, state, {
+          shape: _extends({}, action.entity)
+        });
+
+      case types.ENTITY_LOAD:
+        if (Array.isArray(action.entity)) {
+          action.entity.forEach(function (element) {
+            var elementStorageKey = getStorageKey(element.id);
+            newStorageEntry[elementStorageKey] = _extends({
+              stakeholders: 0
+            }, state[elementStorageKey], {
+              payload: _extends({}, element)
+            });
+          });
+        } else {
+          newStorageEntry[storageKey] = _extends({
+            stakeholders: 0
+          }, state[storageKey], {
+            payload: _extends({}, action.entity)
+          });
+        }
+
+        return _extends({}, state, newStorageEntry);
+
+      case types.ENTITY_REQUEST:
+        var storedData = state[storageKey];
+        var updateStakeholders = storedData ? storedData.stakeholders + 1 : 1;
+        newStorageEntry[storageKey] = _extends({}, state[storageKey], {
+          stakeholders: updateStakeholders
+        });
+        return _extends({}, state, newStorageEntry);
+    }
+
+    return state;
+  };
+};
+function getStorageKey(id) {
+  if (id === undefined) return undefined;
+  return "id_" + id;
 }
 
-var logo = require("./logo~b570f809cf903aa5b0bdbcb876d10006ba1b5c9a.svg");
+var contextReducer = function contextReducer(state, action) {
+  if (state === void 0) {
+    state = {};
+  }
 
-var shapeLoaded = function shapeLoaded(name, shape) {
-  var action = {
-    type: 'SHAPE_LOADED',
-    shape: {}
-  };
-  action.shape[name] = shape;
-  return action;
+  switch (action.type) {
+    default:
+      return state;
+  }
 };
-var loadingShape = function loadingShape(name) {
-  var action = {
-    type: 'SHAPE_LOADING',
-    loadingShape: {}
+
+var reducersMap = {
+  context: contextReducer,
+  controller: function controller(state) {
+    if (state === void 0) {
+      state = {};
+    }
+
+    return state;
+  }
+};
+var rootReducer = redux.combineReducers(reducersMap);
+
+var toDeep = function toDeep(obj, defaultReturn, path) {
+  if (!obj) return defaultReturn;
+  if (!path || path.length === 0) if (typeof obj === 'string') return obj;else return defaultReturn;
+  return toDeep(obj[path[0]], defaultReturn, path.slice(1));
+};
+
+var Mapper = function Mapper(controllerFieldsComponentsMap, templatesMap, componentsMap, screenConfigurationMap, shapeConfigurationMap, filtersMap, componentsMapByType, textMap, apiUrl) {
+  var _this = this;
+
+  if (controllerFieldsComponentsMap === void 0) {
+    controllerFieldsComponentsMap = {};
+  }
+
+  if (templatesMap === void 0) {
+    templatesMap = {};
+  }
+
+  if (componentsMap === void 0) {
+    componentsMap = {};
+  }
+
+  if (screenConfigurationMap === void 0) {
+    screenConfigurationMap = {
+      "default": {}
+    };
+  }
+
+  if (shapeConfigurationMap === void 0) {
+    shapeConfigurationMap = {};
+  }
+
+  if (filtersMap === void 0) {
+    filtersMap = {};
+  }
+
+  if (componentsMapByType === void 0) {
+    componentsMapByType = {};
+  }
+
+  if (textMap === void 0) {
+    textMap = {};
+  }
+
+  this.getComponent = function (name, controller, type, parentController, level) {
+    var component = _extends({}, _this.getComponentsByType(type)["default"], _this.getComponentsByType(type)[level], _this.getComponents(controller)["default"], _this.getComponents(controller)[level], _this.getFieldComponents(parentController, name)["default"], _this.getFieldComponents(parentController, name)[level]);
+
+    return component;
   };
-  action.loadingShape[name] = true;
-  return action;
+
+  this.getFieldComponents = function (parentController, name) {
+    var parentComponentArray = _this.controllerFieldsComponentsMap[parentController];
+    var fieldComponentArray = parentComponentArray ? parentComponentArray[name] : {};
+    return fieldComponentArray ? fieldComponentArray : {};
+  };
+
+  this.getComponents = function (repository) {
+    var componentArray = _this.componentsMap[repository];
+    return componentArray ? componentArray : {};
+  };
+
+  this.getComponentsByType = function (type) {
+    var componentArray = _this.componentsMapByType[type];
+    return componentArray ? componentArray : {};
+  };
+
+  this.getScreenConfiguration = function (name) {
+    var deffaultConfiguration = _this.screenConfigurationMap["default"] || {};
+    if (!name) return deffaultConfiguration;
+    return _extends({}, deffaultConfiguration, _this.screenConfigurationMap[name]);
+  };
+
+  this.getShapeConfiguration = function (name) {
+    return _this.shapeConfigurationMap[name];
+  };
+
+  this.getTemplates = function (controller) {
+    var templates = _this.templatesMap[controller];
+    return templates ? templates : {};
+  };
+
+  this.t = function (key, def) {
+    return toDeep(_this.textMap, def, key.split('.'));
+  };
+
+  if (!apiUrl) throw new Error("Api url must not be undefined.");
+  this.api = apiUrl;
+  this.controllerFieldsComponentsMap = controllerFieldsComponentsMap;
+  this.templatesMap = templatesMap;
+  this.componentsMap = componentsMap;
+  this.screenConfigurationMap = screenConfigurationMap;
+  this.shapeConfigurationMap = shapeConfigurationMap;
+  this.filtersMap = filtersMap;
+  this.componentsMapByType = componentsMapByType;
+  this.textMap = textMap;
+};
+function applyVisibility(fields, visibilityConfiguration) {
+  if (visibilityConfiguration === void 0) {
+    visibilityConfiguration = {};
+  }
+
+  var hidden = visibilityConfiguration.hidden;
+  var visible = visibilityConfiguration.visible;
+
+  if (hidden) {
+    if (visible) {
+      if (hidden.length) {
+        return [].concat(visible, fields.filter(function (f) {
+          return !hidden.includes(f);
+        }).filter(function (f) {
+          return !visible.includes(f);
+        }));
+      } else return [].concat(visible);
+    } else if (hidden.length) return fields.filter(function (f) {
+      return !hidden.includes(f);
+    });else return [];
+  }
+
+  if (visible) {
+    return [].concat(visible, fields.filter(function (f) {
+      return !visible.includes(f);
+    }));
+  } else return fields;
+}
+
+var ArenaClasses = {
+  FIELD_VALUE: "arena-field-value"
+};
+
+var hiddenStyle = {
+  display: 'none'
+};
+var ArenaText = function ArenaText(_ref) {
+  var k = _ref.k,
+      t = _ref.t;
+  var text = t(k);
+
+  if (text) {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: 'arena-text ' + k.replace(/\./g, ' ')
+    }, text);
+  } else {
+    return /*#__PURE__*/React__default.createElement("div", {
+      style: hiddenStyle
+    }, k);
+  }
+};
+var ArenaTextList = function ArenaTextList(_ref2) {
+  var keys = _ref2.keys,
+      t = _ref2.t;
+  return /*#__PURE__*/React__default.createElement("div", null, keys.map(function (key) {
+    return /*#__PURE__*/React__default.createElement(ArenaText, {
+      key: key,
+      k: key,
+      t: t
+    });
+  }));
+};
+var getPlaceholder = function getPlaceholder(k, t) {
+  var text = t(k);
+
+  if (text) {
+    return text;
+  } else {
+    return /*#__PURE__*/React__default.createElement("div", {
+      style: hiddenStyle
+    }, k);
+  }
 };
 
 var validate = function validate(expression, type, value) {
-  console.log("validate");
-  console.log(expression, type, value);
   if (!value) return true;
 
   switch (type) {
@@ -68,274 +355,342 @@ var evaluateNumber = function evaluateNumber(expression, value) {
   if (expression.indexOf(',') > 0) {
     var ranges = expression.split(',');
 
-    for (range in ranges) {
-      if (evaluateRange(range, value)) return true;
+    for (var range in ranges) {
+      if (evaluateRange(ranges[range], value)) return true;
     }
+
+    return false;
   }
 
-  return evaluateRange(range, value);
+  return evaluateRange(expression, value);
 };
 
-var evaluateRange = function evaluateRange(range, value) {
+var evaluateRange = function evaluateRange(range, v) {
   var limits = range.split(';');
   if (range === "" || !limits || limits.length > 2 || limits[0] === "" || limits.length === 2 && limits[1] < limits[0]) throw new Error("Invalid range: " + range);
   var index = range.indexOf(';');
+  var value = Number(v);
   if (index === -1) return value === Number(limits[0]);
   if (index === 0) return value <= Number(limits[0]);
   if (index === range.length - 1) return value >= Number(limits[0]);
-  return value >= limits[0] && value <= limis[1];
+  return value >= limits[0] && value <= limits[1];
 };
 
-var ArenaField = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ArenaField, _React$Component);
+var ArenaFieldMode = {
+  EDIT: 'EDIT',
+  VIEW: 'VIEW',
+  CREATE: 'CREATE'
+};
 
-  function ArenaField(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-
-    _this.labelClasses = function () {
-      if (_this.state.value) return 'bmd-label-static';else return 'bmd-label-placeholder';
+var ArenaField = function ArenaField(_ref) {
+  var value = _ref.value,
+      name = _ref.name,
+      parentController = _ref.parentController,
+      type = _ref.type,
+      superType = _ref.superType,
+      parentType = _ref.parentType,
+      level = _ref.level,
+      _ref$mode = _ref.mode,
+      mode = _ref$mode === void 0 ? ArenaFieldMode.VIEW : _ref$mode,
+      field = _ref.field,
+      update = _ref.update,
+      componentMapper = _ref.componentMapper;
+  if (level < 0) return null;
+  if (name === 'reference' || name === 'id') return null;
+  if (mode === ArenaFieldMode.EDIT && !field.editable) return null;
+  var contentClasses = getClassName('arena-field-', name, parentController, type, superType, parentType, level, mode);
+  var textKeys = getTextKeys(parentController, name, mode);
+  var textComponent = textKeys ? /*#__PURE__*/React__default.createElement(ArenaTextList, {
+    keys: textKeys,
+    t: componentMapper.t
+  }) : null;
+  var placeholder = getPlaceholder(parentController + "." + name + ".placeholder", componentMapper.t);
+  var inputType = field.enumeration && field.enumeration.length ? 'enum' : field.jsType;
+  var options = inputType === 'enum' ? field.enumeration.map(function (enumeration) {
+    var key = field.type + "." + enumeration;
+    return {
+      value: enumeration,
+      text: componentMapper.t(key, key)
     };
+  }) : undefined;
 
-    _this.setAcepted = function (acepted) {
-      if (acepted === _this.state.acepted) return;
+  switch (mode) {
+    case ArenaFieldMode.VIEW:
+      var valueKey = type + "." + value;
+      var viewValue = inputType === 'enum' ? componentMapper.t(valueKey, valueKey) : value;
+      return /*#__PURE__*/React__default.createElement("div", {
+        className: contentClasses
+      }, textComponent, /*#__PURE__*/React__default.createElement(ArenaViewField, {
+        value: viewValue
+      }));
 
-      _this.setState({
-        acepted: acepted
-      });
-    };
+    case ArenaFieldMode.CREATE:
+    case ArenaFieldMode.EDIT:
+      return /*#__PURE__*/React__default.createElement("div", {
+        className: contentClasses
+      }, textComponent, /*#__PURE__*/React__default.createElement(ArenaInputField, {
+        placeholder: placeholder,
+        value: value,
+        onBlur: update,
+        validation: {
+          regEx: field.regEx,
+          type: field.jsType
+        },
+        type: inputType,
+        options: options
+      }));
 
-    _this.setValue = function (value) {
-      var valid = true;
-      var valueIsRequired = false;
-
-      if (_this.props.regEx) {
-        if (!validate(_this.props.regEx, _this.props.jsType, value)) valid = false;
-      }
-
-      if (_this.props.required && !value) valueIsRequired = true;
-
-      _this.setState({
-        valid: valid,
-        value: value
-      });
-
-      if (_this.props.setValidationStatus) _this.props.setValidationStatus(_this.props.name, valid && !valueIsRequired);
-    };
-
-    _this.onChange = function (e) {
-      var value = e.target.value;
-
-      _this.setValue(value);
-    };
-
-    _this.onFocus = function (e) {
-      _this.setState({
-        previous: _this.state.value
-      });
-    };
-
-    _this.onBlur = function (e) {
-      if (_this.state.valid && _this.state.previous !== e.target.value) {
-        _this.props.update(_this.props.name, _this.state.value, _this.setAcepted);
-      }
-    };
-
-    _this.input = function () {
-      var disabled;
-
-      switch (_this.props.mode) {
-        case 'view':
-          disabled = true;
-          break;
-
-        case 'edit':
-          disabled = false;
-          break;
-      }
-
-      var _this$props = _this.props,
-          componentMapper = _this$props.componentMapper,
-          type = _this$props.type,
-          parentController = _this$props.parentController,
-          name = _this$props.name;
-      var commonProps = {
-        id: _this.state.id,
-        className: "arena-form-control arena-form-control-" + _this.props.name,
-        value: _this.state.value,
-        onChange: _this.onChange,
-        onFocus: _this.onFocus,
-        onBlur: _this.onBlur,
-        disabled: disabled,
-        placeholder: componentMapper.t(parentController + "." + name + ".placeholder")
-      };
-
-      if (_this.props.enumeration) {
-        return /*#__PURE__*/React__default.createElement("select", _extends({}, commonProps, {
-          style: {
-            height: 'unset'
-          }
-        }), /*#__PURE__*/React__default.createElement("option", {
-          value: "",
-          disabled: true,
-          selected: true
-        }), _this.props.enumeration.map(function (enumeration) {
-          return /*#__PURE__*/React__default.createElement("option", {
-            value: enumeration
-          }, componentMapper.t(type + "." + enumeration));
-        }));
-      } else {
-        return /*#__PURE__*/React__default.createElement("input", _extends({
-          type: "text"
-        }, commonProps));
-      }
-    };
-
-    _this.getClassName = function (prefix, extraClass) {
-      if (extraClass === void 0) {
-        extraClass = "";
-      }
-
-      var _this$props2 = _this.props,
-          name = _this$props2.name,
-          parentController = _this$props2.parentController,
-          type = _this$props2.type,
-          superType = _this$props2.superType,
-          parentType = _this$props2.parentType,
-          level = _this$props2.level,
-          mode = _this$props2.mode;
-      return prefix + "name-" + name + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode + " " + extraClass;
-    };
-
-    var _type = props.type;
-    _this.state = {
-      value: props.value,
-      id: _type + "." + props.name,
-      valid: true,
-      acepted: true
-    };
-    return _this;
+    default:
+      return null;
   }
+};
 
-  var _proto = ArenaField.prototype;
+var getTextKeys = function getTextKeys(parentController, name, arenaMode) {
+  if (!parentController) return undefined;
+  var mode = arenaMode.toLowerCase();
+  return [parentController + "." + name + ".label", parentController + "." + name + "." + mode + ".label", parentController + "." + name + ".sublabel", parentController + "." + name + "." + mode + ".sublabel"];
+};
 
-  _proto.componentDidMount = function componentDidMount() {
-    this.setValue(this.props.value);
+var ArenaViewField = function ArenaViewField(_ref2) {
+  var value = _ref2.value;
+  return /*#__PURE__*/React__default.createElement("span", {
+    className: ArenaClasses.FIELD_VALUE
+  }, value);
+};
+var ArenaInputField = function ArenaInputField(_ref3) {
+  var value = _ref3.value,
+      onFocus = _ref3.onFocus,
+      onBlur = _ref3.onBlur,
+      type = _ref3.type,
+      name = _ref3.name,
+      options = _ref3.options,
+      placeholder = _ref3.placeholder,
+      validation = _ref3.validation;
+
+  var _useState = React.useState(value),
+      currentValue = _useState[0],
+      setValue = _useState[1];
+
+  var _useState2 = React.useState(true),
+      currentValueIsValid = _useState2[0],
+      setIsValid = _useState2[1];
+
+  React.useEffect(function () {
+    if (currentValue && value !== currentValue) setValue(value);
+  }, [value]);
+
+  var _onBlur = function _onBlur(event) {
+    var newValue = event.target.value;
+    var newValueIsValid = validation && validation.regEx ? validate(validation.regEx, validation.type, newValue) : true;
+    if (newValueIsValid) onBlur(newValue);
+    if (newValueIsValid !== currentValueIsValid) setIsValid(newValueIsValid);
   };
 
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (this.props.value !== prevProps.value) {
-      this.setState({
-        value: this.props.value
-      });
+  var _onChange = function _onChange(event) {
+    var eventValue = event.target.value;
+    setValue(eventValue);
+
+    if (!currentValueIsValid && validate(validation.regEx, validation.type, eventValue)) {
+      setIsValid(true);
     }
   };
 
-  _proto.render = function render() {
-    if (this.props.level < 0) return null;
-    if (this.props.name === 'reference' || this.props.name === 'id') return null;
-    if (this.props.mode === 'edit' && !this.props.field.editable) return null;
-    var _this$props3 = this.props,
-        componentMapper = _this$props3.componentMapper,
-        parentController = _this$props3.parentController,
-        name = _this$props3.name;
-    var textKey = parentController + "." + name + ".label";
-    var invalidKey = parentController + "." + name + ".invalid";
-    var rejectedKey = parentController + "." + name + ".rejected";
-    var requiredKey = parentController + "." + name + ".required";
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-field-')
-    }, /*#__PURE__*/React__default.createElement("fieldset", {
-      className: this.getClassName('arena-fieldset-')
-    }, /*#__PURE__*/React__default.createElement("label", {
-      htmlFor: this.state.id,
-      className: this.getClassName('arena-label-')
-    }, componentMapper.t(textKey)), _extends({}, this.input())), this.props.required && !this.state.value && /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-required-')
-    }, componentMapper.t(requiredKey)), !this.state.valid && /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-error-invalid-')
-    }, componentMapper.t(invalidKey)), !this.state.acepted && /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-error-rejected-')
-    }, componentMapper.t(rejectedKey)));
+  var placeholderIsString = typeof placeholder === 'string';
+  var placeholderString = placeholderIsString ? placeholder : undefined;
+  var commonProps = {
+    id: type + "." + name,
+    className: "arena-edit-field",
+    value: currentValue,
+    onChange: _onChange,
+    onFocus: onFocus,
+    onBlur: _onBlur
   };
 
-  return ArenaField;
-}(React__default.Component);
+  var content = function content() {
+    switch (type) {
+      case 'enum':
+        return buildSelect(commonProps, options, placeholderString);
 
-var CONTAINER_MODE = {
-  edit: "edit",
-  view: "view",
-  search: "search",
-  select: "select",
-  dummy: "dummy"
+      default:
+        return /*#__PURE__*/React__default.createElement("input", _extends({
+          className: "arena-edit-field",
+          type: "text",
+          placeholder: placeholderString
+        }, commonProps));
+    }
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !placeholderIsString && placeholder, content());
 };
+
+var buildSelect = function buildSelect(commonProps, options, placeholder) {
+  return /*#__PURE__*/React__default.createElement("select", _extends({}, commonProps, {
+    style: {
+      height: 'unset'
+    }
+  }), /*#__PURE__*/React__default.createElement("option", {
+    defaultValue: true
+  }, placeholder), options.map(function (option) {
+    return /*#__PURE__*/React__default.createElement("option", {
+      key: option.value,
+      value: option.value
+    }, option.text);
+  }));
+};
+
+var getClassName = function getClassName(prefix, name, parentController, type, superType, parentType, level, mode, extraClass) {
+  if (extraClass === void 0) {
+    extraClass = "";
+  }
+
+  return prefix + "name-" + name + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode + " " + extraClass;
+};
+
+var checkAndAddReducers = function checkAndAddReducers(store, controller) {
+  var controllerState = store.getState().controller;
+  var actionsController = controller;
+  if (!actionsController || controllerState[actionsController]) return;
+  var reducer = {
+    controller: {}
+  };
+  Object.entries(controllerState).forEach(function (_ref) {
+    var key = _ref[0];
+    reducer.controller[key] = buildControllerReducer(key);
+  });
+  reducer.controller[actionsController] = buildControllerReducer(actionsController);
+  var controllerReducer = redux.combineReducers(reducer.controller);
+  store.replaceReducer(redux.combineReducers(_extends({}, reducersMap, {
+    controller: controllerReducer
+  })));
+};
+
+var ArenaBasicMode = {
+  VIEW: 'VIEW',
+  HIDE: 'HIDE'
+};
+var ArenaFieldMode$1 = _extends({}, ArenaBasicMode, {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE'
+});
+var ArenaListContainerMode = _extends({}, ArenaBasicMode, {
+  SELECT: 'SELECT'
+});
+var ArenaContainerMode = _extends({}, ArenaFieldMode$1, {
+  SEARCH: 'SEARCH'
+});
+var useUpdateMode = {
+  IN_LOCAL_STATE: 'IN_LOCAL_STATE',
+  PERSIST: 'PERSIST',
+  EXTERNAL_STATE_UPDATE: 'EXTERNAL_STATE_UPDATE'
+};
+
+var useUpdate = function useUpdate(updateMode, controller, providedEntity, id, endpoint, updateParentState) {
+  if (updateMode === void 0) {
+    updateMode = useUpdateMode.IN_LOCAL_STATE;
+  }
+
+  var persistRequired = updateMode === useUpdateMode.PERSIST;
+
+  if (persistRequired) {
+    if (!id) throw "Error creando funci\xF3n de update con id vac\xEDo: [ updateMode " + updateMode + ", controller " + controller + ", initialEntity " + providedEntity + ", endpoint " + endpoint + " ]";
+    if (!endpoint) throw "Error creando funci\xF3n de update con endpoint vac\xEDo: [ updateMode " + updateMode + ", controller " + controller + ", initialEntity " + providedEntity + ", id " + id + " ]";
+  }
+
+  var _useState = React.useState(providedEntity),
+      entity = _useState[0],
+      setEntity = _useState[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var updateFunctionBuilder = function updateFunctionBuilder(fieldName) {
+    if (fieldName) {
+      return function (value) {
+        var chunk = {};
+        chunk[fieldName] = value;
+
+        var newState = _extends({}, entity, chunk);
+
+        if (updateMode === useUpdateMode.EXTERNAL_STATE_UPDATE && updateParentState) {
+          updateParentState(newState);
+        }
+
+        setEntity(newState);
+        if (persistRequired) dispatch(createEntityUpdate(endpoint, controller, id, fieldName, value));
+      };
+    } else {
+      return function (value, callback) {
+        setEntity(value);
+        if (persistRequired) dispatch(createFullEntityUpdate(endpoint, controller, value, callback));
+      };
+    }
+  };
+
+  return [entity, updateFunctionBuilder];
+};
+
+var createListItemSelectionFunction = function createListItemSelectionFunction(mode, setItems) {
+  if (mode === ArenaListContainerMode.SELECT) {
+    return function (items, toogledItem) {
+      setItems(items.map(function (item) {
+        if (item.id !== toogledItem) return _extends({}, item, {
+          selected: false
+        });
+        return _extends({}, item, {
+          selected: !item.selected
+        });
+      }));
+    };
+  }
+};
+
+var findEntities = function findEntities(api, controller, example) {
+  var url = new URL(api + "/" + controller + "/search");
+  var params = {};
+  Object.keys(example).forEach(function (key) {
+    if (example[key] !== undefined) params[key] = example[key];
+  });
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (res) {
+    return res.json();
+  });
+};
+var findEntitiesByText = function findEntitiesByText(api, controller, search) {
+  var url = api + "/" + controller + "/search/inline?query=" + search;
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (res) {
+    return res.json();
+  });
+};
+var createEntity = function createEntity(api, controller, entity) {
+  if (entity === void 0) {
+    entity = {};
+  }
+
+  return fetch(api + "/" + controller + "/create", {
+    method: 'POST',
+    body: JSON.stringify(entity),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (res) {
+    return res.json();
+  });
+};
+
+var modal = tingle.modal;
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
-
-var classnames = createCommonjsModule(function (module) {
-/*!
-  Copyright (c) 2017 Jed Watson.
-  Licensed under the MIT License (MIT), see
-  http://jedwatson.github.io/classnames
-*/
-/* global define */
-
-(function () {
-
-	var hasOwn = {}.hasOwnProperty;
-
-	function classNames () {
-		var classes = [];
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg;
-
-			if (argType === 'string' || argType === 'number') {
-				classes.push(arg);
-			} else if (Array.isArray(arg) && arg.length) {
-				var inner = classNames.apply(null, arg);
-				if (inner) {
-					classes.push(inner);
-				}
-			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes.push(key);
-					}
-				}
-			}
-		}
-
-		return classes.join(' ');
-	}
-
-	if ( module.exports) {
-		classNames.default = classNames;
-		module.exports = classNames;
-	} else {
-		window.classNames = classNames;
-	}
-}());
-});
-
-var mapStateToProps = function mapStateToProps(state, ownProps) {
-  return {
-    loadingOwnShape: state.shapes.loadingShape[ownProps.controller],
-    shape: state.shapes[ownProps.controller],
-    context: state.context
-  };
-};
-var mapContextToProps = function mapContextToProps(state, ownProps) {
-  return {
-    context: state.context
-  };
-};
 
 /*
 object-assign
@@ -27098,5228 +27453,801 @@ if (process.env.NODE_ENV === 'production') {
 }
 });
 
-/** @license React v16.13.1
- * react-is.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-var b$1="function"===typeof Symbol&&Symbol.for,c=b$1?Symbol.for("react.element"):60103,d=b$1?Symbol.for("react.portal"):60106,e=b$1?Symbol.for("react.fragment"):60107,f=b$1?Symbol.for("react.strict_mode"):60108,g=b$1?Symbol.for("react.profiler"):60114,h=b$1?Symbol.for("react.provider"):60109,k=b$1?Symbol.for("react.context"):60110,l=b$1?Symbol.for("react.async_mode"):60111,m=b$1?Symbol.for("react.concurrent_mode"):60111,n=b$1?Symbol.for("react.forward_ref"):60112,p=b$1?Symbol.for("react.suspense"):60113,q=b$1?
-Symbol.for("react.suspense_list"):60120,r=b$1?Symbol.for("react.memo"):60115,t=b$1?Symbol.for("react.lazy"):60116,v$1=b$1?Symbol.for("react.block"):60121,w=b$1?Symbol.for("react.fundamental"):60117,x=b$1?Symbol.for("react.responder"):60118,y=b$1?Symbol.for("react.scope"):60119;
-function z(a){if("object"===typeof a&&null!==a){var u=a.$$typeof;switch(u){case c:switch(a=a.type,a){case l:case m:case e:case g:case f:case p:return a;default:switch(a=a&&a.$$typeof,a){case k:case n:case t:case r:case h:return a;default:return u}}case d:return u}}}function A(a){return z(a)===m}var AsyncMode=l;var ConcurrentMode=m;var ContextConsumer=k;var ContextProvider=h;var Element$1=c;var ForwardRef=n;var Fragment=e;var Lazy=t;var Memo=r;var Portal=d;
-var Profiler=g;var StrictMode=f;var Suspense=p;var isAsyncMode=function(a){return A(a)||z(a)===l};var isConcurrentMode=A;var isContextConsumer=function(a){return z(a)===k};var isContextProvider=function(a){return z(a)===h};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===c};var isForwardRef=function(a){return z(a)===n};var isFragment=function(a){return z(a)===e};var isLazy=function(a){return z(a)===t};
-var isMemo=function(a){return z(a)===r};var isPortal=function(a){return z(a)===d};var isProfiler=function(a){return z(a)===g};var isStrictMode=function(a){return z(a)===f};var isSuspense=function(a){return z(a)===p};
-var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===w||a.$$typeof===x||a.$$typeof===y||a.$$typeof===v$1)};var typeOf=z;
+var ArenaContainer = function ArenaContainer(_ref) {
+  var controller = _ref.controller,
+      id = _ref.id,
+      level = _ref.level,
+      mode = _ref.mode,
+      entity = _ref.entity,
+      update = _ref.update,
+      componentMapper = _ref.componentMapper,
+      name = _ref.name,
+      parentController = _ref.parentController,
+      type = _ref.type,
+      onCreateFinish = _ref.onCreateFinish,
+      entityRenderConfiguration = _ref.entityRenderConfiguration;
+  if (level < 1) return null;
+  var dispatch = reactRedux.useDispatch();
+  var reduxStore = reactRedux.useStore();
+  React.useEffect(function () {
+    checkAndAddReducers(reduxStore, controller);
+  }, [controller]);
+  var endpoint = componentMapper.api;
+  React.useEffect(function () {
+    if (controller) {
+      dispatch(createShapeRequest(endpoint, controller));
+    }
 
-var reactIs_production_min = {
-	AsyncMode: AsyncMode,
-	ConcurrentMode: ConcurrentMode,
-	ContextConsumer: ContextConsumer,
-	ContextProvider: ContextProvider,
-	Element: Element$1,
-	ForwardRef: ForwardRef,
-	Fragment: Fragment,
-	Lazy: Lazy,
-	Memo: Memo,
-	Portal: Portal,
-	Profiler: Profiler,
-	StrictMode: StrictMode,
-	Suspense: Suspense,
-	isAsyncMode: isAsyncMode,
-	isConcurrentMode: isConcurrentMode,
-	isContextConsumer: isContextConsumer,
-	isContextProvider: isContextProvider,
-	isElement: isElement,
-	isForwardRef: isForwardRef,
-	isFragment: isFragment,
-	isLazy: isLazy,
-	isMemo: isMemo,
-	isPortal: isPortal,
-	isProfiler: isProfiler,
-	isStrictMode: isStrictMode,
-	isSuspense: isSuspense,
-	isValidElementType: isValidElementType,
-	typeOf: typeOf
+    if (id) {
+      dispatch(createEntityRequestById(endpoint, controller, id));
+      return function () {
+        dispatch(createEntityReleaseById(controller, id));
+      };
+    }
+  }, [controller, id]);
+
+  var _shapeSelector = React.useMemo(function () {
+    return shapeSelector(controller);
+  }, [controller]);
+
+  var _entitySelector = React.useMemo(function () {
+    return entitySelector(controller, id);
+  }, [controller, id]);
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return [_shapeSelector(state), _entitySelector(state)];
+  }, reactRedux.shallowEqual),
+      shape = _useSelector[0],
+      entityFromCentralMemory = _useSelector[1];
+
+  var useUpdateMode = getUseUpdateMode(mode);
+
+  var _useUpdate = useUpdate(useUpdateMode, controller, entity, id, endpoint, update),
+      entityInState = _useUpdate[0],
+      updateFunctionBuilder = _useUpdate[1];
+
+  var entityToUse = getEntityToUse(mode, entityInState, entityFromCentralMemory);
+
+  var _entityRenderConfiguration = entityRenderConfiguration || componentMapper.getShapeConfiguration(controller);
+
+  var calculatedConfiguration = _extends({}, _entityRenderConfiguration, {
+    wrapperConfiguration: componentMapper.getComponent(name, controller, type, parentController, level)
+  });
+
+  var keys = getTextKeys$1(parentController ? parentController : controller, name, mode);
+
+  var _onCreateFinish = mode !== ArenaContainerMode.CREATE ? undefined : function () {
+    updateFunctionBuilder()(entityToUse);
+    onCreateFinish(entityToUse);
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "arena-container " + (parentController ? parentController + "-" : '') + controller + "-container"
+  }, keys && /*#__PURE__*/React__default.createElement(ArenaTextList, {
+    keys: keys,
+    t: componentMapper.t
+  }), /*#__PURE__*/React__default.createElement(ArenaEntityRender, {
+    controller: controller,
+    level: level,
+    entity: entityToUse,
+    mode: mode,
+    shape: shape,
+    update: update,
+    updateFunctionBuilder: updateFunctionBuilder,
+    componentMapper: componentMapper,
+    configuration: calculatedConfiguration
+  }), mode === ArenaContainerMode.CREATE && onCreateFinish && /*#__PURE__*/React__default.createElement("button", {
+    className: "arena-create-finish-button",
+    onClick: _onCreateFinish
+  }, getCreteFinishText(componentMapper.t, controller)));
 };
 
-var reactIs_development = createCommonjsModule(function (module, exports) {
-
-
-
-if (process.env.NODE_ENV !== "production") {
-  (function() {
-
-// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
-// nor polyfill, then a plain number is used for performance.
-var hasSymbol = typeof Symbol === 'function' && Symbol.for;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
-var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
-var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
-var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
-var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
-var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
-// (unstable) APIs that have been removed. Can we remove the symbols?
-
-var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
-var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
-var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
-var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
-var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
-var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
-var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
-var REACT_BLOCK_TYPE = hasSymbol ? Symbol.for('react.block') : 0xead9;
-var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
-var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
-var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
-
-function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE || type.$$typeof === REACT_BLOCK_TYPE);
-}
-
-function typeOf(object) {
-  if (typeof object === 'object' && object !== null) {
-    var $$typeof = object.$$typeof;
-
-    switch ($$typeof) {
-      case REACT_ELEMENT_TYPE:
-        var type = object.type;
-
-        switch (type) {
-          case REACT_ASYNC_MODE_TYPE:
-          case REACT_CONCURRENT_MODE_TYPE:
-          case REACT_FRAGMENT_TYPE:
-          case REACT_PROFILER_TYPE:
-          case REACT_STRICT_MODE_TYPE:
-          case REACT_SUSPENSE_TYPE:
-            return type;
-
-          default:
-            var $$typeofType = type && type.$$typeof;
-
-            switch ($$typeofType) {
-              case REACT_CONTEXT_TYPE:
-              case REACT_FORWARD_REF_TYPE:
-              case REACT_LAZY_TYPE:
-              case REACT_MEMO_TYPE:
-              case REACT_PROVIDER_TYPE:
-                return $$typeofType;
-
-              default:
-                return $$typeof;
-            }
-
-        }
-
-      case REACT_PORTAL_TYPE:
-        return $$typeof;
-    }
-  }
-
-  return undefined;
-} // AsyncMode is deprecated along with isAsyncMode
-
-var AsyncMode = REACT_ASYNC_MODE_TYPE;
-var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
-var ContextConsumer = REACT_CONTEXT_TYPE;
-var ContextProvider = REACT_PROVIDER_TYPE;
-var Element = REACT_ELEMENT_TYPE;
-var ForwardRef = REACT_FORWARD_REF_TYPE;
-var Fragment = REACT_FRAGMENT_TYPE;
-var Lazy = REACT_LAZY_TYPE;
-var Memo = REACT_MEMO_TYPE;
-var Portal = REACT_PORTAL_TYPE;
-var Profiler = REACT_PROFILER_TYPE;
-var StrictMode = REACT_STRICT_MODE_TYPE;
-var Suspense = REACT_SUSPENSE_TYPE;
-var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
-
-function isAsyncMode(object) {
-  {
-    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
-      hasWarnedAboutDeprecatedIsAsyncMode = true; // Using console['warn'] to evade Babel and ESLint
-
-      console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
-    }
-  }
-
-  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
-}
-function isConcurrentMode(object) {
-  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
-}
-function isContextConsumer(object) {
-  return typeOf(object) === REACT_CONTEXT_TYPE;
-}
-function isContextProvider(object) {
-  return typeOf(object) === REACT_PROVIDER_TYPE;
-}
-function isElement(object) {
-  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
-}
-function isForwardRef(object) {
-  return typeOf(object) === REACT_FORWARD_REF_TYPE;
-}
-function isFragment(object) {
-  return typeOf(object) === REACT_FRAGMENT_TYPE;
-}
-function isLazy(object) {
-  return typeOf(object) === REACT_LAZY_TYPE;
-}
-function isMemo(object) {
-  return typeOf(object) === REACT_MEMO_TYPE;
-}
-function isPortal(object) {
-  return typeOf(object) === REACT_PORTAL_TYPE;
-}
-function isProfiler(object) {
-  return typeOf(object) === REACT_PROFILER_TYPE;
-}
-function isStrictMode(object) {
-  return typeOf(object) === REACT_STRICT_MODE_TYPE;
-}
-function isSuspense(object) {
-  return typeOf(object) === REACT_SUSPENSE_TYPE;
-}
-
-exports.AsyncMode = AsyncMode;
-exports.ConcurrentMode = ConcurrentMode;
-exports.ContextConsumer = ContextConsumer;
-exports.ContextProvider = ContextProvider;
-exports.Element = Element;
-exports.ForwardRef = ForwardRef;
-exports.Fragment = Fragment;
-exports.Lazy = Lazy;
-exports.Memo = Memo;
-exports.Portal = Portal;
-exports.Profiler = Profiler;
-exports.StrictMode = StrictMode;
-exports.Suspense = Suspense;
-exports.isAsyncMode = isAsyncMode;
-exports.isConcurrentMode = isConcurrentMode;
-exports.isContextConsumer = isContextConsumer;
-exports.isContextProvider = isContextProvider;
-exports.isElement = isElement;
-exports.isForwardRef = isForwardRef;
-exports.isFragment = isFragment;
-exports.isLazy = isLazy;
-exports.isMemo = isMemo;
-exports.isPortal = isPortal;
-exports.isProfiler = isProfiler;
-exports.isStrictMode = isStrictMode;
-exports.isSuspense = isSuspense;
-exports.isValidElementType = isValidElementType;
-exports.typeOf = typeOf;
-  })();
-}
-});
-
-var reactIs = createCommonjsModule(function (module) {
-
-if (process.env.NODE_ENV === 'production') {
-  module.exports = reactIs_production_min;
-} else {
-  module.exports = reactIs_development;
-}
-});
-
-var has$1 = Function.call.bind(Object.prototype.hasOwnProperty);
-var printWarning$1 = function() {};
-
-if (process.env.NODE_ENV !== 'production') {
-  printWarning$1 = function(text) {
-    var message = 'Warning: ' + text;
-    if (typeof console !== 'undefined') {
-      console.error(message);
-    }
-    try {
-      // --- Welcome to debugging React ---
-      // This error was thrown as a convenience so that you can use this stack
-      // to find the callsite that caused this warning to fire.
-      throw new Error(message);
-    } catch (x) {}
-  };
-}
-
-function emptyFunctionThatReturnsNull() {
-  return null;
-}
-
-var factoryWithTypeCheckers = function(isValidElement, throwOnDirectAccess) {
-  /* global Symbol */
-  var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
-  var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
-
-  /**
-   * Returns the iterator method function contained on the iterable object.
-   *
-   * Be sure to invoke the function with the iterable as context:
-   *
-   *     var iteratorFn = getIteratorFn(myIterable);
-   *     if (iteratorFn) {
-   *       var iterator = iteratorFn.call(myIterable);
-   *       ...
-   *     }
-   *
-   * @param {?object} maybeIterable
-   * @return {?function}
-   */
-  function getIteratorFn(maybeIterable) {
-    var iteratorFn = maybeIterable && (ITERATOR_SYMBOL && maybeIterable[ITERATOR_SYMBOL] || maybeIterable[FAUX_ITERATOR_SYMBOL]);
-    if (typeof iteratorFn === 'function') {
-      return iteratorFn;
-    }
-  }
-
-  /**
-   * Collection of methods that allow declaration and validation of props that are
-   * supplied to React components. Example usage:
-   *
-   *   var Props = require('ReactPropTypes');
-   *   var MyArticle = React.createClass({
-   *     propTypes: {
-   *       // An optional string prop named "description".
-   *       description: Props.string,
-   *
-   *       // A required enum prop named "category".
-   *       category: Props.oneOf(['News','Photos']).isRequired,
-   *
-   *       // A prop named "dialog" that requires an instance of Dialog.
-   *       dialog: Props.instanceOf(Dialog).isRequired
-   *     },
-   *     render: function() { ... }
-   *   });
-   *
-   * A more formal specification of how these methods are used:
-   *
-   *   type := array|bool|func|object|number|string|oneOf([...])|instanceOf(...)
-   *   decl := ReactPropTypes.{type}(.isRequired)?
-   *
-   * Each and every declaration produces a function with the same signature. This
-   * allows the creation of custom validation functions. For example:
-   *
-   *  var MyLink = React.createClass({
-   *    propTypes: {
-   *      // An optional string or URI prop named "href".
-   *      href: function(props, propName, componentName) {
-   *        var propValue = props[propName];
-   *        if (propValue != null && typeof propValue !== 'string' &&
-   *            !(propValue instanceof URI)) {
-   *          return new Error(
-   *            'Expected a string or an URI for ' + propName + ' in ' +
-   *            componentName
-   *          );
-   *        }
-   *      }
-   *    },
-   *    render: function() {...}
-   *  });
-   *
-   * @internal
-   */
-
-  var ANONYMOUS = '<<anonymous>>';
-
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithThrowingShims.js`.
-  var ReactPropTypes = {
-    array: createPrimitiveTypeChecker('array'),
-    bool: createPrimitiveTypeChecker('boolean'),
-    func: createPrimitiveTypeChecker('function'),
-    number: createPrimitiveTypeChecker('number'),
-    object: createPrimitiveTypeChecker('object'),
-    string: createPrimitiveTypeChecker('string'),
-    symbol: createPrimitiveTypeChecker('symbol'),
-
-    any: createAnyTypeChecker(),
-    arrayOf: createArrayOfTypeChecker,
-    element: createElementTypeChecker(),
-    elementType: createElementTypeTypeChecker(),
-    instanceOf: createInstanceTypeChecker,
-    node: createNodeChecker(),
-    objectOf: createObjectOfTypeChecker,
-    oneOf: createEnumTypeChecker,
-    oneOfType: createUnionTypeChecker,
-    shape: createShapeTypeChecker,
-    exact: createStrictShapeTypeChecker,
-  };
-
-  /**
-   * inlined Object.is polyfill to avoid requiring consumers ship their own
-   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
-   */
-  /*eslint-disable no-self-compare*/
-  function is(x, y) {
-    // SameValue algorithm
-    if (x === y) {
-      // Steps 1-5, 7-10
-      // Steps 6.b-6.e: +0 != -0
-      return x !== 0 || 1 / x === 1 / y;
-    } else {
-      // Step 6.a: NaN == NaN
-      return x !== x && y !== y;
-    }
-  }
-  /*eslint-enable no-self-compare*/
-
-  /**
-   * We use an Error-like object for backward compatibility as people may call
-   * PropTypes directly and inspect their output. However, we don't use real
-   * Errors anymore. We don't inspect their stack anyway, and creating them
-   * is prohibitively expensive if they are created too often, such as what
-   * happens in oneOfType() for any type before the one that matched.
-   */
-  function PropTypeError(message) {
-    this.message = message;
-    this.stack = '';
-  }
-  // Make `instanceof Error` still work for returned errors.
-  PropTypeError.prototype = Error.prototype;
-
-  function createChainableTypeChecker(validate) {
-    if (process.env.NODE_ENV !== 'production') {
-      var manualPropTypeCallCache = {};
-      var manualPropTypeWarningCount = 0;
-    }
-    function checkType(isRequired, props, propName, componentName, location, propFullName, secret) {
-      componentName = componentName || ANONYMOUS;
-      propFullName = propFullName || propName;
-
-      if (secret !== ReactPropTypesSecret_1) {
-        if (throwOnDirectAccess) {
-          // New behavior only for users of `prop-types` package
-          var err = new Error(
-            'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-            'Use `PropTypes.checkPropTypes()` to call them. ' +
-            'Read more at http://fb.me/use-check-prop-types'
-          );
-          err.name = 'Invariant Violation';
-          throw err;
-        } else if (process.env.NODE_ENV !== 'production' && typeof console !== 'undefined') {
-          // Old behavior for people using React.PropTypes
-          var cacheKey = componentName + ':' + propName;
-          if (
-            !manualPropTypeCallCache[cacheKey] &&
-            // Avoid spamming the console because they are often not actionable except for lib authors
-            manualPropTypeWarningCount < 3
-          ) {
-            printWarning$1(
-              'You are manually calling a React.PropTypes validation ' +
-              'function for the `' + propFullName + '` prop on `' + componentName  + '`. This is deprecated ' +
-              'and will throw in the standalone `prop-types` package. ' +
-              'You may be seeing this warning due to a third-party PropTypes ' +
-              'library. See https://fb.me/react-warning-dont-call-proptypes ' + 'for details.'
-            );
-            manualPropTypeCallCache[cacheKey] = true;
-            manualPropTypeWarningCount++;
-          }
-        }
-      }
-      if (props[propName] == null) {
-        if (isRequired) {
-          if (props[propName] === null) {
-            return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required ' + ('in `' + componentName + '`, but its value is `null`.'));
-          }
-          return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required in ' + ('`' + componentName + '`, but its value is `undefined`.'));
-        }
-        return null;
-      } else {
-        return validate(props, propName, componentName, location, propFullName);
-      }
-    }
-
-    var chainedCheckType = checkType.bind(null, false);
-    chainedCheckType.isRequired = checkType.bind(null, true);
-
-    return chainedCheckType;
-  }
-
-  function createPrimitiveTypeChecker(expectedType) {
-    function validate(props, propName, componentName, location, propFullName, secret) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== expectedType) {
-        // `propValue` being instance of, say, date/regexp, pass the 'object'
-        // check, but we can offer a more precise error message here rather than
-        // 'of type `object`'.
-        var preciseType = getPreciseType(propValue);
-
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + preciseType + '` supplied to `' + componentName + '`, expected ') + ('`' + expectedType + '`.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createAnyTypeChecker() {
-    return createChainableTypeChecker(emptyFunctionThatReturnsNull);
-  }
-
-  function createArrayOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside arrayOf.');
-      }
-      var propValue = props[propName];
-      if (!Array.isArray(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
-      }
-      for (var i = 0; i < propValue.length; i++) {
-        var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', ReactPropTypesSecret_1);
-        if (error instanceof Error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!isValidElement(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!reactIs.isValidElementType(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createInstanceTypeChecker(expectedClass) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!(props[propName] instanceof expectedClass)) {
-        var expectedClassName = expectedClass.name || ANONYMOUS;
-        var actualClassName = getClassName(props[propName]);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + actualClassName + '` supplied to `' + componentName + '`, expected ') + ('instance of `' + expectedClassName + '`.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createEnumTypeChecker(expectedValues) {
-    if (!Array.isArray(expectedValues)) {
-      if (process.env.NODE_ENV !== 'production') {
-        if (arguments.length > 1) {
-          printWarning$1(
-            'Invalid arguments supplied to oneOf, expected an array, got ' + arguments.length + ' arguments. ' +
-            'A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).'
-          );
-        } else {
-          printWarning$1('Invalid argument supplied to oneOf, expected an array.');
-        }
-      }
-      return emptyFunctionThatReturnsNull;
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      for (var i = 0; i < expectedValues.length; i++) {
-        if (is(propValue, expectedValues[i])) {
-          return null;
-        }
-      }
-
-      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
-        var type = getPreciseType(value);
-        if (type === 'symbol') {
-          return String(value);
-        }
-        return value;
-      });
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createObjectOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside objectOf.');
-      }
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
-      }
-      for (var key in propValue) {
-        if (has$1(propValue, key)) {
-          var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-          if (error instanceof Error) {
-            return error;
-          }
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createUnionTypeChecker(arrayOfTypeCheckers) {
-    if (!Array.isArray(arrayOfTypeCheckers)) {
-      process.env.NODE_ENV !== 'production' ? printWarning$1('Invalid argument supplied to oneOfType, expected an instance of array.') : void 0;
-      return emptyFunctionThatReturnsNull;
-    }
-
-    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-      var checker = arrayOfTypeCheckers[i];
-      if (typeof checker !== 'function') {
-        printWarning$1(
-          'Invalid argument supplied to oneOfType. Expected an array of check functions, but ' +
-          'received ' + getPostfixForTypeWarning(checker) + ' at index ' + i + '.'
-        );
-        return emptyFunctionThatReturnsNull;
-      }
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-        var checker = arrayOfTypeCheckers[i];
-        if (checker(props, propName, componentName, location, propFullName, ReactPropTypesSecret_1) == null) {
-          return null;
-        }
-      }
-
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createNodeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!isNode(props[propName])) {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`, expected a ReactNode.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      for (var key in shapeTypes) {
-        var checker = shapeTypes[key];
-        if (!checker) {
-          continue;
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createStrictShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      // We need to check all keys in case some are required but missing from
-      // props.
-      var allKeys = objectAssign({}, props[propName], shapeTypes);
-      for (var key in allKeys) {
-        var checker = shapeTypes[key];
-        if (!checker) {
-          return new PropTypeError(
-            'Invalid ' + location + ' `' + propFullName + '` key `' + key + '` supplied to `' + componentName + '`.' +
-            '\nBad object: ' + JSON.stringify(props[propName], null, '  ') +
-            '\nValid keys: ' +  JSON.stringify(Object.keys(shapeTypes), null, '  ')
-          );
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-
-    return createChainableTypeChecker(validate);
-  }
-
-  function isNode(propValue) {
-    switch (typeof propValue) {
-      case 'number':
-      case 'string':
-      case 'undefined':
-        return true;
-      case 'boolean':
-        return !propValue;
-      case 'object':
-        if (Array.isArray(propValue)) {
-          return propValue.every(isNode);
-        }
-        if (propValue === null || isValidElement(propValue)) {
-          return true;
-        }
-
-        var iteratorFn = getIteratorFn(propValue);
-        if (iteratorFn) {
-          var iterator = iteratorFn.call(propValue);
-          var step;
-          if (iteratorFn !== propValue.entries) {
-            while (!(step = iterator.next()).done) {
-              if (!isNode(step.value)) {
-                return false;
-              }
-            }
-          } else {
-            // Iterator will provide entry [k,v] tuples rather than values.
-            while (!(step = iterator.next()).done) {
-              var entry = step.value;
-              if (entry) {
-                if (!isNode(entry[1])) {
-                  return false;
-                }
-              }
-            }
-          }
-        } else {
-          return false;
-        }
-
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  function isSymbol(propType, propValue) {
-    // Native Symbol.
-    if (propType === 'symbol') {
-      return true;
-    }
-
-    // falsy value can't be a Symbol
-    if (!propValue) {
-      return false;
-    }
-
-    // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
-    if (propValue['@@toStringTag'] === 'Symbol') {
-      return true;
-    }
-
-    // Fallback for non-spec compliant Symbols which are polyfilled.
-    if (typeof Symbol === 'function' && propValue instanceof Symbol) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // Equivalent of `typeof` but with special handling for array and regexp.
-  function getPropType(propValue) {
-    var propType = typeof propValue;
-    if (Array.isArray(propValue)) {
-      return 'array';
-    }
-    if (propValue instanceof RegExp) {
-      // Old webkits (at least until Android 4.0) return 'function' rather than
-      // 'object' for typeof a RegExp. We'll normalize this here so that /bla/
-      // passes PropTypes.object.
-      return 'object';
-    }
-    if (isSymbol(propType, propValue)) {
-      return 'symbol';
-    }
-    return propType;
-  }
-
-  // This handles more types than `getPropType`. Only used for error messages.
-  // See `createPrimitiveTypeChecker`.
-  function getPreciseType(propValue) {
-    if (typeof propValue === 'undefined' || propValue === null) {
-      return '' + propValue;
-    }
-    var propType = getPropType(propValue);
-    if (propType === 'object') {
-      if (propValue instanceof Date) {
-        return 'date';
-      } else if (propValue instanceof RegExp) {
-        return 'regexp';
-      }
-    }
-    return propType;
-  }
-
-  // Returns a string that is postfixed to a warning about an invalid type.
-  // For example, "undefined" or "of type array"
-  function getPostfixForTypeWarning(value) {
-    var type = getPreciseType(value);
-    switch (type) {
-      case 'array':
-      case 'object':
-        return 'an ' + type;
-      case 'boolean':
-      case 'date':
-      case 'regexp':
-        return 'a ' + type;
-      default:
-        return type;
-    }
-  }
-
-  // Returns class name of the object, if any.
-  function getClassName(propValue) {
-    if (!propValue.constructor || !propValue.constructor.name) {
-      return ANONYMOUS;
-    }
-    return propValue.constructor.name;
-  }
-
-  ReactPropTypes.checkPropTypes = checkPropTypes_1;
-  ReactPropTypes.resetWarningCache = checkPropTypes_1.resetWarningCache;
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
+var getCreteFinishText = function getCreteFinishText(t, controller) {
+  var k = controller + ".create.finish";
+  var text = t(k);
+  return text ? text : k;
 };
 
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-var factoryWithThrowingShims = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret_1) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  }  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  }  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
+var getCreteStartText = function getCreteStartText(t, controller) {
+  var k = controller + ".create.start";
+  var text = t(k);
+  return text ? text : k;
 };
 
-var propTypes = createCommonjsModule(function (module) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-if (process.env.NODE_ENV !== 'production') {
-  var ReactIs = reactIs;
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = factoryWithTypeCheckers(ReactIs.isElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = factoryWithThrowingShims();
-}
-});
-
-function _extends$1() {
-  _extends$1 = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-
-  return _extends$1.apply(this, arguments);
-}
-
-function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null) return {};
-  var target = {};
-  var sourceKeys = Object.keys(source);
-  var key, i;
-
-  for (i = 0; i < sourceKeys.length; i++) {
-    key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0) continue;
-    target[key] = source[key];
+var getTextKeys$1 = function getTextKeys(parentController, name, arenaMode) {
+  if (arenaMode === void 0) {
+    arenaMode = 'default';
   }
 
-  return target;
-}
+  if (!parentController) return undefined;
+  var mode = arenaMode.toLowerCase();
 
-function _inheritsLoose$1(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-  subClass.__proto__ = superClass;
-}
-
-function hasClass(element, className) {
-  if (element.classList) return !!className && element.classList.contains(className);
-  return (" " + (element.className.baseVal || element.className) + " ").indexOf(" " + className + " ") !== -1;
-}
-
-function addClass(element, className) {
-  if (element.classList) element.classList.add(className);else if (!hasClass(element, className)) if (typeof element.className === 'string') element.className = element.className + " " + className;else element.setAttribute('class', (element.className && element.className.baseVal || '') + " " + className);
-}
-
-function replaceClassName(origClass, classToRemove) {
-  return origClass.replace(new RegExp("(^|\\s)" + classToRemove + "(?:\\s|$)", 'g'), '$1').replace(/\s+/g, ' ').replace(/^\s*|\s*$/g, '');
-}
-
-function removeClass(element, className) {
-  if (element.classList) {
-    element.classList.remove(className);
-  } else if (typeof element.className === 'string') {
-    element.className = replaceClassName(element.className, className);
+  if (name) {
+    return [parentController + "." + name + ".label", parentController + "." + name + "." + mode + ".label", parentController + "." + name + ".sublabel", parentController + "." + name + "." + mode + ".sublabel"];
   } else {
-    element.setAttribute('class', replaceClassName(element.className && element.className.baseVal || '', className));
+    return [parentController + ".label", parentController + "." + mode + ".label", parentController + ".sublabel", parentController + "." + mode + ".sublabel"];
+  }
+};
+
+var ArenaContainerDefaultRender = function ArenaContainerDefaultRender(_ref2) {
+  var entity = _ref2.entity,
+      shape = _ref2.shape,
+      level = _ref2.level,
+      updateBuilder = _ref2.updateBuilder,
+      mode = _ref2.mode,
+      componentMapper = _ref2.componentMapper,
+      controller = _ref2.controller,
+      _ref2$configuration = _ref2.configuration,
+      configuration = _ref2$configuration === void 0 ? {
+    wrapperConfiguration: {},
+    shapeConfiguration: {}
+  } : _ref2$configuration;
+  var wrapperConfiguration = configuration.wrapperConfiguration || {};
+  var shapeConfiguration = configuration.shapeConfiguration || {};
+  return /*#__PURE__*/React__default.createElement(ArenaDefaultRenderWrapper, {
+    configuration: wrapperConfiguration.render,
+    entity: entity,
+    updateEntity: updateBuilder ? updateBuilder() : undefined,
+    t: componentMapper.t,
+    mode: mode
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "arena-container-default-render"
+  }, " ", drawShape(shape, entity, level, updateBuilder, mode, componentMapper, controller, shapeConfiguration), " "));
+};
+var ArenaContainerSearchRender = function ArenaContainerSearchRender(_ref3) {
+  var filter = _ref3.filter,
+      shape = _ref3.shape,
+      controller = _ref3.controller,
+      onSelectFinish = _ref3.onSelectFinish,
+      updateBuilder = _ref3.updateBuilder,
+      componentMapper = _ref3.componentMapper,
+      configuration = _ref3.configuration;
+  var commonProps = {
+    controller: controller,
+    componentMapper: componentMapper
+  };
+  return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(ArenaContainerDefaultRender, _extends({}, commonProps, {
+    entity: filter,
+    shape: shape,
+    level: 1,
+    updateBuilder: updateBuilder,
+    mode: ArenaContainerMode.CREATE,
+    configuration: configuration
+  })), /*#__PURE__*/React__default.createElement(ArenaListContainer, _extends({}, commonProps, {
+    filter: filter,
+    onSelectFinish: onSelectFinish,
+    mode: ArenaListContainerMode.SELECT,
+    level: 2
+  })));
+};
+
+var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, componentMapper, parentController, shapeConfiguration) {
+  if (shapeConfiguration === void 0) {
+    shapeConfiguration = {};
+  }
+
+  var orderedFields = React.useMemo(function () {
+    var fields = [];
+    Object.keys(shape.fields).forEach(function (f) {
+      var field = shape.fields[f];
+      if (field.key) fields.unshift(f);else fields.push(f);
+    });
+    return applyVisibility(fields, shapeConfiguration.visibility);
+  });
+  var shapeConfigurationForFields = shapeConfiguration.fields || {};
+  return orderedFields.map(function (fieldName) {
+    var field = shape.fields[fieldName];
+    var update = updateBuilder(fieldName);
+    var currentFieldCommonProps = {
+      name: fieldName,
+      key: fieldName,
+      level: level,
+      update: update,
+      mode: mode,
+      componentMapper: componentMapper,
+      parentController: parentController,
+      type: field.type
+    };
+
+    if (!field.hidden) {
+      if (field.key) {
+        return drawKeyField(currentFieldCommonProps, field, entity[fieldName], shapeConfigurationForFields[fieldName]);
+      } else {
+        return drawSimpleField(currentFieldCommonProps, field, entity[fieldName]);
+      }
+    }
+  });
+};
+
+var drawSimpleField = function drawSimpleField(props, field, value) {
+  var fieldName = field.name;
+  return /*#__PURE__*/React__default.createElement(ArenaField, _extends({
+    key: fieldName,
+    name: fieldName,
+    value: value,
+    field: field
+  }, props));
+};
+
+var drawKeyField = function drawKeyField(props, field, value, shapeConfiguration) {
+  var containerCommonProps = _extends({}, props, {
+    controller: field.controller,
+    entityRenderConfiguration: {
+      shapeConfiguration: shapeConfiguration,
+      allowInLineCreate: field.allowInLineCreate,
+      allowInLineEdit: field.allowInLineEdit,
+      allowInLineSearch: field.allowInLineSearch
+    }
+  });
+
+  if (!field.collection) {
+    var valueProp = props.mode === ArenaContainerMode.CREATE ? {
+      entity: value
+    } : {
+      id: value
+    };
+
+    if (containerCommonProps.level === 1) {
+      return /*#__PURE__*/React__default.createElement(ArenaKeyField, _extends({}, valueProp, containerCommonProps));
+    } else {
+      return /*#__PURE__*/React__default.createElement(ArenaContainer, _extends({}, valueProp, containerCommonProps));
+    }
+  } else {
+    return /*#__PURE__*/React__default.createElement(ArenaListContainer, _extends({
+      filter: value
+    }, containerCommonProps));
+  }
+};
+
+function getEntityToUse(mode, entity, entityFromCentralMemory) {
+  switch (mode) {
+    case ArenaContainerMode.CREATE:
+    case ArenaContainerMode.SEARCH:
+      return entity;
+
+    default:
+      return entityFromCentralMemory;
   }
 }
 
-var config = {
-  disabled: false
-};
+function getUseUpdateMode(mode) {
+  switch (mode) {
+    case ArenaContainerMode.EDIT:
+      return useUpdateMode.PERSIST;
 
-var timeoutsShape = process.env.NODE_ENV !== 'production' ? propTypes.oneOfType([propTypes.number, propTypes.shape({
-  enter: propTypes.number,
-  exit: propTypes.number,
-  appear: propTypes.number
-}).isRequired]) : null;
-var classNamesShape = process.env.NODE_ENV !== 'production' ? propTypes.oneOfType([propTypes.string, propTypes.shape({
-  enter: propTypes.string,
-  exit: propTypes.string,
-  active: propTypes.string
-}), propTypes.shape({
-  enter: propTypes.string,
-  enterDone: propTypes.string,
-  enterActive: propTypes.string,
-  exit: propTypes.string,
-  exitDone: propTypes.string,
-  exitActive: propTypes.string
-})]) : null;
+    case ArenaContainerMode.CREATE:
+      return useUpdateMode.EXTERNAL_STATE_UPDATE;
 
-var TransitionGroupContext = React__default.createContext(null);
-
-var UNMOUNTED = 'unmounted';
-var EXITED = 'exited';
-var ENTERING = 'entering';
-var ENTERED = 'entered';
-var EXITING = 'exiting';
-/**
- * The Transition component lets you describe a transition from one component
- * state to another _over time_ with a simple declarative API. Most commonly
- * it's used to animate the mounting and unmounting of a component, but can also
- * be used to describe in-place transition states as well.
- *
- * ---
- *
- * **Note**: `Transition` is a platform-agnostic base component. If you're using
- * transitions in CSS, you'll probably want to use
- * [`CSSTransition`](https://reactcommunity.org/react-transition-group/css-transition)
- * instead. It inherits all the features of `Transition`, but contains
- * additional features necessary to play nice with CSS transitions (hence the
- * name of the component).
- *
- * ---
- *
- * By default the `Transition` component does not alter the behavior of the
- * component it renders, it only tracks "enter" and "exit" states for the
- * components. It's up to you to give meaning and effect to those states. For
- * example we can add styles to a component when it enters or exits:
- *
- * ```jsx
- * import { Transition } from 'react-transition-group';
- *
- * const duration = 300;
- *
- * const defaultStyle = {
- *   transition: `opacity ${duration}ms ease-in-out`,
- *   opacity: 0,
- * }
- *
- * const transitionStyles = {
- *   entering: { opacity: 1 },
- *   entered:  { opacity: 1 },
- *   exiting:  { opacity: 0 },
- *   exited:  { opacity: 0 },
- * };
- *
- * const Fade = ({ in: inProp }) => (
- *   <Transition in={inProp} timeout={duration}>
- *     {state => (
- *       <div style={{
- *         ...defaultStyle,
- *         ...transitionStyles[state]
- *       }}>
- *         I'm a fade Transition!
- *       </div>
- *     )}
- *   </Transition>
- * );
- * ```
- *
- * There are 4 main states a Transition can be in:
- *  - `'entering'`
- *  - `'entered'`
- *  - `'exiting'`
- *  - `'exited'`
- *
- * Transition state is toggled via the `in` prop. When `true` the component
- * begins the "Enter" stage. During this stage, the component will shift from
- * its current transition state, to `'entering'` for the duration of the
- * transition and then to the `'entered'` stage once it's complete. Let's take
- * the following example (we'll use the
- * [useState](https://reactjs.org/docs/hooks-reference.html#usestate) hook):
- *
- * ```jsx
- * function App() {
- *   const [inProp, setInProp] = useState(false);
- *   return (
- *     <div>
- *       <Transition in={inProp} timeout={500}>
- *         {state => (
- *           // ...
- *         )}
- *       </Transition>
- *       <button onClick={() => setInProp(true)}>
- *         Click to Enter
- *       </button>
- *     </div>
- *   );
- * }
- * ```
- *
- * When the button is clicked the component will shift to the `'entering'` state
- * and stay there for 500ms (the value of `timeout`) before it finally switches
- * to `'entered'`.
- *
- * When `in` is `false` the same thing happens except the state moves from
- * `'exiting'` to `'exited'`.
- */
-
-var Transition =
-/*#__PURE__*/
-function (_React$Component) {
-  _inheritsLoose$1(Transition, _React$Component);
-
-  function Transition(props, context) {
-    var _this;
-
-    _this = _React$Component.call(this, props, context) || this;
-    var parentGroup = context; // In the context of a TransitionGroup all enters are really appears
-
-    var appear = parentGroup && !parentGroup.isMounting ? props.enter : props.appear;
-    var initialStatus;
-    _this.appearStatus = null;
-
-    if (props.in) {
-      if (appear) {
-        initialStatus = EXITED;
-        _this.appearStatus = ENTERING;
-      } else {
-        initialStatus = ENTERED;
-      }
-    } else {
-      if (props.unmountOnExit || props.mountOnEnter) {
-        initialStatus = UNMOUNTED;
-      } else {
-        initialStatus = EXITED;
-      }
-    }
-
-    _this.state = {
-      status: initialStatus
-    };
-    _this.nextCallback = null;
-    return _this;
+    case ArenaContainerMode.SEARCH:
+    case ArenaContainerMode.VIEW:
+    default:
+      return useUpdateMode.IN_LOCAL_STATE;
   }
+}
 
-  Transition.getDerivedStateFromProps = function getDerivedStateFromProps(_ref, prevState) {
-    var nextIn = _ref.in;
+function entitySelector(controller, id) {
+  return function (state) {
+    var controllers = state.controller;
+    var controllerState = controllers ? controllers[controller] : undefined;
 
-    if (nextIn && prevState.status === UNMOUNTED) {
-      return {
-        status: EXITED
-      };
+    if (controllerState) {
+      var storedData = controllerState[getStorageKey(id)];
+      if (storedData) return storedData.payload;
     }
 
+    return undefined;
+  };
+}
+
+function shapeSelector(controller) {
+  return function (state) {
+    var controllers = state.controller;
+    var controllerState = controllers ? controllers[controller] : undefined;
+    if (controllerState) return controllerState.shape;else return undefined;
+  };
+}
+
+var ArenaKeyField = function ArenaKeyField(_ref4) {
+  var id = _ref4.id,
+      name = _ref4.name,
+      controller = _ref4.controller,
+      mode = _ref4.mode,
+      update = _ref4.update,
+      parentController = _ref4.parentController,
+      componentMapper = _ref4.componentMapper,
+      entityRenderConfiguration = _ref4.entityRenderConfiguration;
+  var showSearchModal = mode === ArenaContainerMode.EDIT;
+  var commonProps = {
+    controller: controller,
+    parentController: parentController,
+    componentMapper: componentMapper,
+    entityRenderConfiguration: entityRenderConfiguration
+  };
+  return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(ArenaContainer, _extends({}, commonProps, {
+    mode: mode,
+    id: id,
+    level: 1,
+    name: name,
+    update: update
+  })), showSearchModal && /*#__PURE__*/React__default.createElement(ArenaSearchModal, _extends({}, commonProps, {
+    onCloseModal: update
+  })));
+};
+var ArenaListContainer = function ArenaListContainer(_ref5) {
+  var controller = _ref5.controller,
+      filter = _ref5.filter,
+      _ref5$level = _ref5.level,
+      level = _ref5$level === void 0 ? 0 : _ref5$level,
+      _ref5$mode = _ref5.mode,
+      mode = _ref5$mode === void 0 ? ArenaListContainerMode.VIEW : _ref5$mode,
+      onSelectFinish = _ref5.onSelectFinish,
+      componentMapper = _ref5.componentMapper,
+      parentController = _ref5.parentController,
+      showCreateModal = _ref5.showCreateModal,
+      shapeConfiguration = _ref5.shapeConfiguration;
+  if (level < 1) return null;
+  var dispatch = reactRedux.useDispatch();
+
+  var _useState = React.useState([]),
+      items = _useState[0],
+      setItems = _useState[1];
+
+  var _useState2 = React.useState(true),
+      reRender = _useState2[0],
+      setReRender = _useState2[1];
+
+  var history = reactRouterDom.useHistory();
+  var endpoint = componentMapper.api;
+  React.useEffect(function () {
+    findEntities(endpoint, controller, filter).then(function (res) {
+      dispatch(createEntityLoad(controller, res));
+      setItems(res.map(function (e) {
+        return {
+          id: e.id
+        };
+      }));
+    });
+  }, [controller, filter, reRender]);
+  var selectionFunction = React.useMemo(function () {
+    return createListItemSelectionFunction(mode, setItems);
+  }, [mode]);
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "arena-list-container list"
+  }, /*#__PURE__*/React__default.createElement(ArenaText, {
+    k: "list." + controller + ".label",
+    t: componentMapper.t
+  }), /*#__PURE__*/React__default.createElement(ArenaText, {
+    k: "list." + controller + ".sublabel",
+    t: componentMapper.t
+  }), /*#__PURE__*/React__default.createElement(ArenaText, {
+    k: "list." + controller + "." + mode.toLocaleLowerCase() + ".label",
+    t: componentMapper.t
+  }), /*#__PURE__*/React__default.createElement(ArenaText, {
+    k: "list." + controller + "." + mode.toLocaleLowerCase() + ".sublabel",
+    t: componentMapper.t
+  }), mode === ArenaListContainerMode.VIEW && showCreateModal && /*#__PURE__*/React__default.createElement(ArenaCreateModal, {
+    controller: controller,
+    parentController: parentController,
+    componentMapper: componentMapper,
+    entity: filter,
+    onCloseModal: function onCloseModal(value) {
+      createEntity(endpoint, controller, value);
+      setReRender(!reRender);
+    }
+  }), items.map(function (i) {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "arena-list-item-wrapper",
+      key: i.id,
+      onClick: function onClick() {
+        mode === ArenaListContainerMode.SELECT && selectionFunction(items, i.id);
+        mode === ArenaListContainerMode.VIEW && shapeConfiguration.onItemClick(i.id, history);
+      }
+    }, /*#__PURE__*/React__default.createElement(ArenaContainer, {
+      controller: controller,
+      id: i.id,
+      level: level,
+      mode: ArenaContainerMode.VIEW,
+      componentMapper: componentMapper,
+      parentController: parentController,
+      entityRenderConfiguration: {
+        shapeConfiguration: shapeConfiguration
+      }
+    }));
+  }), mode === ArenaListContainerMode.SELECT && /*#__PURE__*/React__default.createElement("button", {
+    className: "arena-list-selection-finish",
+    onClick: function onClick() {
+      onSelectFinish(items.find(function (i) {
+        return i.selected;
+      }).id);
+    }
+  }, componentMapper.t(controller + ".search.finish", controller + ".search.finish")));
+};
+var ArenaSearchModal = function ArenaSearchModal(_ref6) {
+  var controller = _ref6.controller,
+      _ref6$filter = _ref6.filter,
+      filter = _ref6$filter === void 0 ? {} : _ref6$filter,
+      onCloseModal = _ref6.onCloseModal,
+      parentController = _ref6.parentController,
+      componentMapper = _ref6.componentMapper;
+
+  var _useState3 = React.useState(null),
+      portal = _useState3[0],
+      setPortal = _useState3[1];
+
+  function openModal() {
+    var modalInstance = new modal({
+      closeMethods: ['overlay', 'button', 'escape'],
+      onClose: function onClose() {
+        setPortal(null);
+        modalInstance.destroy();
+      },
+      footer: false,
+      stickyFooter: false,
+      cssClass: [controller + "-arena-search-modal"]
+    });
+    setPortal(reactDom.createPortal( /*#__PURE__*/React__default.createElement(ArenaContainer, {
+      mode: ArenaContainerMode.SEARCH,
+      controller: controller,
+      entity: filter,
+      update: function update(value) {
+        onCloseModal(value);
+        modalInstance.close();
+        modalInstance.destroy();
+        setPortal(null);
+      },
+      parentController: parentController,
+      componentMapper: componentMapper
+    }), modalInstance.getContent()));
+    modalInstance.open();
+  }
+  return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("button", {
+    className: "arena-search-start-button arena-open-modal-button",
+    onClick: function onClick() {
+      return openModal();
+    }
+  }), portal);
+};
+var ArenaCreateModal = function ArenaCreateModal(_ref7) {
+  var controller = _ref7.controller,
+      _ref7$entity = _ref7.entity,
+      entity = _ref7$entity === void 0 ? {} : _ref7$entity,
+      onCloseModal = _ref7.onCloseModal,
+      parentController = _ref7.parentController,
+      componentMapper = _ref7.componentMapper;
+
+  var _useState4 = React.useState(null),
+      portal = _useState4[0],
+      setPortal = _useState4[1];
+
+  function openModal() {
+    var modalInstance = new modal({
+      closeMethods: ['overlay', 'button', 'escape'],
+      onClose: function onClose() {
+        setPortal(null);
+        modalInstance.destroy();
+      },
+      footer: false,
+      stickyFooter: false,
+      cssClass: [controller + "-arena-create-modal"]
+    });
+    setPortal(reactDom.createPortal( /*#__PURE__*/React__default.createElement(ArenaContainer, {
+      mode: ArenaContainerMode.CREATE,
+      controller: controller,
+      entity: entity,
+      level: 2,
+      onCreateFinish: function onCreateFinish(entity) {
+        onCloseModal(entity);
+        modalInstance.close();
+        modalInstance.destroy();
+        setPortal(null);
+      },
+      parentController: parentController,
+      componentMapper: componentMapper,
+      entityRenderConfiguration: {
+        allowInLineCreate: true
+      }
+    }), modalInstance.getContent()));
+    modalInstance.open();
+  }
+  return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("button", {
+    className: "arena-create-start-button arena-open-modal-button",
+    onClick: function onClick() {
+      return openModal();
+    }
+  }, getCreteStartText(componentMapper.t, controller)), portal);
+};
+var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
+  var controller = _ref8.controller,
+      level = _ref8.level,
+      mode = _ref8.mode,
+      shape = _ref8.shape,
+      entity = _ref8.entity,
+      updateFunctionBuilder = _ref8.updateFunctionBuilder,
+      update = _ref8.update,
+      componentMapper = _ref8.componentMapper,
+      _ref8$configuration = _ref8.configuration,
+      configuration = _ref8$configuration === void 0 ? {} : _ref8$configuration;
+
+  if (!shape) {
     return null;
-  }; // getSnapshotBeforeUpdate(prevProps) {
-  //   let nextStatus = null
-  //   if (prevProps !== this.props) {
-  //     const { status } = this.state
-  //     if (this.props.in) {
-  //       if (status !== ENTERING && status !== ENTERED) {
-  //         nextStatus = ENTERING
-  //       }
-  //     } else {
-  //       if (status === ENTERING || status === ENTERED) {
-  //         nextStatus = EXITING
-  //       }
-  //     }
-  //   }
-  //   return { nextStatus }
-  // }
-
-
-  var _proto = Transition.prototype;
-
-  _proto.componentDidMount = function componentDidMount() {
-    this.updateStatus(true, this.appearStatus);
-  };
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    var nextStatus = null;
-
-    if (prevProps !== this.props) {
-      var status = this.state.status;
-
-      if (this.props.in) {
-        if (status !== ENTERING && status !== ENTERED) {
-          nextStatus = ENTERING;
-        }
-      } else {
-        if (status === ENTERING || status === ENTERED) {
-          nextStatus = EXITING;
-        }
-      }
-    }
-
-    this.updateStatus(false, nextStatus);
-  };
-
-  _proto.componentWillUnmount = function componentWillUnmount() {
-    this.cancelNextCallback();
-  };
-
-  _proto.getTimeouts = function getTimeouts() {
-    var timeout = this.props.timeout;
-    var exit, enter, appear;
-    exit = enter = appear = timeout;
-
-    if (timeout != null && typeof timeout !== 'number') {
-      exit = timeout.exit;
-      enter = timeout.enter; // TODO: remove fallback for next major
-
-      appear = timeout.appear !== undefined ? timeout.appear : enter;
-    }
-
-    return {
-      exit: exit,
-      enter: enter,
-      appear: appear
-    };
-  };
-
-  _proto.updateStatus = function updateStatus(mounting, nextStatus) {
-    if (mounting === void 0) {
-      mounting = false;
-    }
-
-    if (nextStatus !== null) {
-      // nextStatus will always be ENTERING or EXITING.
-      this.cancelNextCallback();
-      var node = reactDom.findDOMNode(this);
-
-      if (nextStatus === ENTERING) {
-        this.performEnter(node, mounting);
-      } else {
-        this.performExit(node);
-      }
-    } else if (this.props.unmountOnExit && this.state.status === EXITED) {
-      this.setState({
-        status: UNMOUNTED
-      });
-    }
-  };
-
-  _proto.performEnter = function performEnter(node, mounting) {
-    var _this2 = this;
-
-    var enter = this.props.enter;
-    var appearing = this.context ? this.context.isMounting : mounting;
-    var timeouts = this.getTimeouts();
-    var enterTimeout = appearing ? timeouts.appear : timeouts.enter; // no enter animation skip right to ENTERED
-    // if we are mounting and running this it means appear _must_ be set
-
-    if (!mounting && !enter || config.disabled) {
-      this.safeSetState({
-        status: ENTERED
-      }, function () {
-        _this2.props.onEntered(node);
-      });
-      return;
-    }
-
-    this.props.onEnter(node, appearing);
-    this.safeSetState({
-      status: ENTERING
-    }, function () {
-      _this2.props.onEntering(node, appearing);
-
-      _this2.onTransitionEnd(node, enterTimeout, function () {
-        _this2.safeSetState({
-          status: ENTERED
-        }, function () {
-          _this2.props.onEntered(node, appearing);
-        });
-      });
-    });
-  };
-
-  _proto.performExit = function performExit(node) {
-    var _this3 = this;
-
-    var exit = this.props.exit;
-    var timeouts = this.getTimeouts(); // no exit animation skip right to EXITED
-
-    if (!exit || config.disabled) {
-      this.safeSetState({
-        status: EXITED
-      }, function () {
-        _this3.props.onExited(node);
-      });
-      return;
-    }
-
-    this.props.onExit(node);
-    this.safeSetState({
-      status: EXITING
-    }, function () {
-      _this3.props.onExiting(node);
-
-      _this3.onTransitionEnd(node, timeouts.exit, function () {
-        _this3.safeSetState({
-          status: EXITED
-        }, function () {
-          _this3.props.onExited(node);
-        });
-      });
-    });
-  };
-
-  _proto.cancelNextCallback = function cancelNextCallback() {
-    if (this.nextCallback !== null) {
-      this.nextCallback.cancel();
-      this.nextCallback = null;
-    }
-  };
-
-  _proto.safeSetState = function safeSetState(nextState, callback) {
-    // This shouldn't be necessary, but there are weird race conditions with
-    // setState callbacks and unmounting in testing, so always make sure that
-    // we can cancel any pending setState callbacks after we unmount.
-    callback = this.setNextCallback(callback);
-    this.setState(nextState, callback);
-  };
-
-  _proto.setNextCallback = function setNextCallback(callback) {
-    var _this4 = this;
-
-    var active = true;
-
-    this.nextCallback = function (event) {
-      if (active) {
-        active = false;
-        _this4.nextCallback = null;
-        callback(event);
-      }
-    };
-
-    this.nextCallback.cancel = function () {
-      active = false;
-    };
-
-    return this.nextCallback;
-  };
-
-  _proto.onTransitionEnd = function onTransitionEnd(node, timeout, handler) {
-    this.setNextCallback(handler);
-    var doesNotHaveTimeoutOrListener = timeout == null && !this.props.addEndListener;
-
-    if (!node || doesNotHaveTimeoutOrListener) {
-      setTimeout(this.nextCallback, 0);
-      return;
-    }
-
-    if (this.props.addEndListener) {
-      this.props.addEndListener(node, this.nextCallback);
-    }
-
-    if (timeout != null) {
-      setTimeout(this.nextCallback, timeout);
-    }
-  };
-
-  _proto.render = function render() {
-    var status = this.state.status;
-
-    if (status === UNMOUNTED) {
-      return null;
-    }
-
-    var _this$props = this.props,
-        children = _this$props.children,
-        childProps = _objectWithoutPropertiesLoose(_this$props, ["children"]); // filter props for Transtition
-
-
-    delete childProps.in;
-    delete childProps.mountOnEnter;
-    delete childProps.unmountOnExit;
-    delete childProps.appear;
-    delete childProps.enter;
-    delete childProps.exit;
-    delete childProps.timeout;
-    delete childProps.addEndListener;
-    delete childProps.onEnter;
-    delete childProps.onEntering;
-    delete childProps.onEntered;
-    delete childProps.onExit;
-    delete childProps.onExiting;
-    delete childProps.onExited;
-
-    if (typeof children === 'function') {
-      // allows for nested Transitions
-      return React__default.createElement(TransitionGroupContext.Provider, {
-        value: null
-      }, children(status, childProps));
-    }
-
-    var child = React__default.Children.only(children);
-    return (// allows for nested Transitions
-      React__default.createElement(TransitionGroupContext.Provider, {
-        value: null
-      }, React__default.cloneElement(child, childProps))
-    );
-  };
-
-  return Transition;
-}(React__default.Component);
-
-Transition.contextType = TransitionGroupContext;
-Transition.propTypes = process.env.NODE_ENV !== "production" ? {
-  /**
-   * A `function` child can be used instead of a React element. This function is
-   * called with the current transition status (`'entering'`, `'entered'`,
-   * `'exiting'`, `'exited'`), which can be used to apply context
-   * specific props to a component.
-   *
-   * ```jsx
-   * <Transition in={this.state.in} timeout={150}>
-   *   {state => (
-   *     <MyComponent className={`fade fade-${state}`} />
-   *   )}
-   * </Transition>
-   * ```
-   */
-  children: propTypes.oneOfType([propTypes.func.isRequired, propTypes.element.isRequired]).isRequired,
-
-  /**
-   * Show the component; triggers the enter or exit states
-   */
-  in: propTypes.bool,
-
-  /**
-   * By default the child component is mounted immediately along with
-   * the parent `Transition` component. If you want to "lazy mount" the component on the
-   * first `in={true}` you can set `mountOnEnter`. After the first enter transition the component will stay
-   * mounted, even on "exited", unless you also specify `unmountOnExit`.
-   */
-  mountOnEnter: propTypes.bool,
-
-  /**
-   * By default the child component stays mounted after it reaches the `'exited'` state.
-   * Set `unmountOnExit` if you'd prefer to unmount the component after it finishes exiting.
-   */
-  unmountOnExit: propTypes.bool,
-
-  /**
-   * Normally a component is not transitioned if it is shown when the
-   * `<Transition>` component mounts. If you want to transition on the first
-   * mount set `appear` to `true`, and the component will transition in as soon
-   * as the `<Transition>` mounts.
-   *
-   * > **Note**: there are no special appear states like `appearing`/`appeared`, this prop
-   * > only adds an additional enter transition. However, in the
-   * > `<CSSTransition>` component that first enter transition does result in
-   * > additional `.appear-*` classes, that way you can choose to style it
-   * > differently.
-   */
-  appear: propTypes.bool,
-
-  /**
-   * Enable or disable enter transitions.
-   */
-  enter: propTypes.bool,
-
-  /**
-   * Enable or disable exit transitions.
-   */
-  exit: propTypes.bool,
-
-  /**
-   * The duration of the transition, in milliseconds.
-   * Required unless `addEndListener` is provided.
-   *
-   * You may specify a single timeout for all transitions:
-   *
-   * ```jsx
-   * timeout={500}
-   * ```
-   *
-   * or individually:
-   *
-   * ```jsx
-   * timeout={{
-   *  appear: 500,
-   *  enter: 300,
-   *  exit: 500,
-   * }}
-   * ```
-   *
-   * - `appear` defaults to the value of `enter`
-   * - `enter` defaults to `0`
-   * - `exit` defaults to `0`
-   *
-   * @type {number | { enter?: number, exit?: number, appear?: number }}
-   */
-  timeout: function timeout(props) {
-    var pt = timeoutsShape;
-    if (!props.addEndListener) pt = pt.isRequired;
-
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    return pt.apply(void 0, [props].concat(args));
-  },
-
-  /**
-   * Add a custom transition end trigger. Called with the transitioning
-   * DOM node and a `done` callback. Allows for more fine grained transition end
-   * logic. **Note:** Timeouts are still used as a fallback if provided.
-   *
-   * ```jsx
-   * addEndListener={(node, done) => {
-   *   // use the css transitionend event to mark the finish of a transition
-   *   node.addEventListener('transitionend', done, false);
-   * }}
-   * ```
-   */
-  addEndListener: propTypes.func,
-
-  /**
-   * Callback fired before the "entering" status is applied. An extra parameter
-   * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool) -> void
-   */
-  onEnter: propTypes.func,
-
-  /**
-   * Callback fired after the "entering" status is applied. An extra parameter
-   * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool)
-   */
-  onEntering: propTypes.func,
-
-  /**
-   * Callback fired after the "entered" status is applied. An extra parameter
-   * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool) -> void
-   */
-  onEntered: propTypes.func,
-
-  /**
-   * Callback fired before the "exiting" status is applied.
-   *
-   * @type Function(node: HtmlElement) -> void
-   */
-  onExit: propTypes.func,
-
-  /**
-   * Callback fired after the "exiting" status is applied.
-   *
-   * @type Function(node: HtmlElement) -> void
-   */
-  onExiting: propTypes.func,
-
-  /**
-   * Callback fired after the "exited" status is applied.
-   *
-   * @type Function(node: HtmlElement) -> void
-   */
-  onExited: propTypes.func // Name the function so it is clearer in the documentation
-
-} : {};
-
-function noop() {}
-
-Transition.defaultProps = {
-  in: false,
-  mountOnEnter: false,
-  unmountOnExit: false,
-  appear: false,
-  enter: true,
-  exit: true,
-  onEnter: noop,
-  onEntering: noop,
-  onEntered: noop,
-  onExit: noop,
-  onExiting: noop,
-  onExited: noop
-};
-Transition.UNMOUNTED = 0;
-Transition.EXITED = 1;
-Transition.ENTERING = 2;
-Transition.ENTERED = 3;
-Transition.EXITING = 4;
-
-var _addClass = function addClass$1(node, classes) {
-  return node && classes && classes.split(' ').forEach(function (c) {
-    return addClass(node, c);
-  });
-};
-
-var removeClass$1 = function removeClass$1(node, classes) {
-  return node && classes && classes.split(' ').forEach(function (c) {
-    return removeClass(node, c);
-  });
-};
-/**
- * A transition component inspired by the excellent
- * [ng-animate](http://www.nganimate.org/) library, you should use it if you're
- * using CSS transitions or animations. It's built upon the
- * [`Transition`](https://reactcommunity.org/react-transition-group/transition)
- * component, so it inherits all of its props.
- *
- * `CSSTransition` applies a pair of class names during the `appear`, `enter`,
- * and `exit` states of the transition. The first class is applied and then a
- * second `*-active` class in order to activate the CSS transition. After the
- * transition, matching `*-done` class names are applied to persist the
- * transition state.
- *
- * ```jsx
- * function App() {
- *   const [inProp, setInProp] = useState(false);
- *   return (
- *     <div>
- *       <CSSTransition in={inProp} timeout={200} classNames="my-node">
- *         <div>
- *           {"I'll receive my-node-* classes"}
- *         </div>
- *       </CSSTransition>
- *       <button type="button" onClick={() => setInProp(true)}>
- *         Click to Enter
- *       </button>
- *     </div>
- *   );
- * }
- * ```
- *
- * When the `in` prop is set to `true`, the child component will first receive
- * the class `example-enter`, then the `example-enter-active` will be added in
- * the next tick. `CSSTransition` [forces a
- * reflow](https://github.com/reactjs/react-transition-group/blob/5007303e729a74be66a21c3e2205e4916821524b/src/CSSTransition.js#L208-L215)
- * between before adding the `example-enter-active`. This is an important trick
- * because it allows us to transition between `example-enter` and
- * `example-enter-active` even though they were added immediately one after
- * another. Most notably, this is what makes it possible for us to animate
- * _appearance_.
- *
- * ```css
- * .my-node-enter {
- *   opacity: 0;
- * }
- * .my-node-enter-active {
- *   opacity: 1;
- *   transition: opacity 200ms;
- * }
- * .my-node-exit {
- *   opacity: 1;
- * }
- * .my-node-exit-active {
- *   opacity: 0;
- *   transition: opacity 200ms;
- * }
- * ```
- *
- * `*-active` classes represent which styles you want to animate **to**.
- *
- * **Note**: If you're using the
- * [`appear`](http://reactcommunity.org/react-transition-group/transition#Transition-prop-appear)
- * prop, make sure to define styles for `.appear-*` classes as well.
- */
-
-
-var CSSTransition =
-/*#__PURE__*/
-function (_React$Component) {
-  _inheritsLoose$1(CSSTransition, _React$Component);
-
-  function CSSTransition() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.appliedClasses = {
-      appear: {},
-      enter: {},
-      exit: {}
-    };
-
-    _this.onEnter = function (node, appearing) {
-      _this.removeClasses(node, 'exit');
-
-      _this.addClass(node, appearing ? 'appear' : 'enter', 'base');
-
-      if (_this.props.onEnter) {
-        _this.props.onEnter(node, appearing);
-      }
-    };
-
-    _this.onEntering = function (node, appearing) {
-      var type = appearing ? 'appear' : 'enter';
-
-      _this.addClass(node, type, 'active');
-
-      if (_this.props.onEntering) {
-        _this.props.onEntering(node, appearing);
-      }
-    };
-
-    _this.onEntered = function (node, appearing) {
-      var type = appearing ? 'appear' : 'enter';
-
-      _this.removeClasses(node, type);
-
-      _this.addClass(node, type, 'done');
-
-      if (_this.props.onEntered) {
-        _this.props.onEntered(node, appearing);
-      }
-    };
-
-    _this.onExit = function (node) {
-      _this.removeClasses(node, 'appear');
-
-      _this.removeClasses(node, 'enter');
-
-      _this.addClass(node, 'exit', 'base');
-
-      if (_this.props.onExit) {
-        _this.props.onExit(node);
-      }
-    };
-
-    _this.onExiting = function (node) {
-      _this.addClass(node, 'exit', 'active');
-
-      if (_this.props.onExiting) {
-        _this.props.onExiting(node);
-      }
-    };
-
-    _this.onExited = function (node) {
-      _this.removeClasses(node, 'exit');
-
-      _this.addClass(node, 'exit', 'done');
-
-      if (_this.props.onExited) {
-        _this.props.onExited(node);
-      }
-    };
-
-    _this.getClassNames = function (type) {
-      var classNames = _this.props.classNames;
-      var isStringClassNames = typeof classNames === 'string';
-      var prefix = isStringClassNames && classNames ? classNames + "-" : '';
-      var baseClassName = isStringClassNames ? "" + prefix + type : classNames[type];
-      var activeClassName = isStringClassNames ? baseClassName + "-active" : classNames[type + "Active"];
-      var doneClassName = isStringClassNames ? baseClassName + "-done" : classNames[type + "Done"];
-      return {
-        baseClassName: baseClassName,
-        activeClassName: activeClassName,
-        doneClassName: doneClassName
-      };
-    };
-
-    return _this;
   }
 
-  var _proto = CSSTransition.prototype;
+  var _useState5 = React.useState(level - 1),
+      renderLevel = _useState5[0],
+      setRenderLevel = _useState5[1];
 
-  _proto.addClass = function addClass(node, type, phase) {
-    var className = this.getClassNames(type)[phase + "ClassName"];
-
-    if (type === 'appear' && phase === 'done') {
-      className += " " + this.getClassNames('enter').doneClassName;
-    } // This is for to force a repaint,
-
-    this.appliedClasses[type][phase] = className;
-
-    _addClass(node, className);
+  var initialActions = {
+    showCreateModal: false,
+    showInLineSearch: false,
+    showInLineCreate: false,
+    showClearSelection: false,
+    renderMode: mode
   };
 
-  _proto.removeClasses = function removeClasses(node, type) {
-    var _this$appliedClasses$ = this.appliedClasses[type],
-        baseClassName = _this$appliedClasses$.base,
-        activeClassName = _this$appliedClasses$.active,
-        doneClassName = _this$appliedClasses$.done;
-    this.appliedClasses[type] = {};
+  var _useState6 = React.useState(initialActions),
+      actions = _useState6[0],
+      setActions = _useState6[1];
 
-    if (baseClassName) {
-      removeClass$1(node, baseClassName);
-    }
+  var templateEntity = {};
 
-    if (activeClassName) {
-      removeClass$1(node, activeClassName);
-    }
-
-    if (doneClassName) {
-      removeClass$1(node, doneClassName);
-    }
+  var initEntity = function initEntity() {
+    updateFunctionBuilder()(templateEntity);
   };
 
-  _proto.render = function render() {
-    var _this$props = this.props,
-        props = _objectWithoutPropertiesLoose(_this$props, ["classNames"]);
-
-    return React__default.createElement(Transition, _extends$1({}, props, {
-      onEnter: this.onEnter,
-      onEntered: this.onEntered,
-      onEntering: this.onEntering,
-      onExit: this.onExit,
-      onExiting: this.onExiting,
-      onExited: this.onExited
+  var resetEntity = function resetEntity() {
+    if (mode === ArenaContainerMode.CREATE) updateFunctionBuilder()(undefined);
+    if (mode === ArenaContainerMode.EDIT) setActions(_extends({}, actions, {
+      showInLineSearch: true,
+      showClearSelection: false
     }));
   };
 
-  return CSSTransition;
-}(React__default.Component);
+  React.useEffect(function () {
+    if (mode !== ArenaContainerMode.VIEW) {
+      var newActionsState = _extends({}, initialActions);
 
-CSSTransition.defaultProps = {
-  classNames: ''
-};
-CSSTransition.propTypes = process.env.NODE_ENV !== "production" ? _extends$1({}, Transition.propTypes, {
-  /**
-   * The animation classNames applied to the component as it appears, enters,
-   * exits or has finished the transition. A single name can be provided and it
-   * will be suffixed for each stage: e.g.
-   *
-   * `classNames="fade"` applies `fade-appear`, `fade-appear-active`,
-   * `fade-appear-done`, `fade-enter`, `fade-enter-active`, `fade-enter-done`,
-   * `fade-exit`, `fade-exit-active`, and `fade-exit-done`.
-   *
-   * **Note**: `fade-appear-done` and `fade-enter-done` will _both_ be applied.
-   * This allows you to define different behavior for when appearing is done and
-   * when regular entering is done, using selectors like
-   * `.fade-enter-done:not(.fade-appear-done)`. For example, you could apply an
-   * epic entrance animation when element first appears in the DOM using
-   * [Animate.css](https://daneden.github.io/animate.css/). Otherwise you can
-   * simply use `fade-enter-done` for defining both cases.
-   *
-   * Each individual classNames can also be specified independently like:
-   *
-   * ```js
-   * classNames={{
-   *  appear: 'my-appear',
-   *  appearActive: 'my-active-appear',
-   *  appearDone: 'my-done-appear',
-   *  enter: 'my-enter',
-   *  enterActive: 'my-active-enter',
-   *  enterDone: 'my-done-enter',
-   *  exit: 'my-exit',
-   *  exitActive: 'my-active-exit',
-   *  exitDone: 'my-done-exit',
-   * }}
-   * ```
-   *
-   * If you want to set these classes using CSS Modules:
-   *
-   * ```js
-   * import styles from './styles.css';
-   * ```
-   *
-   * you might want to use camelCase in your CSS file, that way could simply
-   * spread them instead of listing them one by one:
-   *
-   * ```js
-   * classNames={{ ...styles }}
-   * ```
-   *
-   * @type {string | {
-   *  appear?: string,
-   *  appearActive?: string,
-   *  appearDone?: string,
-   *  enter?: string,
-   *  enterActive?: string,
-   *  enterDone?: string,
-   *  exit?: string,
-   *  exitActive?: string,
-   *  exitDone?: string,
-   * }}
-   */
-  classNames: classNamesShape,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'enter' or 'appear' class is
-   * applied.
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool)
-   */
-  onEnter: propTypes.func,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'enter-active' or
-   * 'appear-active' class is applied.
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool)
-   */
-  onEntering: propTypes.func,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'enter' or
-   * 'appear' classes are **removed** and the `done` class is added to the DOM node.
-   *
-   * @type Function(node: HtmlElement, isAppearing: bool)
-   */
-  onEntered: propTypes.func,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'exit' class is
-   * applied.
-   *
-   * @type Function(node: HtmlElement)
-   */
-  onExit: propTypes.func,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'exit-active' is applied.
-   *
-   * @type Function(node: HtmlElement)
-   */
-  onExiting: propTypes.func,
-
-  /**
-   * A `<Transition>` callback fired immediately after the 'exit' classes
-   * are **removed** and the `exit-done` class is added to the DOM node.
-   *
-   * @type Function(node: HtmlElement)
-   */
-  onExited: propTypes.func
-}) : {};
-
-var noScroll = createCommonjsModule(function (module) {
-(function(root) {
-  var isOn = false;
-  var scrollbarSize;
-  var scrollTop;
-
-  function getScrollbarSize() {
-    if (typeof scrollbarSize !== 'undefined') return scrollbarSize;
-
-    var doc = document.documentElement;
-    var dummyScroller = document.createElement('div');
-    dummyScroller.setAttribute('style', 'width:99px;height:99px;' + 'position:absolute;top:-9999px;overflow:scroll;');
-    doc.appendChild(dummyScroller);
-    scrollbarSize = dummyScroller.offsetWidth - dummyScroller.clientWidth;
-    doc.removeChild(dummyScroller);
-    return scrollbarSize;
-  }
-
-  function hasScrollbar() {
-    return document.documentElement.scrollHeight > window.innerHeight;
-  }
-
-  function on(options) {
-    if (typeof document === 'undefined' || isOn) return;
-    var doc = document.documentElement;
-    scrollTop = window.pageYOffset;
-    if (hasScrollbar()) {
-      doc.style.width = 'calc(100% - '+ getScrollbarSize() +'px)';
-    } else {
-      doc.style.width = '100%';
-    }
-    doc.style.position = 'fixed';
-    doc.style.top = -scrollTop + 'px';
-    doc.style.overflow = 'hidden';
-    isOn = true;
-  }
-
-  function off() {
-    if (typeof document === 'undefined' || !isOn) return;
-    var doc = document.documentElement;
-    doc.style.width = '';
-    doc.style.position = '';
-    doc.style.top = '';
-    doc.style.overflow = '';
-    window.scroll(0, scrollTop);
-    isOn = false;
-  }
-
-  function toggle() {
-    if (isOn) {
-      off();
-      return;
-    }
-    on();
-  }
-
-  var noScroll = {
-    on: on,
-    off: off,
-    toggle: toggle,
-  };
-
-  {
-    module.exports = noScroll;
-  }
-})();
-});
-
-var candidateSelectors = [
-  'input',
-  'select',
-  'textarea',
-  'a[href]',
-  'button',
-  '[tabindex]',
-  'audio[controls]',
-  'video[controls]',
-  '[contenteditable]:not([contenteditable="false"])',
-];
-var candidateSelector = candidateSelectors.join(',');
-
-var matches = typeof Element === 'undefined'
-  ? function () {}
-  : Element.prototype.matches || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-
-function tabbable(el, options) {
-  options = options || {};
-
-  var elementDocument = el.ownerDocument || el;
-  var regularTabbables = [];
-  var orderedTabbables = [];
-
-  var untouchabilityChecker = new UntouchabilityChecker(elementDocument);
-  var candidates = el.querySelectorAll(candidateSelector);
-
-  if (options.includeContainer) {
-    if (matches.call(el, candidateSelector)) {
-      candidates = Array.prototype.slice.apply(candidates);
-      candidates.unshift(el);
-    }
-  }
-
-  var i, candidate, candidateTabindex;
-  for (i = 0; i < candidates.length; i++) {
-    candidate = candidates[i];
-
-    if (!isNodeMatchingSelectorTabbable(candidate, untouchabilityChecker)) continue;
-
-    candidateTabindex = getTabindex(candidate);
-    if (candidateTabindex === 0) {
-      regularTabbables.push(candidate);
-    } else {
-      orderedTabbables.push({
-        documentOrder: i,
-        tabIndex: candidateTabindex,
-        node: candidate,
-      });
-    }
-  }
-
-  var tabbableNodes = orderedTabbables
-    .sort(sortOrderedTabbables)
-    .map(function(a) { return a.node })
-    .concat(regularTabbables);
-
-  return tabbableNodes;
-}
-
-tabbable.isTabbable = isTabbable;
-tabbable.isFocusable = isFocusable;
-
-function isNodeMatchingSelectorTabbable(node, untouchabilityChecker) {
-  if (
-    !isNodeMatchingSelectorFocusable(node, untouchabilityChecker)
-    || isNonTabbableRadio(node)
-    || getTabindex(node) < 0
-  ) {
-    return false;
-  }
-  return true;
-}
-
-function isTabbable(node, untouchabilityChecker) {
-  if (!node) throw new Error('No node provided');
-  if (matches.call(node, candidateSelector) === false) return false;
-  return isNodeMatchingSelectorTabbable(node, untouchabilityChecker);
-}
-
-function isNodeMatchingSelectorFocusable(node, untouchabilityChecker) {
-  untouchabilityChecker = untouchabilityChecker || new UntouchabilityChecker(node.ownerDocument || node);
-  if (
-    node.disabled
-    || isHiddenInput(node)
-    || untouchabilityChecker.isUntouchable(node)
-  ) {
-    return false;
-  }
-  return true;
-}
-
-var focusableCandidateSelector = candidateSelectors.concat('iframe').join(',');
-function isFocusable(node, untouchabilityChecker) {
-  if (!node) throw new Error('No node provided');
-  if (matches.call(node, focusableCandidateSelector) === false) return false;
-  return isNodeMatchingSelectorFocusable(node, untouchabilityChecker);
-}
-
-function getTabindex(node) {
-  var tabindexAttr = parseInt(node.getAttribute('tabindex'), 10);
-  if (!isNaN(tabindexAttr)) return tabindexAttr;
-  // Browsers do not return `tabIndex` correctly for contentEditable nodes;
-  // so if they don't have a tabindex attribute specifically set, assume it's 0.
-  if (isContentEditable(node)) return 0;
-  return node.tabIndex;
-}
-
-function sortOrderedTabbables(a, b) {
-  return a.tabIndex === b.tabIndex ? a.documentOrder - b.documentOrder : a.tabIndex - b.tabIndex;
-}
-
-// Array.prototype.find not available in IE.
-function find(list, predicate) {
-  for (var i = 0, length = list.length; i < length; i++) {
-    if (predicate(list[i])) return list[i];
-  }
-}
-
-function isContentEditable(node) {
-  return node.contentEditable === 'true';
-}
-
-function isInput(node) {
-  return node.tagName === 'INPUT';
-}
-
-function isHiddenInput(node) {
-  return isInput(node) && node.type === 'hidden';
-}
-
-function isRadio(node) {
-  return isInput(node) && node.type === 'radio';
-}
-
-function isNonTabbableRadio(node) {
-  return isRadio(node) && !isTabbableRadio(node);
-}
-
-function getCheckedRadio(nodes) {
-  for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i].checked) {
-      return nodes[i];
-    }
-  }
-}
-
-function isTabbableRadio(node) {
-  if (!node.name) return true;
-  // This won't account for the edge case where you have radio groups with the same
-  // in separate forms on the same page.
-  var radioSet = node.ownerDocument.querySelectorAll('input[type="radio"][name="' + node.name + '"]');
-  var checked = getCheckedRadio(radioSet);
-  return !checked || checked === node;
-}
-
-// An element is "untouchable" if *it or one of its ancestors* has
-// `visibility: hidden` or `display: none`.
-function UntouchabilityChecker(elementDocument) {
-  this.doc = elementDocument;
-  // Node cache must be refreshed on every check, in case
-  // the content of the element has changed. The cache contains tuples
-  // mapping nodes to their boolean result.
-  this.cache = [];
-}
-
-// getComputedStyle accurately reflects `visibility: hidden` of ancestors
-// but not `display: none`, so we need to recursively check parents.
-UntouchabilityChecker.prototype.hasDisplayNone = function hasDisplayNone(node, nodeComputedStyle) {
-  if (node.nodeType !== Node.ELEMENT_NODE) return false;
-
-    // Search for a cached result.
-    var cached = find(this.cache, function(item) {
-      return item === node;
-    });
-    if (cached) return cached[1];
-
-    nodeComputedStyle = nodeComputedStyle || this.doc.defaultView.getComputedStyle(node);
-
-    var result = false;
-
-    if (nodeComputedStyle.display === 'none') {
-      result = true;
-    } else if (node.parentNode) {
-      result = this.hasDisplayNone(node.parentNode);
-    }
-
-    this.cache.push([node, result]);
-
-    return result;
-};
-
-UntouchabilityChecker.prototype.isUntouchable = function isUntouchable(node) {
-  if (node === this.doc.documentElement) return false;
-  var computedStyle = this.doc.defaultView.getComputedStyle(node);
-  if (this.hasDisplayNone(node, computedStyle)) return true;
-  return computedStyle.visibility === 'hidden';
-};
-
-var tabbable_1 = tabbable;
-
-var immutable = extend;
-
-var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
-
-function extend() {
-    var target = {};
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i];
-
-        for (var key in source) {
-            if (hasOwnProperty$1.call(source, key)) {
-                target[key] = source[key];
-            }
+      if (!entity) {
+        if (configuration.allowInLineSearch) {
+          newActionsState.showInLineSearch = true;
         }
-    }
 
-    return target
-}
-
-var listeningFocusTrap = null;
-
-function focusTrap(element, userOptions) {
-  var doc = document;
-  var container =
-    typeof element === 'string' ? doc.querySelector(element) : element;
-
-  var config = immutable(
-    {
-      returnFocusOnDeactivate: true,
-      escapeDeactivates: true
-    },
-    userOptions
-  );
-
-  var state = {
-    firstTabbableNode: null,
-    lastTabbableNode: null,
-    nodeFocusedBeforeActivation: null,
-    mostRecentlyFocusedNode: null,
-    active: false,
-    paused: false
-  };
-
-  var trap = {
-    activate: activate,
-    deactivate: deactivate,
-    pause: pause,
-    unpause: unpause
-  };
-
-  return trap;
-
-  function activate(activateOptions) {
-    if (state.active) return;
-
-    updateTabbableNodes();
-
-    state.active = true;
-    state.paused = false;
-    state.nodeFocusedBeforeActivation = doc.activeElement;
-
-    var onActivate =
-      activateOptions && activateOptions.onActivate
-        ? activateOptions.onActivate
-        : config.onActivate;
-    if (onActivate) {
-      onActivate();
-    }
-
-    addListeners();
-    return trap;
-  }
-
-  function deactivate(deactivateOptions) {
-    if (!state.active) return;
-
-    removeListeners();
-    state.active = false;
-    state.paused = false;
-
-    var onDeactivate =
-      deactivateOptions && deactivateOptions.onDeactivate !== undefined
-        ? deactivateOptions.onDeactivate
-        : config.onDeactivate;
-    if (onDeactivate) {
-      onDeactivate();
-    }
-
-    var returnFocus =
-      deactivateOptions && deactivateOptions.returnFocus !== undefined
-        ? deactivateOptions.returnFocus
-        : config.returnFocusOnDeactivate;
-    if (returnFocus) {
-      delay(function() {
-        tryFocus(state.nodeFocusedBeforeActivation);
-      });
-    }
-
-    return trap;
-  }
-
-  function pause() {
-    if (state.paused || !state.active) return;
-    state.paused = true;
-    removeListeners();
-  }
-
-  function unpause() {
-    if (!state.paused || !state.active) return;
-    state.paused = false;
-    addListeners();
-  }
-
-  function addListeners() {
-    if (!state.active) return;
-
-    // There can be only one listening focus trap at a time
-    if (listeningFocusTrap) {
-      listeningFocusTrap.pause();
-    }
-    listeningFocusTrap = trap;
-
-    updateTabbableNodes();
-
-    // Delay ensures that the focused element doesn't capture the event
-    // that caused the focus trap activation.
-    delay(function() {
-      tryFocus(getInitialFocusNode());
-    });
-    doc.addEventListener('focusin', checkFocusIn, true);
-    doc.addEventListener('mousedown', checkPointerDown, true);
-    doc.addEventListener('touchstart', checkPointerDown, true);
-    doc.addEventListener('click', checkClick, true);
-    doc.addEventListener('keydown', checkKey, true);
-
-    return trap;
-  }
-
-  function removeListeners() {
-    if (!state.active || listeningFocusTrap !== trap) return;
-
-    doc.removeEventListener('focusin', checkFocusIn, true);
-    doc.removeEventListener('mousedown', checkPointerDown, true);
-    doc.removeEventListener('touchstart', checkPointerDown, true);
-    doc.removeEventListener('click', checkClick, true);
-    doc.removeEventListener('keydown', checkKey, true);
-
-    listeningFocusTrap = null;
-
-    return trap;
-  }
-
-  function getNodeForOption(optionName) {
-    var optionValue = config[optionName];
-    var node = optionValue;
-    if (!optionValue) {
-      return null;
-    }
-    if (typeof optionValue === 'string') {
-      node = doc.querySelector(optionValue);
-      if (!node) {
-        throw new Error('`' + optionName + '` refers to no known node');
-      }
-    }
-    if (typeof optionValue === 'function') {
-      node = optionValue();
-      if (!node) {
-        throw new Error('`' + optionName + '` did not return a node');
-      }
-    }
-    return node;
-  }
-
-  function getInitialFocusNode() {
-    var node;
-    if (getNodeForOption('initialFocus') !== null) {
-      node = getNodeForOption('initialFocus');
-    } else if (container.contains(doc.activeElement)) {
-      node = doc.activeElement;
-    } else {
-      node = state.firstTabbableNode || getNodeForOption('fallbackFocus');
-    }
-
-    if (!node) {
-      throw new Error(
-        "You can't have a focus-trap without at least one focusable element"
-      );
-    }
-
-    return node;
-  }
-
-  // This needs to be done on mousedown and touchstart instead of click
-  // so that it precedes the focus event.
-  function checkPointerDown(e) {
-    if (container.contains(e.target)) return;
-    if (config.clickOutsideDeactivates) {
-      deactivate({
-        returnFocus: !tabbable_1.isFocusable(e.target)
-      });
-    } else {
-      e.preventDefault();
-    }
-  }
-
-  // In case focus escapes the trap for some strange reason, pull it back in.
-  function checkFocusIn(e) {
-    // In Firefox when you Tab out of an iframe the Document is briefly focused.
-    if (container.contains(e.target) || e.target instanceof Document) {
-      return;
-    }
-    e.stopImmediatePropagation();
-    tryFocus(state.mostRecentlyFocusedNode || getInitialFocusNode());
-  }
-
-  function checkKey(e) {
-    if (config.escapeDeactivates !== false && isEscapeEvent(e)) {
-      e.preventDefault();
-      deactivate();
-      return;
-    }
-    if (isTabEvent(e)) {
-      checkTab(e);
-      return;
-    }
-  }
-
-  // Hijack Tab events on the first and last focusable nodes of the trap,
-  // in order to prevent focus from escaping. If it escapes for even a
-  // moment it can end up scrolling the page and causing confusion so we
-  // kind of need to capture the action at the keydown phase.
-  function checkTab(e) {
-    updateTabbableNodes();
-    if (e.shiftKey && e.target === state.firstTabbableNode) {
-      e.preventDefault();
-      tryFocus(state.lastTabbableNode);
-      return;
-    }
-    if (!e.shiftKey && e.target === state.lastTabbableNode) {
-      e.preventDefault();
-      tryFocus(state.firstTabbableNode);
-      return;
-    }
-  }
-
-  function checkClick(e) {
-    if (config.clickOutsideDeactivates) return;
-    if (container.contains(e.target)) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-  }
-
-  function updateTabbableNodes() {
-    var tabbableNodes = tabbable_1(container);
-    state.firstTabbableNode = tabbableNodes[0] || getInitialFocusNode();
-    state.lastTabbableNode =
-      tabbableNodes[tabbableNodes.length - 1] || getInitialFocusNode();
-  }
-
-  function tryFocus(node) {
-    if (node === doc.activeElement) return;
-    if (!node || !node.focus) {
-      tryFocus(getInitialFocusNode());
-      return;
-    }
-
-    node.focus();
-    state.mostRecentlyFocusedNode = node;
-    if (isSelectableInput(node)) {
-      node.select();
-    }
-  }
-}
-
-function isSelectableInput(node) {
-  return (
-    node.tagName &&
-    node.tagName.toLowerCase() === 'input' &&
-    typeof node.select === 'function'
-  );
-}
-
-function isEscapeEvent(e) {
-  return e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27;
-}
-
-function isTabEvent(e) {
-  return e.key === 'Tab' || e.keyCode === 9;
-}
-
-function delay(fn) {
-  return setTimeout(fn, 0);
-}
-
-var focusTrap_1 = focusTrap;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-
-
-
-var checkedProps = ['active', 'paused', 'tag', 'focusTrapOptions', '_createFocusTrap'];
-
-var FocusTrap = function (_React$Component) {
-  _inherits(FocusTrap, _React$Component);
-
-  function FocusTrap(props) {
-    _classCallCheck(this, FocusTrap);
-
-    var _this = _possibleConstructorReturn(this, (FocusTrap.__proto__ || Object.getPrototypeOf(FocusTrap)).call(this, props));
-
-    _this.setNode = function (el) {
-      _this.node = el;
-    };
-
-    if (typeof document !== 'undefined') {
-      _this.previouslyFocusedElement = document.activeElement;
-    }
-    return _this;
-  }
-
-  _createClass(FocusTrap, [{
-    key: 'componentDidMount',
-    value: function componentDidMount() {
-      // We need to hijack the returnFocusOnDeactivate option,
-      // because React can move focus into the element before we arrived at
-      // this lifecycle hook (e.g. with autoFocus inputs). So the component
-      // captures the previouslyFocusedElement in componentWillMount,
-      // then (optionally) returns focus to it in componentWillUnmount.
-      var specifiedFocusTrapOptions = this.props.focusTrapOptions;
-      var tailoredFocusTrapOptions = {
-        returnFocusOnDeactivate: false
-      };
-      for (var optionName in specifiedFocusTrapOptions) {
-        if (!specifiedFocusTrapOptions.hasOwnProperty(optionName)) continue;
-        if (optionName === 'returnFocusOnDeactivate') continue;
-        tailoredFocusTrapOptions[optionName] = specifiedFocusTrapOptions[optionName];
-      }
-
-      this.focusTrap = this.props._createFocusTrap(this.node, tailoredFocusTrapOptions);
-      if (this.props.active) {
-        this.focusTrap.activate();
-      }
-      if (this.props.paused) {
-        this.focusTrap.pause();
-      }
-    }
-  }, {
-    key: 'componentDidUpdate',
-    value: function componentDidUpdate(prevProps) {
-      if (prevProps.active && !this.props.active) {
-        var returnFocusOnDeactivate = this.props.focusTrapOptions.returnFocusOnDeactivate;
-
-        var returnFocus = returnFocusOnDeactivate || false;
-        var config = { returnFocus: returnFocus };
-        this.focusTrap.deactivate(config);
-      } else if (!prevProps.active && this.props.active) {
-        this.focusTrap.activate();
-      }
-
-      if (prevProps.paused && !this.props.paused) {
-        this.focusTrap.unpause();
-      } else if (!prevProps.paused && this.props.paused) {
-        this.focusTrap.pause();
-      }
-    }
-  }, {
-    key: 'componentWillUnmount',
-    value: function componentWillUnmount() {
-      this.focusTrap.deactivate();
-      if (this.props.focusTrapOptions.returnFocusOnDeactivate !== false && this.previouslyFocusedElement && this.previouslyFocusedElement.focus) {
-        this.previouslyFocusedElement.focus();
-      }
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var elementProps = {
-        ref: this.setNode
-      };
-
-      // This will get id, className, style, etc. -- arbitrary element props
-      for (var prop in this.props) {
-        if (!this.props.hasOwnProperty(prop)) continue;
-        if (checkedProps.indexOf(prop) !== -1) continue;
-        elementProps[prop] = this.props[prop];
-      }
-
-      return React__default.createElement(this.props.tag, elementProps, this.props.children);
-    }
-  }]);
-
-  return FocusTrap;
-}(React__default.Component);
-
-FocusTrap.defaultProps = {
-  active: true,
-  tag: 'div',
-  paused: false,
-  focusTrapOptions: {},
-  _createFocusTrap: focusTrap_1
-};
-
-var focusTrapReact = FocusTrap;
-
-function _classCallCheck$1(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass$1(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function _objectSpread(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
-
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
-    }
-
-    ownKeys.forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    });
-  }
-
-  return target;
-}
-
-function _inherits$1(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function");
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) _setPrototypeOf(subClass, superClass);
-}
-
-function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-    return o.__proto__ || Object.getPrototypeOf(o);
-  };
-  return _getPrototypeOf(o);
-}
-
-function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-    o.__proto__ = p;
-    return o;
-  };
-
-  return _setPrototypeOf(o, p);
-}
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-function _possibleConstructorReturn$1(self, call) {
-  if (call && (typeof call === "object" || typeof call === "function")) {
-    return call;
-  }
-
-  return _assertThisInitialized(self);
-}
-
-var CloseIcon = function CloseIcon(_ref) {
-  var classes = _ref.classes,
-      classNames = _ref.classNames,
-      styles = _ref.styles,
-      closeIconSize = _ref.closeIconSize,
-      closeIconSvgPath = _ref.closeIconSvgPath,
-      onClickCloseIcon = _ref.onClickCloseIcon,
-      id = _ref.id;
-  return React__default.createElement("button", {
-    className: classnames(classes.closeButton, classNames.closeButton),
-    style: styles.closeButton,
-    onClick: onClickCloseIcon,
-    id: id
-  }, React__default.createElement("svg", {
-    className: classnames(classes.closeIcon, classNames.closeIcon),
-    style: styles.closeIcon,
-    xmlns: "http://www.w3.org/2000/svg",
-    width: closeIconSize,
-    height: closeIconSize,
-    viewBox: "0 0 36 36"
-  }, closeIconSvgPath));
-};
-
-CloseIcon.propTypes = {
-  classNames: propTypes.object.isRequired,
-  styles: propTypes.object.isRequired,
-  classes: propTypes.object.isRequired,
-  closeIconSize: propTypes.number.isRequired,
-  closeIconSvgPath: propTypes.node.isRequired,
-  onClickCloseIcon: propTypes.func.isRequired,
-  id: propTypes.string
-};
-CloseIcon.defaultProps = {
-  id: null
-};
-
-var _modals = [];
-/**
- * Handle the order of the modals.
- * Inspired by the material-ui implementation.
- */
-
-var modalManager = {
-  /**
-   * Return the modals array
-   */
-  modals: function modals() {
-    return _modals;
-  },
-
-  /**
-   * Register a new modal
-   */
-  add: function add(modal) {
-    if (_modals.indexOf(modal) === -1) {
-      _modals.push(modal);
-    }
-  },
-
-  /**
-   * Remove a modal
-   */
-  remove: function remove(modal) {
-    var index = _modals.indexOf(modal);
-
-    if (index !== -1) {
-      _modals.splice(index, 1);
-    }
-  },
-
-  /**
-   * Check if the modal is the first one on the screen
-   */
-  isTopModal: function isTopModal(modal) {
-    return !!_modals.length && _modals[_modals.length - 1] === modal;
-  }
-};
-
-function styleInject(css, ref) {
-  if ( ref === void 0 ) ref = {};
-  var insertAt = ref.insertAt;
-
-  if (!css || typeof document === 'undefined') { return; }
-
-  var head = document.head || document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
-  style.type = 'text/css';
-
-  if (insertAt === 'top') {
-    if (head.firstChild) {
-      head.insertBefore(style, head.firstChild);
-    } else {
-      head.appendChild(style);
-    }
-  } else {
-    head.appendChild(style);
-  }
-
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css;
-  } else {
-    style.appendChild(document.createTextNode(css));
-  }
-}
-
-var css = ".styles_overlay__CLSq- {\n  background: rgba(0, 0, 0, 0.75);\n  display: flex;\n  align-items: flex-start;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow-y: auto;\n  overflow-x: hidden;\n  z-index: 1000;\n  padding: 1.2rem;\n}\n.styles_modal__gNwvD {\n  max-width: 800px;\n  position: relative;\n  padding: 1.2rem;\n  background: #ffffff;\n  background-clip: padding-box;\n  box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.25);\n  margin: 0 auto;\n}\n.styles_modalCenter__L9F2w {\n  margin: auto;\n}\n.styles_closeButton__20ID4 {\n  position: absolute;\n  top: 14px;\n  right: 14px;\n  border: none;\n  padding: 0;\n  background-color: transparent;\n  display: flex;\n}\n.styles_closeIcon__1QwbI {\n}\n.styles_transitionEnter__3j_-a {\n  opacity: 0.01;\n}\n.styles_transitionEnterActive___eQs7 {\n  opacity: 1;\n  transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1);\n}\n.styles_transitionExit__1KmEf {\n  opacity: 1;\n}\n.styles_transitionExitActive__1nQXw {\n  opacity: 0.01;\n  transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1);\n}\n";
-var cssClasses = {"overlay":"styles_overlay__CLSq-","modal":"styles_modal__gNwvD","modalCenter":"styles_modalCenter__L9F2w","closeButton":"styles_closeButton__20ID4","closeIcon":"styles_closeIcon__1QwbI","transitionEnter":"styles_transitionEnter__3j_-a","transitionEnterActive":"styles_transitionEnterActive___eQs7","transitionExit":"styles_transitionExit__1KmEf","transitionExitActive":"styles_transitionExitActive__1nQXw"};
-styleInject(css,{"insertAt":"top"});
-
-var isBrowser = typeof window !== 'undefined';
-
-var Modal =
-/*#__PURE__*/
-function (_Component) {
-  _inherits$1(Modal, _Component);
-
-  _createClass$1(Modal, null, [{
-    key: "blockScroll",
-    value: function blockScroll() {
-      noScroll.on();
-    }
-  }]);
-
-  function Modal(props) {
-    var _this;
-
-    _classCallCheck$1(this, Modal);
-
-    _this = _possibleConstructorReturn$1(this, _getPrototypeOf(Modal).call(this, props));
-
-    _defineProperty(_assertThisInitialized(_this), "shouldClose", null);
-
-    _defineProperty(_assertThisInitialized(_this), "handleOpen", function () {
-      modalManager.add(_assertThisInitialized(_this));
-
-      if (isBrowser && !_this.props.container) {
-        document.body.appendChild(_this.container);
-      }
-
-      if (_this.props.blockScroll) {
-        Modal.blockScroll();
-      }
-
-      document.addEventListener('keydown', _this.handleKeydown);
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleClose", function () {
-      modalManager.remove(_assertThisInitialized(_this));
-
-      if (_this.props.blockScroll) {
-        Modal.unblockScroll();
-      }
-
-      if (isBrowser && !_this.props.container) {
-        document.body.removeChild(_this.container);
-      }
-
-      document.removeEventListener('keydown', _this.handleKeydown);
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleClickOverlay", function (event) {
-      if (_this.shouldClose === null) {
-        _this.shouldClose = true;
-      }
-
-      if (!_this.shouldClose) {
-        _this.shouldClose = null;
-        return;
-      }
-
-      if (_this.props.onOverlayClick) {
-        _this.props.onOverlayClick(event);
-      }
-
-      if (_this.props.closeOnOverlayClick) {
-        _this.props.onClose(event);
-      }
-
-      _this.shouldClose = null;
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleClickCloseIcon", function (event) {
-      _this.props.onClose(event);
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleKeydown", function (event) {
-      // Only the last modal need to be escaped when pressing the esc key
-      if (event.keyCode !== 27 || !modalManager.isTopModal(_assertThisInitialized(_this))) {
-        return;
-      }
-
-      if (_this.props.onEscKeyDown) {
-        _this.props.onEscKeyDown(event);
-      }
-
-      if (_this.props.closeOnEsc) {
-        _this.props.onClose(event);
-      }
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleModalEvent", function () {
-      _this.shouldClose = false;
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleEntered", function () {
-      if (_this.props.onEntered) {
-        _this.props.onEntered();
-      }
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "handleExited", function () {
-      if (_this.props.onExited) {
-        _this.props.onExited();
-      }
-
-      _this.setState({
-        showPortal: false
-      });
-
-      if (_this.props.blockScroll) {
-        Modal.unblockScroll();
-      }
-    });
-
-    _this.container = isBrowser && document.createElement('div');
-    _this.state = {
-      showPortal: _this.props.open
-    };
-    return _this;
-  }
-
-  _createClass$1(Modal, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      // Block scroll when initial prop is open
-      if (this.props.open) {
-        this.handleOpen();
-      }
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState) {
-      if (prevState.showPortal && !this.state.showPortal) {
-        this.handleClose();
-      } else if (!prevProps.open && this.props.open) {
-        this.handleOpen();
-      }
-    }
-  }, {
-    key: "componentWillUnmount",
-    value: function componentWillUnmount() {
-      if (this.state.showPortal) {
-        this.handleClose();
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this$props = this.props,
-          open = _this$props.open,
-          center = _this$props.center,
-          classes = _this$props.classes,
-          classNames = _this$props.classNames,
-          styles = _this$props.styles,
-          showCloseIcon = _this$props.showCloseIcon,
-          closeIconSize = _this$props.closeIconSize,
-          closeIconSvgPath = _this$props.closeIconSvgPath,
-          animationDuration = _this$props.animationDuration,
-          focusTrapped = _this$props.focusTrapped,
-          focusTrapOptions = _this$props.focusTrapOptions,
-          overlayId = _this$props.overlayId,
-          modalId = _this$props.modalId,
-          closeIconId = _this$props.closeIconId,
-          role = _this$props.role,
-          ariaLabelledby = _this$props.ariaLabelledby,
-          ariaDescribedby = _this$props.ariaDescribedby;
-      var showPortal = this.state.showPortal;
-
-      if (!showPortal) {
-        return null;
-      }
-
-      var content = React__default.createElement(React__default.Fragment, null, this.props.children, showCloseIcon && React__default.createElement(CloseIcon, {
-        classes: classes,
-        classNames: classNames,
-        styles: styles,
-        closeIconSize: closeIconSize,
-        closeIconSvgPath: closeIconSvgPath,
-        onClickCloseIcon: this.handleClickCloseIcon,
-        id: closeIconId
-      }));
-      return reactDom.createPortal(React__default.createElement(CSSTransition, {
-        "in": open,
-        appear: true,
-        classNames: {
-          appear: classNames.transitionEnter || classes.transitionEnter,
-          appearActive: classNames.transitionEnterActive || classes.transitionEnterActive,
-          enter: classNames.transitionEnter || classes.transitionEnter,
-          enterActive: classNames.transitionEnterActive || classes.transitionEnterActive,
-          exit: classNames.transitionExit || classes.transitionExit,
-          exitActive: classNames.transitionExitActive || classes.transitionExitActive
-        },
-        timeout: animationDuration,
-        onEntered: this.handleEntered,
-        onExited: this.handleExited
-      }, React__default.createElement("div", {
-        className: classnames(classes.overlay, classNames.overlay),
-        onClick: this.handleClickOverlay,
-        style: styles.overlay,
-        id: overlayId
-      }, React__default.createElement("div", {
-        className: classnames(classes.modal, center && classes.modalCenter, classNames.modal),
-        style: styles.modal,
-        onMouseDown: this.handleModalEvent,
-        onMouseUp: this.handleModalEvent,
-        onClick: this.handleModalEvent,
-        id: modalId,
-        role: role,
-        "aria-modal": "true",
-        "aria-labelledby": ariaLabelledby,
-        "aria-describedby": ariaDescribedby
-      }, focusTrapped ? React__default.createElement(focusTrapReact, {
-        focusTrapOptions: _objectSpread({}, {
-          clickOutsideDeactivates: true
-        }, focusTrapOptions)
-      }, content) : content))), this.props.container || this.container);
-    }
-  }], [{
-    key: "getDerivedStateFromProps",
-    value: function getDerivedStateFromProps(nextProps, prevState) {
-      if (!prevState.showPortal && nextProps.open) {
-        return {
-          showPortal: true
-        };
-      }
-
-      return null;
-    }
-  }]);
-
-  return Modal;
-}(React.Component);
-
-_defineProperty(Modal, "unblockScroll", function () {
-  // Restore the scroll only if there is no modal on the screen
-  if (modalManager.modals().length === 0) {
-    noScroll.off();
-  }
-});
-
-Modal.propTypes = {
-  /**
-   * Is the modal closable when user press esc key.
-   */
-  closeOnEsc: propTypes.bool,
-
-  /**
-   * Is the modal closable when user click on overlay.
-   */
-  closeOnOverlayClick: propTypes.bool,
-
-  /**
-   * Callback fired when the Modal is open and the animation is finished.
-   */
-  onEntered: propTypes.func,
-
-  /**
-   * Callback fired when the Modal has exited and the animation is finished.
-   */
-  onExited: propTypes.func,
-
-  /**
-   * Callback fired when the Modal is requested to be closed by a click on the overlay or when user press esc key.
-   */
-  onClose: propTypes.func.isRequired,
-
-  /**
-   * Callback fired when the escape key is pressed.
-   */
-  onEscKeyDown: propTypes.func,
-
-  /**
-   * Callback fired when the overlay is clicked.
-   */
-  onOverlayClick: propTypes.func,
-
-  /**
-   * Control if the modal is open or not.
-   */
-  open: propTypes.bool.isRequired,
-
-  /**
-   * An object containing classNames to style the modal, can have properties 'overlay' (classname for overlay div), 'modal' (classname for modal content div), 'closeButton' (classname for the button that contain the close icon), 'closeIcon' (classname for close icon svg). You can customize the transition with 'transitionEnter', 'transitionEnterActive', 'transitionExit', 'transitionExitActive'
-   */
-  classNames: propTypes.object,
-
-  /**
-   * An object containing the styles objects to style the modal, can have properties 'overlay', 'modal', 'closeButton', 'closeIcon'.
-   */
-  styles: propTypes.object,
-
-  /**
-   * The content of the modal.
-   */
-  children: propTypes.node,
-
-  /**
-   * @internal
-   */
-  classes: propTypes.object,
-
-  /**
-   * Should the dialog be centered.
-   */
-  center: propTypes.bool,
-
-  /**
-   * Show the close icon.
-   */
-  showCloseIcon: propTypes.bool,
-
-  /**
-   * Close icon size.
-   */
-  closeIconSize: propTypes.number,
-
-  /**
-   * A valid svg path to show as icon.
-   */
-  closeIconSvgPath: propTypes.node,
-
-  /**
-   * Animation duration in milliseconds.
-   */
-  animationDuration: propTypes.number,
-
-  /**
-   * You can specify a container prop which should be of type `Element`. The portal will be rendered inside that element. The default behavior will create a div node and render it at the at the end of document.body.
-   */
-  container: propTypes.object,
-  // eslint-disable-line
-
-  /**
-   * Whether to block scrolling when dialog is open
-   */
-  blockScroll: propTypes.bool,
-
-  /**
-   * When the modal is open, trap focus within it
-   */
-  focusTrapped: propTypes.bool,
-
-  /**
-   * Options to be passed to the focus trap, details available at https://github.com/davidtheclark/focus-trap#focustrap--createfocustrapelement-createoptions
-   */
-  focusTrapOptions: propTypes.object,
-
-  /**
-   * id attribute for overlay
-   */
-  overlayId: propTypes.string,
-
-  /**
-   * id attribute for modal
-   */
-  modalId: propTypes.string,
-
-  /**
-   * id attribute for close icon
-   */
-  closeIconId: propTypes.string,
-
-  /**
-   * ARIA role for modal
-   */
-  role: propTypes.string,
-
-  /**
-   * ARIA label for modal
-   */
-  ariaLabelledby: propTypes.string,
-
-  /**
-   * ARIA description for modal
-   */
-  ariaDescribedby: propTypes.string
-};
-Modal.defaultProps = {
-  classes: cssClasses,
-  closeOnEsc: true,
-  closeOnOverlayClick: true,
-  onEntered: undefined,
-  onExited: undefined,
-  onEscKeyDown: undefined,
-  onOverlayClick: undefined,
-  showCloseIcon: true,
-  closeIconSize: 28,
-  closeIconSvgPath: React__default.createElement("path", {
-    d: "M28.5 9.62L26.38 7.5 18 15.88 9.62 7.5 7.5 9.62 15.88 18 7.5 26.38l2.12 2.12L18 20.12l8.38 8.38 2.12-2.12L20.12 18z"
-  }),
-  classNames: {},
-  styles: {},
-  children: null,
-  center: false,
-  animationDuration: 500,
-  blockScroll: true,
-  focusTrapped: true,
-  focusTrapOptions: {},
-  overlayId: undefined,
-  modalId: undefined,
-  closeIconId: undefined,
-  role: 'dialog',
-  ariaLabelledby: undefined,
-  ariaDescribedby: undefined
-};
-
-var modalClassNames = function modalClassNames(action) {
-  return {
-    closeButton: "arena-close-modal-button arena-close-" + action + "-modal-button",
-    modal: "arena-modal"
-  };
-};
-var getClassNameBasic = function getClassNameBasic(prefix, props, sufix) {
-  var name = props.name,
-      controller = props.controller;
-  var baseClass = prefix + sufix;
-  baseClass = baseClass.replace('--', '-');
-  return baseClass + " " + prefix + "name-" + name + sufix + " " + prefix + "controller-" + controller + sufix;
-};
-
-var ArenaCreateContainerInitialState = {
-  open: false
-};
-
-var ArenaCreateContainer = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ArenaCreateContainer, _React$Component);
-
-  function ArenaCreateContainer(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-
-    _this.create = function () {
-      fetch(_this.props.componentMapper.api + "/" + _this.props.controller, {
-        method: 'POST',
-        body: JSON.stringify(_this.state.entity),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(function (res) {
-        res.json().then(_this.props.onCreate);
-
-        _this.onClose();
-      });
-    };
-
-    _this.setValidationStatus = function (field, valid) {
-      if (_this.state.validations[field] === valid) return;
-
-      var validations = _extends({}, _this.state.validations);
-
-      validations[field] = valid;
-
-      var isValid = _this.entityIsValid(validations);
-
-      _this.setState({
-        validations: validations,
-        isValid: isValid
-      });
-    };
-
-    _this.entityIsValid = function (validations) {
-      if (Object.keys(validations).filter(function (e) {
-        return validations[e] === false;
-      }).length) return false;
-      return true;
-    };
-
-    _this.componentDidMount = function () {
-      _this.setState({
-        entity: _this.props.template.entity
-      });
-    };
-
-    _this.onClose = function () {
-      return _this.setState(_extends({}, ArenaCreateContainerInitialState, {
-        entity: _this.props.template.entity
-      }));
-    };
-
-    _this.state = ArenaCreateContainerInitialState;
-    _this.state.entity = props.template.entity;
-    _this.state.validations = {};
-    console.log(props.template);
-    return _this;
-  }
-
-  var _proto = ArenaCreateContainer.prototype;
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    var open = this.state.open;
-    var containerClass = "arena-create-" + this.props.controller;
-    var _this$props = this.props,
-        componentMapper = _this$props.componentMapper,
-        controller = _this$props.controller;
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: containerClass
-    }, /*#__PURE__*/React__default.createElement("button", {
-      type: "button",
-      className: getClassNameBasic("arena-open-create-modal-", this.props, "-button"),
-      onClick: function onClick() {
-        return _this2.setState({
-          open: true
-        });
-      }
-    }, componentMapper.t(controller + ".create")), /*#__PURE__*/React__default.createElement(Modal, {
-      open: open,
-      onClose: this.onClose,
-      center: true,
-      classNames: modalClassNames('create')
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "pt-4"
-    }, /*#__PURE__*/React__default.createElement(ConnectedContainer$1, _extends({}, this.props, {
-      update: undefined,
-      level: 1,
-      id: undefined,
-      entity: this.state.entity,
-      updateEntity: function updateEntity(entity) {
-        return _this2.setState({
-          entity: entity
-        });
-      },
-      mode: CONTAINER_MODE.dummy,
-      shapeConfiguration: this.props.template.shapeConfiguration,
-      componentMapper: this.props.componentMapper,
-      setValidationStatus: this.setValidationStatus
-    })), /*#__PURE__*/React__default.createElement("button", {
-      className: getClassNameBasic('arena-create-', this.props, '-button'),
-      onClick: this.create,
-      disabled: !this.state.isValid
-    }, componentMapper.t(controller + ".create")))));
-  };
-
-  return ArenaCreateContainer;
-}(React__default.Component);
-
-var findEntities = function findEntities(api, controller, example) {
-  var url = new URL(api + "/" + controller + "/search");
-  var params = {};
-  Object.keys(example).forEach(function (key) {
-    if (example[key] !== undefined) params[key] = example[key];
-  });
-  url.search = new URLSearchParams(params).toString();
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-};
-
-var ArenaListContainer = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ArenaListContainer, _React$Component);
-
-  function ArenaListContainer(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-
-    _this.addItem = function (item) {
-      var entities = [item].concat(_this.state.entities);
-
-      var containerClassName = _this.getClassName('arena-list-item-');
-
-      var rows = entities.map(function (entity) {
-        console.log("ArenaListContainer - rows", entity);
-        var selectedClass = "";
-        if (_this.props.mode === CONTAINER_MODE.select) selectedClass = _this.isSelected(entity) ? "selected" : "not-selected";
-        var href = _this.props.shapeConfiguration.itemHref ? _this.props.shapeConfiguration.itemHref(entity) : undefined;
-        return /*#__PURE__*/React__default.createElement(ArenaListItemWrapper, {
-          className: classnames(containerClassName, selectedClass),
-          onClick: function onClick() {
-            return _this.onItemClick(entity);
-          },
-          href: href
-        }, /*#__PURE__*/React__default.createElement(ConnectedContainer$1, _extends({
-          shapeConfiguration: _this.props.shapeConfiguration,
-          className: getClassNameBasic("arena-list-container-", _this.props, "-item"),
-          controller: _this.props.controller,
-          name: _this.props.name,
-          type: _this.props.superType,
-          mode: _this.state.mode,
-          level: _this.props.level,
-          entity: entity,
-          componentMapper: _this.props.componentMapper
-        }, _this.state.mappedComponent.props)));
-      });
-
-      _this.setState({
-        entities: entities,
-        rows: rows
-      });
-    };
-
-    _this.getCreateContainer = function () {
-      if (!_this.props.template) return null;
-      return /*#__PURE__*/React__default.createElement(ArenaCreateContainer, {
-        controller: _this.props.controller,
-        onCreate: _this.addItem,
-        template: _this.props.template,
-        componentMapper: _this.props.componentMapper
-      });
-    };
-
-    _this.isSelected = function (item) {
-      var result = _this.props.selected.find(function (id) {
-        return id === item.id;
-      });
-
-      return result !== undefined;
-    };
-
-    _this.onItemClick = function (entity) {
-      if (_this.props.onItemClick) _this.props.onItemClick(entity);
-    };
-
-    _this.getClassName = function (prefix) {
-      var _this$props = _this.props,
-          name = _this$props.name,
-          controller = _this$props.controller,
-          parentController = _this$props.parentController,
-          type = _this$props.type,
-          superType = _this$props.superType,
-          parentType = _this$props.parentType,
-          level = _this$props.level,
-          mode = _this$props.mode;
-      return prefix + "name-" + name + " " + prefix + "controller-" + controller + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode;
-    };
-
-    if (!props.shape && !props.loadingOwnShape) {
-      _this.props.loadingShape(props.controller);
-
-      fetch(props.componentMapper.api + "/" + props.controller + "/shape").then(function (res) {
-        console.log(res);
-        res.json().then(function (response) {
-          _this.props.shapeLoaded(props.controller, response);
-        });
-      });
-    }
-
-    _this.state = {};
-    _this.state.example = props.example;
-    _this.state.mode = props.mode ? props.mode : 'view';
-    _this.state.mappedComponent = _this.props.componentMapper.getComponent(_this.props.name, _this.props.controller, _this.props.parentController, _this.props.type, _this.props.superType, _this.props.parentType, _this.props.level);
-    return _this;
-  }
-
-  var _proto = ArenaListContainer.prototype;
-
-  _proto.componentDidMount = function componentDidMount() {
-    var _this2 = this;
-
-    if (this.props.ids && this.props.ids.length > 0) {
-      fetch(this.props.componentMapper.api + "/" + this.props.controller + "?ids=" + this.props.ids).then(function (res) {
-        return res.json().then(function (response) {
-          _this2.setState({
-            entities: response
-          });
-        });
-      });
-    } else {
-      if (this.state.example) {
-        findEntities(this.props.controller, this.state.example).then(function (res) {
-          return res.json().then(function (entities) {
-            _this2.setState({
-              entities: entities
-            });
-          });
-        });
-      } else {
-        if (this.props.entities) this.setState({
-          entities: this.props.entities
-        });else this.setState({
-          entities: []
-        });
-      }
-    }
-  };
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {};
-
-  _proto.render = function render() {
-    if (!this.state.entities) {
-      if (this.props.mode === CONTAINER_MODE.edit) return this.getCreateContainer();else return null;
-    }
-
-    if (this.props.level < 0) return null;
-    var t = this.props.componentMapper.t;
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-list-')
-    }, /*#__PURE__*/React__default.createElement("h2", null, t(this.props.controller + ".listLabel")), this.props.template && this.props.shapeConfiguration && this.props.shapeConfiguration.showCreate && this.getCreateContainer(), /*#__PURE__*/React__default.createElement("div", {
-      className: this.getClassName('arena-list-rows-')
-    }, [].concat(this.state.rows)), this.props.mode === CONTAINER_MODE.select && this.props.entities.length > 0 && /*#__PURE__*/React__default.createElement("button", {
-      type: "button",
-      className: getClassNameBasic('arena-end-selection-', this.props, '-button'),
-      onClick: this.props.onSelectFinish
-    }, t(this.props.controller + ".select")));
-  };
-
-  return ArenaListContainer;
-}(React__default.Component);
-
-var ArenaListItemWrapper = function ArenaListItemWrapper(_ref) {
-  var className = _ref.className,
-      onClick = _ref.onClick,
-      href = _ref.href,
-      children = _ref.children;
-  if (href) return /*#__PURE__*/React__default.createElement("a", {
-    className: "arena-link",
-    href: href
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: className,
-    onClick: onClick
-  }, children));else return /*#__PURE__*/React__default.createElement("div", {
-    className: className,
-    onClick: onClick
-  }, children);
-};
-
-var ConnectedContainer = reactRedux.connect(mapStateToProps, {
-  shapeLoaded: shapeLoaded,
-  loadingShape: loadingShape
-})(ArenaListContainer);
-
-var ArenaSearchContainerInitialState = {
-  open: false,
-  example: {},
-  entities: [],
-  items: []
-};
-
-var ArenaSearchContainer = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ArenaSearchContainer, _React$Component);
-
-  function ArenaSearchContainer() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.state = ArenaSearchContainerInitialState;
-
-    _this.find = function () {
-      findEntities(_this.props.componentMapper.api, _this.props.controller, _this.state.example).then(function (res) {
-        return res.json().then(function (entities) {
-          _this.setState({
-            entities: entities
-          });
-        });
-      });
-    };
-
-    _this.select = function (item) {
-      console.log("select");
-
-      _this.setState({
-        items: [item.id]
-      });
-    };
-
-    _this.getClassName = function (prefix) {
-      var _this$props = _this.props,
-          name = _this$props.name,
-          type = _this$props.type;
-      return prefix + "name-" + name + " " + prefix + "type-" + type + " ";
-    };
-
-    return _this;
-  }
-
-  var _proto = ArenaSearchContainer.prototype;
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    var open = this.state.open;
-    var _this$props2 = this.props,
-        componentMapper = _this$props2.componentMapper,
-        controller = _this$props2.controller;
-    var buttonText = componentMapper.t(controller + ".search");
-    return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("button", {
-      type: "button",
-      className: getClassNameBasic("arena-open-search-modal-", this.props, "-button"),
-      onClick: function onClick() {
-        return _this2.setState({
-          open: true
-        });
-      }
-    }, buttonText), /*#__PURE__*/React__default.createElement(Modal, {
-      open: open,
-      onClose: function onClose() {
-        return _this2.setState(ArenaSearchContainerInitialState);
-      },
-      center: true,
-      classNames: modalClassNames('search')
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "pt-4"
-    }, /*#__PURE__*/React__default.createElement(ConnectedContainer$1, _extends({}, this.props, {
-      update: undefined,
-      level: 1,
-      id: undefined,
-      entity: this.state.example,
-      updateEntity: function updateEntity(entity) {
-        return _this2.setState({
-          example: entity
-        });
-      },
-      mode: CONTAINER_MODE.dummy
-    })), /*#__PURE__*/React__default.createElement("button", {
-      type: "button",
-      className: getClassNameBasic('arena-search-', this.props, '-button'),
-      onClick: this.find
-    }, buttonText), /*#__PURE__*/React__default.createElement(ConnectedContainer, _extends({}, this.props, {
-      level: 0,
-      entities: this.state.entities,
-      mode: CONTAINER_MODE.select,
-      onItemClick: this.select,
-      selected: this.state.items,
-      onSelectFinish: function onSelectFinish() {
-        _this2.props.update(_this2.state.items[0]);
-
-        _this2.setState(ArenaSearchContainerInitialState);
-      }
-    })))));
-  };
-
-  return ArenaSearchContainer;
-}(React__default.Component);
-
-var ArenaContainer = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ArenaContainer, _React$Component);
-
-  function ArenaContainer(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-
-    _this.fetchTemplates = function () {
-      _this.setState({
-        templates: _this.props.componentMapper.getTemplates(_this.props.controller)
-      });
-    };
-
-    _this.fetchEntity = function () {
-      if (_this.props.id) {
-        console.log("ArenaContainer - fetchEntity", "by id", _this.props.id);
-        fetch(_this.props.componentMapper.api + "/" + _this.props.controller + "/" + _this.props.id).then(function (res) {
-          return res.json().then(function (response) {
-            _this.setState({
-              entity: response
-            });
-          });
-        });
-      } else {
-        console.log("ArenaContainer - fetchEntity", "from props", _this.props.entity);
-
-        _this.setState({
-          entity: _this.props.entity
-        });
-      }
-    };
-
-    _this.update = function (field, newValue, setAcepted) {
-      var entity = {
-        id: _this.state.entity.id
-      };
-      entity[field] = newValue;
-
-      if (_this.props.mode === CONTAINER_MODE.dummy) {
-        entity = _extends({}, _this.state.entity, {}, entity);
-
-        _this.setState({
-          entity: entity
-        });
-
-        _this.props.updateEntity(entity);
-
-        return;
-      }
-
-      fetch(_this.props.componentMapper.api + "/" + _this.props.controller, {
-        method: 'POST',
-        body: JSON.stringify(entity),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(function (res) {
-        if (setAcepted) setAcepted(res.status !== 400);
-        if (res.status >= 500) alert("Server error: " + res.status);
-        if (res.status === 200) res.json().then(function (entity) {
-          _this.setState({
-            entity: entity
-          });
-        });
-      });
-    };
-
-    _this.getClassName = function () {
-      var prefix = 'arena-container-';
-      var _this$props = _this.props,
-          name = _this$props.name,
-          controller = _this$props.controller,
-          parentController = _this$props.parentController,
-          type = _this$props.type,
-          superType = _this$props.superType,
-          parentType = _this$props.parentType,
-          level = _this$props.level,
-          mode = _this$props.mode;
-      return prefix + "name-" + name + " " + prefix + "controller-" + controller + " " + prefix + "parentController-" + parentController + " " + prefix + "type-" + type + " " + prefix + "superType-" + superType + " " + prefix + "parentType-" + parentType + " " + prefix + "level-" + level + " " + prefix + "mode-" + mode;
-    };
-
-    console.log("ArenaContainer", props);
-
-    if (!props.shape && !props.loadingOwnShape) {
-      _this.props.loadingShape(props.controller);
-
-      fetch(props.componentMapper.api + "/" + props.controller + "/shape").then(function (res) {
-        console.log(res);
-        res.json().then(function (response) {
-          _this.props.shapeLoaded(props.controller, response);
-        });
-      });
-    }
-
-    _this.state = {};
-    _this.state.mode = props.mode ? props.mode : 'view';
-    _this.state.templates = props.componentMapper.getTemplates(_this.props.controller);
-    _this.mappedComponent = undefined;
-    return _this;
-  }
-
-  var _proto = ArenaContainer.prototype;
-
-  _proto.componentDidMount = function componentDidMount() {
-    this.fetchEntity();
-    this.mappedComponent = this.calculateComponent();
-  };
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (prevProps.id !== this.props.id || prevProps.entity !== this.props.entity) this.fetchEntity();
-    if (prevProps.controller !== this.props.controller) this.fetchTemplates();
-  };
-
-  _proto.calculateComponent = function calculateComponent() {
-    return this.props.componentMapper.getComponent(this.props.name, this.props.controller, this.props.parentController, this.props.type, this.props.superType, this.props.parentType, this.props.level);
-  };
-
-  _proto.renderMappedComponent = function renderMappedComponent(mappedComponent) {
-    var containerClassName = this.getClassName();
-    return /*#__PURE__*/React__default.createElement(ContainerLayout, {
-      className: classnames(containerClassName, this.props.className)
-    }, this.props.mode !== CONTAINER_MODE.view && this.props.update && /*#__PURE__*/React__default.createElement(ArenaSearchContainer, this.props), mappedComponent.render(this.state.entity, _extends({}, this.props, {}, mappedComponent.props)));
-  };
-
-  _proto.renderChildren = function renderChildren(fields) {
-    var containerClassName = this.getClassName();
-    var _this$props2 = this.props,
-        controller = _this$props2.controller,
-        name = _this$props2.name,
-        componentMapper = _this$props2.componentMapper;
-    var textKey = name ? controller + "." + name + ".label" : controller + ".label";
-    return /*#__PURE__*/React__default.createElement(ContainerLayout, {
-      className: classnames(containerClassName, this.props.className),
-      name: componentMapper.t(textKey)
-    }, this.props.mode !== CONTAINER_MODE.view && this.props.update && /*#__PURE__*/React__default.createElement(ArenaSearchContainer, this.props), fields);
-  };
-
-  _proto.calculateField = function calculateField(fieldName) {
-    var defaultField = this.props.shape.fields[fieldName];
-    if (!this.props.shapeConfiguration) return defaultField;
-    var customShapeConfiguration = this.props.shapeConfiguration[fieldName];
-    if (!customShapeConfiguration) return defaultField;
-    var self = customShapeConfiguration.self ? customShapeConfiguration.self : {};
-
-    var field = _extends({}, defaultField, {}, self);
-
-    console.log(field);
-    return field;
-  };
-
-  _proto.calculateChildren = function calculateChildren() {
-    var _this2 = this;
-
-    var containerFields = [];
-    var simpleFields = [];
-
-    if (this.state.entity) {
-      var entity = this.state.entity;
-      Object.keys(this.props.shape.fields).forEach(function (fieldName) {
-        var field = _this2.calculateField(fieldName);
-
-        if (!field.hidden) {
-          if (field.key) {
-            if (!field.collection) {
-              containerFields.unshift( /*#__PURE__*/React__default.createElement(ConnectedContainer$1, {
-                name: fieldName,
-                type: field.type,
-                superType: field.superType,
-                id: entity[field.name],
-                mode: _this2.state.mode,
-                level: field.level ? field.level : _this2.props.level - 1,
-                controller: field.controller,
-                parentController: _this2.props.controller,
-                parentType: _this2.props.type,
-                shapeConfiguration: _this2.props.shapeConfiguration[fieldName],
-                componentMapper: _this2.props.componentMapper,
-                required: field.required,
-                update: function update(value) {
-                  _this2.update(fieldName, value);
-                }
-              }));
+        if (configuration.allowInLineCreate) {
+          if (mode === ArenaContainerMode.CREATE) {
+            if (configuration.allowInLineSearch) {
+              newActionsState.showInLineCreate = true;
             } else {
-              var template = _this2.state.templates[fieldName];
-              containerFields.push( /*#__PURE__*/React__default.createElement(ConnectedContainer, {
-                name: fieldName,
-                type: field.type,
-                superType: field.superType,
-                ids: entity[field.name],
-                mode: _this2.state.mode,
-                level: _this2.props.level - 1,
-                controller: field.controller,
-                parentController: _this2.props.controller,
-                parentType: _this2.props.type,
-                shapeConfiguration: _this2.props.shapeConfiguration[fieldName],
-                componentMapper: _this2.props.componentMapper,
-                template: template ? template(_this2.props, _this2.state) : undefined
-              }));
+              initEntity();
             }
-          } else {
-            simpleFields.push( /*#__PURE__*/React__default.createElement(ArenaField, {
-              mode: _this2.state.mode,
-              name: fieldName,
-              field: field,
-              type: field.type,
-              value: entity[field.name],
-              enumeration: field.enumeration,
-              update: _this2.update,
-              level: _this2.props.level - 1,
-              componentMapper: _this2.props.componentMapper,
-              parentController: _this2.props.controller,
-              regEx: field.regEx,
-              jsType: field.jsType,
-              required: field.required,
-              setValidationStatus: _this2.props.setValidationStatus
-            }));
           }
         }
-      });
+      } else {
+        if (configuration.allowInLineCreate && mode === ArenaContainerMode.EDIT) {
+          newActionsState.showCreateModal = true;
+        }
+
+        if (!entity.id && configuration.allowInLineCreate || entity.id && configuration.allowInLineEdit) {
+          if (level >= renderLevel) setRenderLevel(level);
+          if (configuration.allowInLineSearch) newActionsState.showClearSelection = true;
+        } else {
+          newActionsState.renderMode = ArenaContainerMode.VIEW;
+        }
+
+        if (configuration.allowInLineSearch) {
+          newActionsState.showClearSelection = true;
+        }
+      }
+
+      setActions(newActionsState);
     }
-
-    return [].concat(simpleFields, containerFields);
+  }, [JSON.stringify(entity)]);
+  var commonProps = {
+    updateBuilder: updateFunctionBuilder,
+    shape: shape,
+    componentMapper: componentMapper,
+    controller: controller,
+    configuration: configuration
   };
 
-  _proto.render = function render() {
-    if (!this.props.shape) return null;
-    var mappedComponent = this.mappedComponent;
-    if (this.props.level < 0 || this.mappedComponent && this.mappedComponent.hidden) return null;
-    if (mappedComponent && mappedComponent.render) return this.renderMappedComponent(mappedComponent);
-    var fields = this.calculateChildren();
-    return this.renderChildren(fields);
-  };
+  switch (mode) {
+    case ArenaContainerMode.SEARCH:
+      return /*#__PURE__*/React__default.createElement(ArenaContainerSearchRender, _extends({}, commonProps, {
+        filter: entity,
+        onSelectFinish: update
+      }));
 
-  return ArenaContainer;
-}(React__default.Component);
+    default:
+      return /*#__PURE__*/React__default.createElement("div", {
+        className: "arena-entity-reder"
+      }, actions.showClearSelection && /*#__PURE__*/React__default.createElement("button", {
+        className: "arena-clear-field-button",
+        onClick: resetEntity
+      }, componentMapper.t('clear', 'clear')), actions.showInLineCreate && !actions.showInLineSearch && /*#__PURE__*/React__default.createElement("button", {
+        className: "arena-create-button",
+        onClick: initEntity
+      }, componentMapper.t(controller + ".create.start", controller + ".create.start")), actions.showCreateModal && /*#__PURE__*/React__default.createElement(ArenaCreateModal, {
+        controller: controller,
+        onCloseModal: function onCloseModal(entity) {
+          return createEntity(componentMapper.api, controller, entity).then(function (res) {
+            return update(res.id);
+          });
+        },
+        componentMapper: componentMapper,
+        entity: templateEntity
+      }), actions.showInLineSearch && /*#__PURE__*/React__default.createElement(ArenaInLineSearch, {
+        controller: controller,
+        componentMapper: componentMapper,
+        shape: shape,
+        templateEntity: actions.showInLineCreate ? templateEntity : undefined,
+        onSelectFinish: function onSelectFinish(item) {
+          if (mode === ArenaContainerMode.EDIT) {
+            update(item.id);
+          }
 
-ArenaContainer.defaultProps = {
-  shapeConfiguration: {}
+          if (mode === ArenaContainerMode.CREATE) {
+            update(item);
+            updateFunctionBuilder()(item);
+          }
+        }
+      }), entity && /*#__PURE__*/React__default.createElement(ArenaContainerDefaultRender, _extends({}, commonProps, {
+        entity: entity,
+        level: renderLevel,
+        mode: actions.renderMode
+      })));
+  }
 };
-
-var ContainerLayout = function ContainerLayout(_ref) {
-  var name = _ref.name,
-      className = _ref.className,
-      children = _ref.children;
-  return /*#__PURE__*/React__default.createElement("div", {
-    className: name + " " + className
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: ""
-  }, name && /*#__PURE__*/React__default.createElement("h2", null, name), children));
-};
-
-var ConnectedContainer$1 = reactRedux.connect(mapStateToProps, {
-  shapeLoaded: shapeLoaded,
-  loadingShape: loadingShape
-})(ArenaContainer);
-
-function isAbsolute(pathname) {
-  return pathname.charAt(0) === '/';
-}
-
-// About 1.5x faster than the two-arg version of Array#splice()
-function spliceOne(list, index) {
-  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) {
-    list[i] = list[k];
-  }
-
-  list.pop();
-}
-
-// This implementation is based heavily on node's url.parse
-function resolvePathname(to, from) {
-  if (from === undefined) from = '';
-
-  var toParts = (to && to.split('/')) || [];
-  var fromParts = (from && from.split('/')) || [];
-
-  var isToAbs = to && isAbsolute(to);
-  var isFromAbs = from && isAbsolute(from);
-  var mustEndAbs = isToAbs || isFromAbs;
-
-  if (to && isAbsolute(to)) {
-    // to is absolute
-    fromParts = toParts;
-  } else if (toParts.length) {
-    // to is relative, drop the filename
-    fromParts.pop();
-    fromParts = fromParts.concat(toParts);
-  }
-
-  if (!fromParts.length) return '/';
-
-  var hasTrailingSlash;
-  if (fromParts.length) {
-    var last = fromParts[fromParts.length - 1];
-    hasTrailingSlash = last === '.' || last === '..' || last === '';
-  } else {
-    hasTrailingSlash = false;
-  }
-
-  var up = 0;
-  for (var i = fromParts.length; i >= 0; i--) {
-    var part = fromParts[i];
-
-    if (part === '.') {
-      spliceOne(fromParts, i);
-    } else if (part === '..') {
-      spliceOne(fromParts, i);
-      up++;
-    } else if (up) {
-      spliceOne(fromParts, i);
-      up--;
-    }
-  }
-
-  if (!mustEndAbs) for (; up--; up) fromParts.unshift('..');
-
-  if (
-    mustEndAbs &&
-    fromParts[0] !== '' &&
-    (!fromParts[0] || !isAbsolute(fromParts[0]))
-  )
-    fromParts.unshift('');
-
-  var result = fromParts.join('/');
-
-  if (hasTrailingSlash && result.substr(-1) !== '/') result += '/';
-
-  return result;
-}
-
-var isProduction = process.env.NODE_ENV === 'production';
-function warning(condition, message) {
-  if (!isProduction) {
-    if (condition) {
-      return;
-    }
-
-    var text = "Warning: " + message;
-
-    if (typeof console !== 'undefined') {
-      console.warn(text);
-    }
-
-    try {
-      throw Error(text);
-    } catch (x) {}
-  }
-}
-
-var isProduction$1 = process.env.NODE_ENV === 'production';
-var prefix = 'Invariant failed';
-function invariant(condition, message) {
-    if (condition) {
-        return;
-    }
-    if (isProduction$1) {
-        throw new Error(prefix);
-    }
-    throw new Error(prefix + ": " + (message || ''));
-}
-
-function addLeadingSlash(path) {
-  return path.charAt(0) === '/' ? path : '/' + path;
-}
-function stripLeadingSlash(path) {
-  return path.charAt(0) === '/' ? path.substr(1) : path;
-}
-function hasBasename(path, prefix) {
-  return path.toLowerCase().indexOf(prefix.toLowerCase()) === 0 && '/?#'.indexOf(path.charAt(prefix.length)) !== -1;
-}
-function stripBasename(path, prefix) {
-  return hasBasename(path, prefix) ? path.substr(prefix.length) : path;
-}
-function stripTrailingSlash(path) {
-  return path.charAt(path.length - 1) === '/' ? path.slice(0, -1) : path;
-}
-function parsePath(path) {
-  var pathname = path || '/';
-  var search = '';
-  var hash = '';
-  var hashIndex = pathname.indexOf('#');
-
-  if (hashIndex !== -1) {
-    hash = pathname.substr(hashIndex);
-    pathname = pathname.substr(0, hashIndex);
-  }
-
-  var searchIndex = pathname.indexOf('?');
-
-  if (searchIndex !== -1) {
-    search = pathname.substr(searchIndex);
-    pathname = pathname.substr(0, searchIndex);
-  }
-
-  return {
-    pathname: pathname,
-    search: search === '?' ? '' : search,
-    hash: hash === '#' ? '' : hash
-  };
-}
-function createPath(location) {
-  var pathname = location.pathname,
-      search = location.search,
-      hash = location.hash;
-  var path = pathname || '/';
-  if (search && search !== '?') path += search.charAt(0) === '?' ? search : "?" + search;
-  if (hash && hash !== '#') path += hash.charAt(0) === '#' ? hash : "#" + hash;
-  return path;
-}
-
-function createLocation(path, state, key, currentLocation) {
-  var location;
-
-  if (typeof path === 'string') {
-    // Two-arg form: push(path, state)
-    location = parsePath(path);
-    location.state = state;
-  } else {
-    // One-arg form: push(location)
-    location = _extends$1({}, path);
-    if (location.pathname === undefined) location.pathname = '';
-
-    if (location.search) {
-      if (location.search.charAt(0) !== '?') location.search = '?' + location.search;
-    } else {
-      location.search = '';
-    }
-
-    if (location.hash) {
-      if (location.hash.charAt(0) !== '#') location.hash = '#' + location.hash;
-    } else {
-      location.hash = '';
-    }
-
-    if (state !== undefined && location.state === undefined) location.state = state;
-  }
-
-  try {
-    location.pathname = decodeURI(location.pathname);
-  } catch (e) {
-    if (e instanceof URIError) {
-      throw new URIError('Pathname "' + location.pathname + '" could not be decoded. ' + 'This is likely caused by an invalid percent-encoding.');
-    } else {
-      throw e;
-    }
-  }
-
-  if (key) location.key = key;
-
-  if (currentLocation) {
-    // Resolve incomplete/relative pathname relative to current location.
-    if (!location.pathname) {
-      location.pathname = currentLocation.pathname;
-    } else if (location.pathname.charAt(0) !== '/') {
-      location.pathname = resolvePathname(location.pathname, currentLocation.pathname);
-    }
-  } else {
-    // When there is no prior location and pathname is empty, set it to /
-    if (!location.pathname) {
-      location.pathname = '/';
-    }
-  }
-
-  return location;
-}
-
-function createTransitionManager() {
-  var prompt = null;
-
-  function setPrompt(nextPrompt) {
-    process.env.NODE_ENV !== "production" ? warning(prompt == null, 'A history supports only one prompt at a time') : void 0;
-    prompt = nextPrompt;
-    return function () {
-      if (prompt === nextPrompt) prompt = null;
-    };
-  }
-
-  function confirmTransitionTo(location, action, getUserConfirmation, callback) {
-    // TODO: If another transition starts while we're still confirming
-    // the previous one, we may end up in a weird state. Figure out the
-    // best way to handle this.
-    if (prompt != null) {
-      var result = typeof prompt === 'function' ? prompt(location, action) : prompt;
-
-      if (typeof result === 'string') {
-        if (typeof getUserConfirmation === 'function') {
-          getUserConfirmation(result, callback);
-        } else {
-          process.env.NODE_ENV !== "production" ? warning(false, 'A history needs a getUserConfirmation function in order to use a prompt message') : void 0;
-          callback(true);
-        }
-      } else {
-        // Return false from a transition hook to cancel the transition.
-        callback(result !== false);
-      }
-    } else {
-      callback(true);
-    }
-  }
-
-  var listeners = [];
-
-  function appendListener(fn) {
-    var isActive = true;
-
-    function listener() {
-      if (isActive) fn.apply(void 0, arguments);
-    }
-
-    listeners.push(listener);
-    return function () {
-      isActive = false;
-      listeners = listeners.filter(function (item) {
-        return item !== listener;
-      });
-    };
-  }
-
-  function notifyListeners() {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    listeners.forEach(function (listener) {
-      return listener.apply(void 0, args);
-    });
-  }
-
-  return {
-    setPrompt: setPrompt,
-    confirmTransitionTo: confirmTransitionTo,
-    appendListener: appendListener,
-    notifyListeners: notifyListeners
-  };
-}
-
-var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
-function getConfirmation(message, callback) {
-  callback(window.confirm(message)); // eslint-disable-line no-alert
-}
-/**
- * Returns true if the HTML5 history API is supported. Taken from Modernizr.
- *
- * https://github.com/Modernizr/Modernizr/blob/master/LICENSE
- * https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
- * changed to avoid false negatives for Windows Phones: https://github.com/reactjs/react-router/issues/586
- */
-
-function supportsHistory() {
-  var ua = window.navigator.userAgent;
-  if ((ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) && ua.indexOf('Mobile Safari') !== -1 && ua.indexOf('Chrome') === -1 && ua.indexOf('Windows Phone') === -1) return false;
-  return window.history && 'pushState' in window.history;
-}
-/**
- * Returns true if browser fires popstate on hash change.
- * IE10 and IE11 do not.
- */
-
-function supportsPopStateOnHashChange() {
-  return window.navigator.userAgent.indexOf('Trident') === -1;
-}
-/**
- * Returns false if using go(n) with hash history causes a full page reload.
- */
-
-function supportsGoWithoutReloadUsingHash() {
-  return window.navigator.userAgent.indexOf('Firefox') === -1;
-}
-/**
- * Returns true if a given popstate event is an extraneous WebKit event.
- * Accounts for the fact that Chrome on iOS fires real popstate events
- * containing undefined state when pressing the back button.
- */
-
-function isExtraneousPopstateEvent(event) {
-  return event.state === undefined && navigator.userAgent.indexOf('CriOS') === -1;
-}
-
-var PopStateEvent = 'popstate';
-var HashChangeEvent = 'hashchange';
-
-function getHistoryState() {
-  try {
-    return window.history.state || {};
-  } catch (e) {
-    // IE 11 sometimes throws when accessing window.history.state
-    // See https://github.com/ReactTraining/history/pull/289
-    return {};
-  }
-}
-/**
- * Creates a history object that uses the HTML5 history API including
- * pushState, replaceState, and the popstate event.
- */
-
-
-function createBrowserHistory(props) {
-  if (props === void 0) {
-    props = {};
-  }
-
-  !canUseDOM ? process.env.NODE_ENV !== "production" ? invariant(false, 'Browser history needs a DOM') : invariant(false) : void 0;
-  var globalHistory = window.history;
-  var canUseHistory = supportsHistory();
-  var needsHashChangeListener = !supportsPopStateOnHashChange();
-  var _props = props,
-      _props$forceRefresh = _props.forceRefresh,
-      forceRefresh = _props$forceRefresh === void 0 ? false : _props$forceRefresh,
-      _props$getUserConfirm = _props.getUserConfirmation,
-      getUserConfirmation = _props$getUserConfirm === void 0 ? getConfirmation : _props$getUserConfirm,
-      _props$keyLength = _props.keyLength,
-      keyLength = _props$keyLength === void 0 ? 6 : _props$keyLength;
-  var basename = props.basename ? stripTrailingSlash(addLeadingSlash(props.basename)) : '';
-
-  function getDOMLocation(historyState) {
-    var _ref = historyState || {},
-        key = _ref.key,
-        state = _ref.state;
-
-    var _window$location = window.location,
-        pathname = _window$location.pathname,
-        search = _window$location.search,
-        hash = _window$location.hash;
-    var path = pathname + search + hash;
-    process.env.NODE_ENV !== "production" ? warning(!basename || hasBasename(path, basename), 'You are attempting to use a basename on a page whose URL path does not begin ' + 'with the basename. Expected path "' + path + '" to begin with "' + basename + '".') : void 0;
-    if (basename) path = stripBasename(path, basename);
-    return createLocation(path, state, key);
-  }
-
-  function createKey() {
-    return Math.random().toString(36).substr(2, keyLength);
-  }
-
-  var transitionManager = createTransitionManager();
-
-  function setState(nextState) {
-    _extends$1(history, nextState);
-
-    history.length = globalHistory.length;
-    transitionManager.notifyListeners(history.location, history.action);
-  }
-
-  function handlePopState(event) {
-    // Ignore extraneous popstate events in WebKit.
-    if (isExtraneousPopstateEvent(event)) return;
-    handlePop(getDOMLocation(event.state));
-  }
-
-  function handleHashChange() {
-    handlePop(getDOMLocation(getHistoryState()));
-  }
-
-  var forceNextPop = false;
-
-  function handlePop(location) {
-    if (forceNextPop) {
-      forceNextPop = false;
-      setState();
-    } else {
-      var action = 'POP';
-      transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-        if (ok) {
-          setState({
-            action: action,
-            location: location
-          });
-        } else {
-          revertPop(location);
-        }
+var ArenaEntityRender = React__default.memo(ArenaEntityRenderComponent);
+var ArenaInLineSearch = function ArenaInLineSearch(_ref9) {
+  var controller = _ref9.controller,
+      componentMapper = _ref9.componentMapper,
+      onSelectFinish = _ref9.onSelectFinish,
+      templateEntity = _ref9.templateEntity;
+  var dispatch = reactRedux.useDispatch();
+
+  var _useState7 = React.useState([]),
+      items = _useState7[0],
+      setItems = _useState7[1];
+
+  var _useState8 = React.useState(''),
+      value = _useState8[0],
+      setValue = _useState8[1];
+
+  var _useState9 = React.useState(false),
+      isOpen = _useState9[0],
+      setIsOpen = _useState9[1];
+
+  var endpoint = componentMapper.api;
+  React.useEffect(function () {
+    if (isOpen) {
+      findEntitiesByText(endpoint, controller, value).then(function (res) {
+        dispatch(createEntityLoad(controller, res));
+        if (templateEntity) setItems([].concat(res, [templateEntity]));else setItems(res);
       });
     }
-  }
-
-  function revertPop(fromLocation) {
-    var toLocation = history.location; // TODO: We could probably make this more reliable by
-    // keeping a list of keys we've seen in sessionStorage.
-    // Instead, we just default to 0 for keys we don't know.
-
-    var toIndex = allKeys.indexOf(toLocation.key);
-    if (toIndex === -1) toIndex = 0;
-    var fromIndex = allKeys.indexOf(fromLocation.key);
-    if (fromIndex === -1) fromIndex = 0;
-    var delta = toIndex - fromIndex;
-
-    if (delta) {
-      forceNextPop = true;
-      go(delta);
-    }
-  }
-
-  var initialLocation = getDOMLocation(getHistoryState());
-  var allKeys = [initialLocation.key]; // Public interface
-
-  function createHref(location) {
-    return basename + createPath(location);
-  }
-
-  function push(path, state) {
-    process.env.NODE_ENV !== "production" ? warning(!(typeof path === 'object' && path.state !== undefined && state !== undefined), 'You should avoid providing a 2nd state argument to push when the 1st ' + 'argument is a location-like object that already has state; it is ignored') : void 0;
-    var action = 'PUSH';
-    var location = createLocation(path, state, createKey(), history.location);
-    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-      if (!ok) return;
-      var href = createHref(location);
-      var key = location.key,
-          state = location.state;
-
-      if (canUseHistory) {
-        globalHistory.pushState({
-          key: key,
-          state: state
-        }, null, href);
-
-        if (forceRefresh) {
-          window.location.href = href;
-        } else {
-          var prevIndex = allKeys.indexOf(history.location.key);
-          var nextKeys = allKeys.slice(0, prevIndex + 1);
-          nextKeys.push(location.key);
-          allKeys = nextKeys;
-          setState({
-            action: action,
-            location: location
-          });
-        }
-      } else {
-        process.env.NODE_ENV !== "production" ? warning(state === undefined, 'Browser history cannot push state in browsers that do not support HTML5 history') : void 0;
-        window.location.href = href;
-      }
-    });
-  }
-
-  function replace(path, state) {
-    process.env.NODE_ENV !== "production" ? warning(!(typeof path === 'object' && path.state !== undefined && state !== undefined), 'You should avoid providing a 2nd state argument to replace when the 1st ' + 'argument is a location-like object that already has state; it is ignored') : void 0;
-    var action = 'REPLACE';
-    var location = createLocation(path, state, createKey(), history.location);
-    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-      if (!ok) return;
-      var href = createHref(location);
-      var key = location.key,
-          state = location.state;
-
-      if (canUseHistory) {
-        globalHistory.replaceState({
-          key: key,
-          state: state
-        }, null, href);
-
-        if (forceRefresh) {
-          window.location.replace(href);
-        } else {
-          var prevIndex = allKeys.indexOf(history.location.key);
-          if (prevIndex !== -1) allKeys[prevIndex] = location.key;
-          setState({
-            action: action,
-            location: location
-          });
-        }
-      } else {
-        process.env.NODE_ENV !== "production" ? warning(state === undefined, 'Browser history cannot replace state in browsers that do not support HTML5 history') : void 0;
-        window.location.replace(href);
-      }
-    });
-  }
-
-  function go(n) {
-    globalHistory.go(n);
-  }
-
-  function goBack() {
-    go(-1);
-  }
-
-  function goForward() {
-    go(1);
-  }
-
-  var listenerCount = 0;
-
-  function checkDOMListeners(delta) {
-    listenerCount += delta;
-
-    if (listenerCount === 1 && delta === 1) {
-      window.addEventListener(PopStateEvent, handlePopState);
-      if (needsHashChangeListener) window.addEventListener(HashChangeEvent, handleHashChange);
-    } else if (listenerCount === 0) {
-      window.removeEventListener(PopStateEvent, handlePopState);
-      if (needsHashChangeListener) window.removeEventListener(HashChangeEvent, handleHashChange);
-    }
-  }
-
-  var isBlocked = false;
-
-  function block(prompt) {
-    if (prompt === void 0) {
-      prompt = false;
-    }
-
-    var unblock = transitionManager.setPrompt(prompt);
-
-    if (!isBlocked) {
-      checkDOMListeners(1);
-      isBlocked = true;
-    }
-
-    return function () {
-      if (isBlocked) {
-        isBlocked = false;
-        checkDOMListeners(-1);
-      }
-
-      return unblock();
-    };
-  }
-
-  function listen(listener) {
-    var unlisten = transitionManager.appendListener(listener);
-    checkDOMListeners(1);
-    return function () {
-      checkDOMListeners(-1);
-      unlisten();
-    };
-  }
-
-  var history = {
-    length: globalHistory.length,
-    action: 'POP',
-    location: initialLocation,
-    createHref: createHref,
-    push: push,
-    replace: replace,
-    go: go,
-    goBack: goBack,
-    goForward: goForward,
-    block: block,
-    listen: listen
-  };
-  return history;
-}
-
-var HashChangeEvent$1 = 'hashchange';
-var HashPathCoders = {
-  hashbang: {
-    encodePath: function encodePath(path) {
-      return path.charAt(0) === '!' ? path : '!/' + stripLeadingSlash(path);
+  }, [controller, value, isOpen]);
+  var inputProps = {
+    placeholder: componentMapper.t(controller + ".search.inline.placeholder", controller + ".search.inline.placeholder"),
+    value: value,
+    onChange: function onChange(e) {
+      if (e.target.value) setValue(e.target.value);else setValue('');
     },
-    decodePath: function decodePath(path) {
-      return path.charAt(0) === '!' ? path.substr(1) : path;
+    onFocus: function onFocus() {
+      setIsOpen(true);
+    },
+    onBlur: function onBlur() {
+      setIsOpen(false);
     }
-  },
-  noslash: {
-    encodePath: stripLeadingSlash,
-    decodePath: addLeadingSlash
-  },
-  slash: {
-    encodePath: addLeadingSlash,
-    decodePath: addLeadingSlash
-  }
+  };
+  return /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(Autosuggest, {
+    containerProps: {
+      className: controller + "-inline-search"
+    },
+    suggestions: items,
+    onSuggestionsFetchRequested: function onSuggestionsFetchRequested(t) {},
+    onSuggestionsClearRequested: function onSuggestionsClearRequested() {
+      setItems(templateEntity ? [templateEntity] : []);
+    },
+    getSuggestionValue: function getSuggestionValue(item) {
+      return item.id ? "" + item.id : 'template';
+    },
+    shouldRenderSuggestions: function shouldRenderSuggestions() {
+      return isOpen;
+    },
+    inputProps: inputProps,
+    onSuggestionSelected: function onSuggestionSelected(e, _ref10) {
+      var suggestion = _ref10.suggestion;
+      onSelectFinish(suggestion);
+    },
+    renderSuggestion: function renderSuggestion(item) {
+      return /*#__PURE__*/React__default.createElement("div", {
+        className: "inline-search-item"
+      }, !item.id && /*#__PURE__*/React__default.createElement("button", {
+        className: "arena-create-button"
+      }, componentMapper.t(controller + ".create.start", controller + ".create.start")), item.id && /*#__PURE__*/React__default.createElement(ArenaContainer, {
+        controller: controller,
+        level: 1,
+        componentMapper: componentMapper,
+        mode: ArenaContainerMode.VIEW,
+        id: item.id
+      }));
+    }
+  }));
+};
+var ArenaDefaultRenderWrapper = function ArenaDefaultRenderWrapper(_ref11) {
+  var children = _ref11.children,
+      _ref11$configuration = _ref11.configuration,
+      configuration = _ref11$configuration === void 0 ? {} : _ref11$configuration,
+      t = _ref11.t,
+      entity = _ref11.entity,
+      error = _ref11.error,
+      updateEntity = _ref11.updateEntity,
+      mode = _ref11.mode;
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "arena-default-render-wrapper"
+  }, configuration.beforeRender && configuration.beforeRender({
+    entity: entity,
+    mode: mode,
+    updateEntity: updateEntity,
+    error: error,
+    t: t
+  }), children, configuration.afterRender && configuration.afterRender({
+    entity: entity,
+    mode: mode,
+    updateEntity: updateEntity,
+    error: error,
+    t: t
+  }));
 };
 
-function stripHash(url) {
-  var hashIndex = url.indexOf('#');
-  return hashIndex === -1 ? url : url.slice(0, hashIndex);
-}
-
-function getHashPath() {
-  // We can't use window.location.hash here because it's not
-  // consistent across browsers - Firefox will pre-decode it!
-  var href = window.location.href;
-  var hashIndex = href.indexOf('#');
-  return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
-}
-
-function pushHashPath(path) {
-  window.location.hash = path;
-}
-
-function replaceHashPath(path) {
-  window.location.replace(stripHash(window.location.href) + '#' + path);
-}
-
-function createHashHistory(props) {
-  if (props === void 0) {
-    props = {};
-  }
-
-  !canUseDOM ? process.env.NODE_ENV !== "production" ? invariant(false, 'Hash history needs a DOM') : invariant(false) : void 0;
-  var globalHistory = window.history;
-  var canGoWithoutReload = supportsGoWithoutReloadUsingHash();
-  var _props = props,
-      _props$getUserConfirm = _props.getUserConfirmation,
-      getUserConfirmation = _props$getUserConfirm === void 0 ? getConfirmation : _props$getUserConfirm,
-      _props$hashType = _props.hashType,
-      hashType = _props$hashType === void 0 ? 'slash' : _props$hashType;
-  var basename = props.basename ? stripTrailingSlash(addLeadingSlash(props.basename)) : '';
-  var _HashPathCoders$hashT = HashPathCoders[hashType],
-      encodePath = _HashPathCoders$hashT.encodePath,
-      decodePath = _HashPathCoders$hashT.decodePath;
-
-  function getDOMLocation() {
-    var path = decodePath(getHashPath());
-    process.env.NODE_ENV !== "production" ? warning(!basename || hasBasename(path, basename), 'You are attempting to use a basename on a page whose URL path does not begin ' + 'with the basename. Expected path "' + path + '" to begin with "' + basename + '".') : void 0;
-    if (basename) path = stripBasename(path, basename);
-    return createLocation(path);
-  }
-
-  var transitionManager = createTransitionManager();
-
-  function setState(nextState) {
-    _extends$1(history, nextState);
-
-    history.length = globalHistory.length;
-    transitionManager.notifyListeners(history.location, history.action);
-  }
-
-  var forceNextPop = false;
-  var ignorePath = null;
-
-  function locationsAreEqual$$1(a, b) {
-    return a.pathname === b.pathname && a.search === b.search && a.hash === b.hash;
-  }
-
-  function handleHashChange() {
-    var path = getHashPath();
-    var encodedPath = encodePath(path);
-
-    if (path !== encodedPath) {
-      // Ensure we always have a properly-encoded hash.
-      replaceHashPath(encodedPath);
-    } else {
-      var location = getDOMLocation();
-      var prevLocation = history.location;
-      if (!forceNextPop && locationsAreEqual$$1(prevLocation, location)) return; // A hashchange doesn't always == location change.
-
-      if (ignorePath === createPath(location)) return; // Ignore this change; we already setState in push/replace.
-
-      ignorePath = null;
-      handlePop(location);
-    }
-  }
-
-  function handlePop(location) {
-    if (forceNextPop) {
-      forceNextPop = false;
-      setState();
-    } else {
-      var action = 'POP';
-      transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-        if (ok) {
-          setState({
-            action: action,
-            location: location
-          });
-        } else {
-          revertPop(location);
-        }
-      });
-    }
-  }
-
-  function revertPop(fromLocation) {
-    var toLocation = history.location; // TODO: We could probably make this more reliable by
-    // keeping a list of paths we've seen in sessionStorage.
-    // Instead, we just default to 0 for paths we don't know.
-
-    var toIndex = allPaths.lastIndexOf(createPath(toLocation));
-    if (toIndex === -1) toIndex = 0;
-    var fromIndex = allPaths.lastIndexOf(createPath(fromLocation));
-    if (fromIndex === -1) fromIndex = 0;
-    var delta = toIndex - fromIndex;
-
-    if (delta) {
-      forceNextPop = true;
-      go(delta);
-    }
-  } // Ensure the hash is encoded properly before doing anything else.
-
-
-  var path = getHashPath();
-  var encodedPath = encodePath(path);
-  if (path !== encodedPath) replaceHashPath(encodedPath);
-  var initialLocation = getDOMLocation();
-  var allPaths = [createPath(initialLocation)]; // Public interface
-
-  function createHref(location) {
-    var baseTag = document.querySelector('base');
-    var href = '';
-
-    if (baseTag && baseTag.getAttribute('href')) {
-      href = stripHash(window.location.href);
-    }
-
-    return href + '#' + encodePath(basename + createPath(location));
-  }
-
-  function push(path, state) {
-    process.env.NODE_ENV !== "production" ? warning(state === undefined, 'Hash history cannot push state; it is ignored') : void 0;
-    var action = 'PUSH';
-    var location = createLocation(path, undefined, undefined, history.location);
-    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-      if (!ok) return;
-      var path = createPath(location);
-      var encodedPath = encodePath(basename + path);
-      var hashChanged = getHashPath() !== encodedPath;
-
-      if (hashChanged) {
-        // We cannot tell if a hashchange was caused by a PUSH, so we'd
-        // rather setState here and ignore the hashchange. The caveat here
-        // is that other hash histories in the page will consider it a POP.
-        ignorePath = path;
-        pushHashPath(encodedPath);
-        var prevIndex = allPaths.lastIndexOf(createPath(history.location));
-        var nextPaths = allPaths.slice(0, prevIndex + 1);
-        nextPaths.push(path);
-        allPaths = nextPaths;
-        setState({
-          action: action,
-          location: location
-        });
-      } else {
-        process.env.NODE_ENV !== "production" ? warning(false, 'Hash history cannot PUSH the same path; a new entry will not be added to the history stack') : void 0;
-        setState();
-      }
-    });
-  }
-
-  function replace(path, state) {
-    process.env.NODE_ENV !== "production" ? warning(state === undefined, 'Hash history cannot replace state; it is ignored') : void 0;
-    var action = 'REPLACE';
-    var location = createLocation(path, undefined, undefined, history.location);
-    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-      if (!ok) return;
-      var path = createPath(location);
-      var encodedPath = encodePath(basename + path);
-      var hashChanged = getHashPath() !== encodedPath;
-
-      if (hashChanged) {
-        // We cannot tell if a hashchange was caused by a REPLACE, so we'd
-        // rather setState here and ignore the hashchange. The caveat here
-        // is that other hash histories in the page will consider it a POP.
-        ignorePath = path;
-        replaceHashPath(encodedPath);
-      }
-
-      var prevIndex = allPaths.indexOf(createPath(history.location));
-      if (prevIndex !== -1) allPaths[prevIndex] = path;
-      setState({
-        action: action,
-        location: location
-      });
-    });
-  }
-
-  function go(n) {
-    process.env.NODE_ENV !== "production" ? warning(canGoWithoutReload, 'Hash history go(n) causes a full page reload in this browser') : void 0;
-    globalHistory.go(n);
-  }
-
-  function goBack() {
-    go(-1);
-  }
-
-  function goForward() {
-    go(1);
-  }
-
-  var listenerCount = 0;
-
-  function checkDOMListeners(delta) {
-    listenerCount += delta;
-
-    if (listenerCount === 1 && delta === 1) {
-      window.addEventListener(HashChangeEvent$1, handleHashChange);
-    } else if (listenerCount === 0) {
-      window.removeEventListener(HashChangeEvent$1, handleHashChange);
-    }
-  }
-
-  var isBlocked = false;
-
-  function block(prompt) {
-    if (prompt === void 0) {
-      prompt = false;
-    }
-
-    var unblock = transitionManager.setPrompt(prompt);
-
-    if (!isBlocked) {
-      checkDOMListeners(1);
-      isBlocked = true;
-    }
-
-    return function () {
-      if (isBlocked) {
-        isBlocked = false;
-        checkDOMListeners(-1);
-      }
-
-      return unblock();
-    };
-  }
-
-  function listen(listener) {
-    var unlisten = transitionManager.appendListener(listener);
-    checkDOMListeners(1);
-    return function () {
-      checkDOMListeners(-1);
-      unlisten();
-    };
-  }
-
-  var history = {
-    length: globalHistory.length,
-    action: 'POP',
-    location: initialLocation,
-    createHref: createHref,
-    push: push,
-    replace: replace,
-    go: go,
-    goBack: goBack,
-    goForward: goForward,
-    block: block,
-    listen: listen
-  };
-  return history;
-}
-
-/**
- * The public API for a <Router> that uses HTML5 history.
- */
-
-var BrowserRouter =
-/*#__PURE__*/
-function (_React$Component) {
-  _inheritsLoose$1(BrowserRouter, _React$Component);
-
-  function BrowserRouter() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.history = createBrowserHistory(_this.props);
-    return _this;
-  }
-
-  var _proto = BrowserRouter.prototype;
-
-  _proto.render = function render() {
-    return React__default.createElement(reactRouter.Router, {
-      history: this.history,
-      children: this.props.children
-    });
-  };
-
-  return BrowserRouter;
-}(React__default.Component);
-
-if (process.env.NODE_ENV !== "production") {
-  BrowserRouter.propTypes = {
-    basename: propTypes.string,
-    children: propTypes.node,
-    forceRefresh: propTypes.bool,
-    getUserConfirmation: propTypes.func,
-    keyLength: propTypes.number
-  };
-
-  BrowserRouter.prototype.componentDidMount = function () {
-    process.env.NODE_ENV !== "production" ? warning(!this.props.history, "<BrowserRouter> ignores the history prop. To use a custom history, " + "use `import { Router }` instead of `import { BrowserRouter as Router }`.") : void 0;
-  };
-}
-
-/**
- * The public API for a <Router> that uses window.location.hash.
- */
-
-var HashRouter =
-/*#__PURE__*/
-function (_React$Component) {
-  _inheritsLoose$1(HashRouter, _React$Component);
-
-  function HashRouter() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.history = createHashHistory(_this.props);
-    return _this;
-  }
-
-  var _proto = HashRouter.prototype;
-
-  _proto.render = function render() {
-    return React__default.createElement(reactRouter.Router, {
-      history: this.history,
-      children: this.props.children
-    });
-  };
-
-  return HashRouter;
-}(React__default.Component);
-
-if (process.env.NODE_ENV !== "production") {
-  HashRouter.propTypes = {
-    basename: propTypes.string,
-    children: propTypes.node,
-    getUserConfirmation: propTypes.func,
-    hashType: propTypes.oneOf(["hashbang", "noslash", "slash"])
-  };
-
-  HashRouter.prototype.componentDidMount = function () {
-    process.env.NODE_ENV !== "production" ? warning(!this.props.history, "<HashRouter> ignores the history prop. To use a custom history, " + "use `import { Router }` instead of `import { HashRouter as Router }`.") : void 0;
-  };
-}
-
-var resolveToLocation = function resolveToLocation(to, currentLocation) {
-  return typeof to === "function" ? to(currentLocation) : to;
-};
-var normalizeToLocation = function normalizeToLocation(to, currentLocation) {
-  return typeof to === "string" ? createLocation(to, null, null, currentLocation) : to;
+var strictUriEncode = function (str) {
+	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+		return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+	});
 };
 
-var forwardRefShim = function forwardRefShim(C) {
-  return C;
-};
-
-var forwardRef = React__default.forwardRef;
-
-if (typeof forwardRef === "undefined") {
-  forwardRef = forwardRefShim;
-}
-
-function isModifiedEvent(event) {
-  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-}
-
-var LinkAnchor = forwardRef(function (_ref, forwardedRef) {
-  var innerRef = _ref.innerRef,
-      navigate = _ref.navigate,
-      _onClick = _ref.onClick,
-      rest = _objectWithoutPropertiesLoose(_ref, ["innerRef", "navigate", "onClick"]);
-
-  var target = rest.target;
-
-  var props = _extends$1({}, rest, {
-    onClick: function onClick(event) {
-      try {
-        if (_onClick) _onClick(event);
-      } catch (ex) {
-        event.preventDefault();
-        throw ex;
-      }
-
-      if (!event.defaultPrevented && // onClick prevented default
-      event.button === 0 && ( // ignore everything but left clicks
-      !target || target === "_self") && // let browser handle "target=_blank" etc.
-      !isModifiedEvent(event) // ignore clicks with modifier keys
-      ) {
-          event.preventDefault();
-          navigate();
-        }
-    }
-  }); // React 15 compat
-
-
-  if (forwardRefShim !== forwardRef) {
-    props.ref = forwardedRef || innerRef;
-  } else {
-    props.ref = innerRef;
-  }
-
-  return React__default.createElement("a", props);
-});
-
-if (process.env.NODE_ENV !== "production") {
-  LinkAnchor.displayName = "LinkAnchor";
-}
-/**
- * The public API for rendering a history-aware <a>.
- */
-
-
-var Link = forwardRef(function (_ref2, forwardedRef) {
-  var _ref2$component = _ref2.component,
-      component = _ref2$component === void 0 ? LinkAnchor : _ref2$component,
-      replace = _ref2.replace,
-      to = _ref2.to,
-      innerRef = _ref2.innerRef,
-      rest = _objectWithoutPropertiesLoose(_ref2, ["component", "replace", "to", "innerRef"]);
-
-  return React__default.createElement(reactRouter.__RouterContext.Consumer, null, function (context) {
-    !context ? process.env.NODE_ENV !== "production" ? invariant(false, "You should not use <Link> outside a <Router>") : invariant(false) : void 0;
-    var history = context.history;
-    var location = normalizeToLocation(resolveToLocation(to, context.location), context.location);
-    var href = location ? history.createHref(location) : "";
-
-    var props = _extends$1({}, rest, {
-      href: href,
-      navigate: function navigate() {
-        var location = resolveToLocation(to, context.location);
-        var method = replace ? history.replace : history.push;
-        method(location);
-      }
-    }); // React 15 compat
-
-
-    if (forwardRefShim !== forwardRef) {
-      props.ref = forwardedRef || innerRef;
-    } else {
-      props.innerRef = innerRef;
-    }
-
-    return React__default.createElement(component, props);
-  });
-});
-
-if (process.env.NODE_ENV !== "production") {
-  var toType = propTypes.oneOfType([propTypes.string, propTypes.object, propTypes.func]);
-  var refType = propTypes.oneOfType([propTypes.string, propTypes.func, propTypes.shape({
-    current: propTypes.any
-  })]);
-  Link.displayName = "Link";
-  Link.propTypes = {
-    innerRef: refType,
-    onClick: propTypes.func,
-    replace: propTypes.bool,
-    target: propTypes.string,
-    to: toType.isRequired
-  };
-}
-
-var forwardRefShim$1 = function forwardRefShim(C) {
-  return C;
-};
-
-var forwardRef$1 = React__default.forwardRef;
-
-if (typeof forwardRef$1 === "undefined") {
-  forwardRef$1 = forwardRefShim$1;
-}
-
-function joinClassnames() {
-  for (var _len = arguments.length, classnames = new Array(_len), _key = 0; _key < _len; _key++) {
-    classnames[_key] = arguments[_key];
-  }
-
-  return classnames.filter(function (i) {
-    return i;
-  }).join(" ");
-}
-/**
- * A <Link> wrapper that knows if it's "active" or not.
- */
-
-
-var NavLink = forwardRef$1(function (_ref, forwardedRef) {
-  var _ref$ariaCurrent = _ref["aria-current"],
-      ariaCurrent = _ref$ariaCurrent === void 0 ? "page" : _ref$ariaCurrent,
-      _ref$activeClassName = _ref.activeClassName,
-      activeClassName = _ref$activeClassName === void 0 ? "active" : _ref$activeClassName,
-      activeStyle = _ref.activeStyle,
-      classNameProp = _ref.className,
-      exact = _ref.exact,
-      isActiveProp = _ref.isActive,
-      locationProp = _ref.location,
-      strict = _ref.strict,
-      styleProp = _ref.style,
-      to = _ref.to,
-      innerRef = _ref.innerRef,
-      rest = _objectWithoutPropertiesLoose(_ref, ["aria-current", "activeClassName", "activeStyle", "className", "exact", "isActive", "location", "strict", "style", "to", "innerRef"]);
-
-  return React__default.createElement(reactRouter.__RouterContext.Consumer, null, function (context) {
-    !context ? process.env.NODE_ENV !== "production" ? invariant(false, "You should not use <NavLink> outside a <Router>") : invariant(false) : void 0;
-    var currentLocation = locationProp || context.location;
-    var toLocation = normalizeToLocation(resolveToLocation(to, currentLocation), currentLocation);
-    var path = toLocation.pathname; // Regex taken from: https://github.com/pillarjs/path-to-regexp/blob/master/index.js#L202
-
-    var escapedPath = path && path.replace(/([.+*?=^!:${}()[\]|/\\])/g, "\\$1");
-    var match = escapedPath ? reactRouter.matchPath(currentLocation.pathname, {
-      path: escapedPath,
-      exact: exact,
-      strict: strict
-    }) : null;
-    var isActive = !!(isActiveProp ? isActiveProp(match, currentLocation) : match);
-    var className = isActive ? joinClassnames(classNameProp, activeClassName) : classNameProp;
-    var style = isActive ? _extends$1({}, styleProp, {}, activeStyle) : styleProp;
-
-    var props = _extends$1({
-      "aria-current": isActive && ariaCurrent || null,
-      className: className,
-      style: style,
-      to: toLocation
-    }, rest); // React 15 compat
-
-
-    if (forwardRefShim$1 !== forwardRef$1) {
-      props.ref = forwardedRef || innerRef;
-    } else {
-      props.innerRef = innerRef;
-    }
-
-    return React__default.createElement(Link, props);
-  });
-});
-
-if (process.env.NODE_ENV !== "production") {
-  NavLink.displayName = "NavLink";
-  var ariaCurrentType = propTypes.oneOf(["page", "step", "location", "date", "time", "true"]);
-  NavLink.propTypes = _extends$1({}, Link.propTypes, {
-    "aria-current": ariaCurrentType,
-    activeClassName: propTypes.string,
-    activeStyle: propTypes.object,
-    className: propTypes.string,
-    exact: propTypes.bool,
-    isActive: propTypes.func,
-    location: propTypes.object,
-    strict: propTypes.bool,
-    style: propTypes.object
-  });
-}
-
-var strictUriEncode = str => encodeURIComponent(str).replace(/[!'()*]/g, x => `%${x.charCodeAt(0).toString(16).toUpperCase()}`);
-
-var token = '%[a-f0-9]{2}';
-var singleMatcher = new RegExp(token, 'gi');
-var multiMatcher = new RegExp('(' + token + ')+', 'gi');
-
-function decodeComponents(components, split) {
-	try {
-		// Try to decode the entire string first
-		return decodeURIComponent(components.join(''));
-	} catch (err) {
-		// Do nothing
-	}
-
-	if (components.length === 1) {
-		return components;
-	}
-
-	split = split || 1;
-
-	// Split the array in 2 parts
-	var left = components.slice(0, split);
-	var right = components.slice(split);
-
-	return Array.prototype.concat.call([], decodeComponents(left), decodeComponents(right));
-}
-
-function decode(input) {
-	try {
-		return decodeURIComponent(input);
-	} catch (err) {
-		var tokens = input.match(singleMatcher);
-
-		for (var i = 1; i < tokens.length; i++) {
-			input = decodeComponents(tokens, i).join('');
-
-			tokens = input.match(singleMatcher);
-		}
-
-		return input;
-	}
-}
-
-function customDecodeURIComponent(input) {
-	// Keep track of all the replacements and prefill the map with the `BOM`
-	var replaceMap = {
-		'%FE%FF': '\uFFFD\uFFFD',
-		'%FF%FE': '\uFFFD\uFFFD'
-	};
-
-	var match = multiMatcher.exec(input);
-	while (match) {
-		try {
-			// Decode as big chunks as possible
-			replaceMap[match[0]] = decodeURIComponent(match[0]);
-		} catch (err) {
-			var result = decode(match[0]);
-
-			if (result !== match[0]) {
-				replaceMap[match[0]] = result;
-			}
-		}
-
-		match = multiMatcher.exec(input);
-	}
-
-	// Add `%C2` at the end of the map to make sure it does not replace the combinator before everything else
-	replaceMap['%C2'] = '\uFFFD';
-
-	var entries = Object.keys(replaceMap);
-
-	for (var i = 0; i < entries.length; i++) {
-		// Replace all decoded components
-		var key = entries[i];
-		input = input.replace(new RegExp(key, 'g'), replaceMap[key]);
-	}
-
-	return input;
-}
-
-var decodeUriComponent = function (encodedURI) {
-	if (typeof encodedURI !== 'string') {
-		throw new TypeError('Expected `encodedURI` to be of type `string`, got `' + typeof encodedURI + '`');
-	}
-
-	try {
-		encodedURI = encodedURI.replace(/\+/g, ' ');
-
-		// Try the built in decoder first
-		return decodeURIComponent(encodedURI);
-	} catch (err) {
-		// Fallback to a more advanced decoder
-		return customDecodeURIComponent(encodedURI);
-	}
-};
-
-var splitOnFirst = (string, separator) => {
-	if (!(typeof string === 'string' && typeof separator === 'string')) {
-		throw new TypeError('Expected the arguments to be of type `string`');
-	}
-
-	if (separator === '') {
-		return [string];
-	}
-
-	const separatorIndex = string.indexOf(separator);
-
-	if (separatorIndex === -1) {
-		return [string];
-	}
-
-	return [
-		string.slice(0, separatorIndex),
-		string.slice(separatorIndex + separator.length)
-	];
-};
-
-var queryString = createCommonjsModule(function (module, exports) {
-
-
-
-
-function encoderForArrayFormat(options) {
-	switch (options.arrayFormat) {
+function encoderForArrayFormat(opts) {
+	switch (opts.arrayFormat) {
 		case 'index':
-			return key => (result, value) => {
-				const index = result.length;
-				if (value === undefined || (options.skipNull && value === null)) {
-					return result;
-				}
-
-				if (value === null) {
-					return [...result, [encode(key, options), '[', index, ']'].join('')];
-				}
-
-				return [
-					...result,
-					[encode(key, options), '[', encode(index, options), ']=', encode(value, options)].join('')
-				];
+			return function (key, value, index) {
+				return value === null ? [
+					encode(key, opts),
+					'[',
+					index,
+					']'
+				].join('') : [
+					encode(key, opts),
+					'[',
+					encode(index, opts),
+					']=',
+					encode(value, opts)
+				].join('');
 			};
 
 		case 'bracket':
-			return key => (result, value) => {
-				if (value === undefined || (options.skipNull && value === null)) {
-					return result;
-				}
-
-				if (value === null) {
-					return [...result, [encode(key, options), '[]'].join('')];
-				}
-
-				return [...result, [encode(key, options), '[]=', encode(value, options)].join('')];
-			};
-
-		case 'comma':
-		case 'separator':
-			return key => (result, value) => {
-				if (value === null || value === undefined || value.length === 0) {
-					return result;
-				}
-
-				if (result.length === 0) {
-					return [[encode(key, options), '=', encode(value, options)].join('')];
-				}
-
-				return [[result, encode(value, options)].join(options.arrayFormatSeparator)];
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'[]=',
+					encode(value, opts)
+				].join('');
 			};
 
 		default:
-			return key => (result, value) => {
-				if (value === undefined || (options.skipNull && value === null)) {
-					return result;
-				}
-
-				if (value === null) {
-					return [...result, encode(key, options)];
-				}
-
-				return [...result, [encode(key, options), '=', encode(value, options)].join('')];
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'=',
+					encode(value, opts)
+				].join('');
 			};
 	}
 }
 
-function parserForArrayFormat(options) {
-	let result;
+function parserForArrayFormat(opts) {
+	var result;
 
-	switch (options.arrayFormat) {
+	switch (opts.arrayFormat) {
 		case 'index':
-			return (key, value, accumulator) => {
+			return function (key, value, accumulator) {
 				result = /\[(\d*)\]$/.exec(key);
 
 				key = key.replace(/\[\d*\]$/, '');
@@ -32337,16 +28265,14 @@ function parserForArrayFormat(options) {
 			};
 
 		case 'bracket':
-			return (key, value, accumulator) => {
+			return function (key, value, accumulator) {
 				result = /(\[\])$/.exec(key);
 				key = key.replace(/\[\]$/, '');
 
 				if (!result) {
 					accumulator[key] = value;
 					return;
-				}
-
-				if (accumulator[key] === undefined) {
+				} else if (accumulator[key] === undefined) {
 					accumulator[key] = [value];
 					return;
 				}
@@ -32354,16 +28280,8 @@ function parserForArrayFormat(options) {
 				accumulator[key] = [].concat(accumulator[key], value);
 			};
 
-		case 'comma':
-		case 'separator':
-			return (key, value, accumulator) => {
-				const isArray = typeof value === 'string' && value.split('').indexOf(options.arrayFormatSeparator) > -1;
-				const newValue = isArray ? value.split(options.arrayFormatSeparator).map(item => decode(item, options)) : value === null ? value : decode(value, options);
-				accumulator[key] = newValue;
-			};
-
 		default:
-			return (key, value, accumulator) => {
+			return function (key, value, accumulator) {
 				if (accumulator[key] === undefined) {
 					accumulator[key] = value;
 					return;
@@ -32374,23 +28292,9 @@ function parserForArrayFormat(options) {
 	}
 }
 
-function validateArrayFormatSeparator(value) {
-	if (typeof value !== 'string' || value.length !== 1) {
-		throw new TypeError('arrayFormatSeparator must be single character string');
-	}
-}
-
-function encode(value, options) {
-	if (options.encode) {
-		return options.strict ? strictUriEncode(value) : encodeURIComponent(value);
-	}
-
-	return value;
-}
-
-function decode(value, options) {
-	if (options.decode) {
-		return decodeUriComponent(value);
+function encode(value, opts) {
+	if (opts.encode) {
+		return opts.strict ? strictUriEncode(value) : encodeURIComponent(value);
 	}
 
 	return value;
@@ -32399,1670 +28303,139 @@ function decode(value, options) {
 function keysSorter(input) {
 	if (Array.isArray(input)) {
 		return input.sort();
-	}
-
-	if (typeof input === 'object') {
-		return keysSorter(Object.keys(input))
-			.sort((a, b) => Number(a) - Number(b))
-			.map(key => input[key]);
-	}
-
-	return input;
-}
-
-function removeHash(input) {
-	const hashStart = input.indexOf('#');
-	if (hashStart !== -1) {
-		input = input.slice(0, hashStart);
+	} else if (typeof input === 'object') {
+		return keysSorter(Object.keys(input)).sort(function (a, b) {
+			return Number(a) - Number(b);
+		}).map(function (key) {
+			return input[key];
+		});
 	}
 
 	return input;
 }
 
-function getHash(url) {
-	let hash = '';
-	const hashStart = url.indexOf('#');
-	if (hashStart !== -1) {
-		hash = url.slice(hashStart);
-	}
+var extract = function (str) {
+	return str.split('?')[1] || '';
+};
 
-	return hash;
-}
+var parse = function (str, opts) {
+	opts = objectAssign({arrayFormat: 'none'}, opts);
 
-function extract(input) {
-	input = removeHash(input);
-	const queryStart = input.indexOf('?');
-	if (queryStart === -1) {
-		return '';
-	}
-
-	return input.slice(queryStart + 1);
-}
-
-function parseValue(value, options) {
-	if (options.parseNumbers && !Number.isNaN(Number(value)) && (typeof value === 'string' && value.trim() !== '')) {
-		value = Number(value);
-	} else if (options.parseBooleans && value !== null && (value.toLowerCase() === 'true' || value.toLowerCase() === 'false')) {
-		value = value.toLowerCase() === 'true';
-	}
-
-	return value;
-}
-
-function parse(input, options) {
-	options = Object.assign({
-		decode: true,
-		sort: true,
-		arrayFormat: 'none',
-		arrayFormatSeparator: ',',
-		parseNumbers: false,
-		parseBooleans: false
-	}, options);
-
-	validateArrayFormatSeparator(options.arrayFormatSeparator);
-
-	const formatter = parserForArrayFormat(options);
+	var formatter = parserForArrayFormat(opts);
 
 	// Create an object with no prototype
-	const ret = Object.create(null);
+	// https://github.com/sindresorhus/query-string/issues/47
+	var ret = Object.create(null);
 
-	if (typeof input !== 'string') {
+	if (typeof str !== 'string') {
 		return ret;
 	}
 
-	input = input.trim().replace(/^[?#&]/, '');
+	str = str.trim().replace(/^(\?|#|&)/, '');
 
-	if (!input) {
+	if (!str) {
 		return ret;
 	}
 
-	for (const param of input.split('&')) {
-		let [key, value] = splitOnFirst(options.decode ? param.replace(/\+/g, ' ') : param, '=');
+	str.split('&').forEach(function (param) {
+		var parts = param.replace(/\+/g, ' ').split('=');
+		// Firefox (pre 40) decodes `%3D` to `=`
+		// https://github.com/sindresorhus/query-string/pull/37
+		var key = parts.shift();
+		var val = parts.length > 0 ? parts.join('=') : undefined;
 
-		// Missing `=` should be `null`:
+		// missing `=` should be `null`:
 		// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
-		value = value === undefined ? null : options.arrayFormat === 'comma' ? value : decode(value, options);
-		formatter(decode(key, options), value, ret);
-	}
+		val = val === undefined ? null : decodeURIComponent(val);
 
-	for (const key of Object.keys(ret)) {
-		const value = ret[key];
-		if (typeof value === 'object' && value !== null) {
-			for (const k of Object.keys(value)) {
-				value[k] = parseValue(value[k], options);
-			}
-		} else {
-			ret[key] = parseValue(value, options);
-		}
-	}
+		formatter(decodeURIComponent(key), val, ret);
+	});
 
-	if (options.sort === false) {
-		return ret;
-	}
-
-	return (options.sort === true ? Object.keys(ret).sort() : Object.keys(ret).sort(options.sort)).reduce((result, key) => {
-		const value = ret[key];
-		if (Boolean(value) && typeof value === 'object' && !Array.isArray(value)) {
+	return Object.keys(ret).sort().reduce(function (result, key) {
+		var val = ret[key];
+		if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
 			// Sort object keys, not values
-			result[key] = keysSorter(value);
+			result[key] = keysSorter(val);
 		} else {
-			result[key] = value;
+			result[key] = val;
 		}
 
 		return result;
 	}, Object.create(null));
-}
+};
 
-exports.extract = extract;
-exports.parse = parse;
-
-exports.stringify = (object, options) => {
-	if (!object) {
-		return '';
-	}
-
-	options = Object.assign({
+var stringify = function (obj, opts) {
+	var defaults = {
 		encode: true,
 		strict: true,
-		arrayFormat: 'none',
-		arrayFormatSeparator: ','
-	}, options);
+		arrayFormat: 'none'
+	};
 
-	validateArrayFormatSeparator(options.arrayFormatSeparator);
+	opts = objectAssign(defaults, opts);
 
-	const formatter = encoderForArrayFormat(options);
+	var formatter = encoderForArrayFormat(opts);
 
-	const objectCopy = Object.assign({}, object);
-	if (options.skipNull) {
-		for (const key of Object.keys(objectCopy)) {
-			if (objectCopy[key] === undefined || objectCopy[key] === null) {
-				delete objectCopy[key];
-			}
-		}
-	}
+	return obj ? Object.keys(obj).sort().map(function (key) {
+		var val = obj[key];
 
-	const keys = Object.keys(objectCopy);
-
-	if (options.sort !== false) {
-		keys.sort(options.sort);
-	}
-
-	return keys.map(key => {
-		const value = object[key];
-
-		if (value === undefined) {
+		if (val === undefined) {
 			return '';
 		}
 
-		if (value === null) {
-			return encode(key, options);
+		if (val === null) {
+			return encode(key, opts);
 		}
 
-		if (Array.isArray(value)) {
-			return value
-				.reduce(formatter(key), [])
-				.join('&');
+		if (Array.isArray(val)) {
+			var result = [];
+
+			val.slice().forEach(function (val2) {
+				if (val2 === undefined) {
+					return;
+				}
+
+				result.push(formatter(key, val2, result.length));
+			});
+
+			return result.join('&');
 		}
 
-		return encode(key, options) + '=' + encode(value, options);
-	}).filter(x => x.length > 0).join('&');
+		return encode(key, opts) + '=' + encode(val, opts);
+	}).filter(function (x) {
+		return x.length > 0;
+	}).join('&') : '';
 };
 
-exports.parseUrl = (input, options) => {
-	return {
-		url: removeHash(input).split('?')[0] || '',
-		query: parse(extract(input), options)
-	};
+var queryString = {
+	extract: extract,
+	parse: parse,
+	stringify: stringify
 };
 
-exports.stringifyUrl = (input, options) => {
-	const url = removeHash(input.url).split('?')[0] || '';
-	const queryFromUrl = exports.extract(input.url);
-	const parsedQueryFromUrl = exports.parse(queryFromUrl);
-	const hash = getHash(input.url);
-	const query = Object.assign(parsedQueryFromUrl, input.query);
-	let queryString = exports.stringify(query, options);
-	if (queryString) {
-		queryString = `?${queryString}`;
-	}
-
-	return `${url}${queryString}${hash}`;
-};
-});
-
-function _classCallCheck$2(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties$1(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass$2(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties$1(Constructor, staticProps);
-  return Constructor;
-}
-
-function _defineProperty$1(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function _objectSpread$1(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
-
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
+var ArenaApp = function ArenaApp(_ref) {
+  var componentMapper = _ref.componentMapper;
+  return /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+    path: "/build/container/:mode/:controller/:id",
+    render: function render(containerProps) {
+      return /*#__PURE__*/React__default.createElement(RouteContainer, _extends({
+        componentMapper: componentMapper
+      }, containerProps));
     }
-
-    ownKeys.forEach(function (key) {
-      _defineProperty$1(target, key, source[key]);
-    });
-  }
-
-  return target;
-}
-
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-}
-
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArrayLimit(arr, i) {
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _e = undefined;
-
-  try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
+  }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+    path: "/build/container/:mode/:controller",
+    render: function render(containerProps) {
+      return /*#__PURE__*/React__default.createElement(RouteContainer, _extends({
+        componentMapper: componentMapper
+      }, containerProps));
     }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
+  }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+    path: "/build/listContainer/:mode/:controller",
+    render: function render(containerProps) {
+      return /*#__PURE__*/React__default.createElement(RoutListContainer, _extends({
+        componentMapper: componentMapper
+      }, containerProps));
     }
-  }
-
-  return _arr;
-}
-
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
-}
-
-var noop$1 = function noop() {};
-
-var _WINDOW = {};
-var _DOCUMENT = {};
-var _MUTATION_OBSERVER = null;
-var _PERFORMANCE = {
-  mark: noop$1,
-  measure: noop$1
-};
-
-try {
-  if (typeof window !== 'undefined') _WINDOW = window;
-  if (typeof document !== 'undefined') _DOCUMENT = document;
-  if (typeof MutationObserver !== 'undefined') _MUTATION_OBSERVER = MutationObserver;
-  if (typeof performance !== 'undefined') _PERFORMANCE = performance;
-} catch (e) {}
-
-var _ref = _WINDOW.navigator || {},
-    _ref$userAgent = _ref.userAgent,
-    userAgent = _ref$userAgent === void 0 ? '' : _ref$userAgent;
-
-var WINDOW = _WINDOW;
-var DOCUMENT = _DOCUMENT;
-var IS_DOM = !!DOCUMENT.documentElement && !!DOCUMENT.head && typeof DOCUMENT.addEventListener === 'function' && typeof DOCUMENT.createElement === 'function';
-var IS_IE = ~userAgent.indexOf('MSIE') || ~userAgent.indexOf('Trident/');
-
-var NAMESPACE_IDENTIFIER = '___FONT_AWESOME___';
-var DEFAULT_FAMILY_PREFIX = 'fa';
-var DEFAULT_REPLACEMENT_CLASS = 'svg-inline--fa';
-var DATA_FA_I2SVG = 'data-fa-i2svg';
-var PRODUCTION = function () {
-  try {
-    return process.env.NODE_ENV === 'production';
-  } catch (e) {
-    return false;
-  }
-}();
-var DUOTONE_CLASSES = {
-  GROUP: 'group',
-  SWAP_OPACITY: 'swap-opacity',
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary'
-};
-
-var initial = WINDOW.FontAwesomeConfig || {};
-
-function getAttrConfig(attr) {
-  var element = DOCUMENT.querySelector('script[' + attr + ']');
-
-  if (element) {
-    return element.getAttribute(attr);
-  }
-}
-
-function coerce(val) {
-  // Getting an empty string will occur if the attribute is set on the HTML tag but without a value
-  // We'll assume that this is an indication that it should be toggled to true
-  // For example <script data-search-pseudo-elements src="..."></script>
-  if (val === '') return true;
-  if (val === 'false') return false;
-  if (val === 'true') return true;
-  return val;
-}
-
-if (DOCUMENT && typeof DOCUMENT.querySelector === 'function') {
-  var attrs = [['data-family-prefix', 'familyPrefix'], ['data-replacement-class', 'replacementClass'], ['data-auto-replace-svg', 'autoReplaceSvg'], ['data-auto-add-css', 'autoAddCss'], ['data-auto-a11y', 'autoA11y'], ['data-search-pseudo-elements', 'searchPseudoElements'], ['data-observe-mutations', 'observeMutations'], ['data-mutate-approach', 'mutateApproach'], ['data-keep-original-source', 'keepOriginalSource'], ['data-measure-performance', 'measurePerformance'], ['data-show-missing-icons', 'showMissingIcons']];
-  attrs.forEach(function (_ref) {
-    var _ref2 = _slicedToArray(_ref, 2),
-        attr = _ref2[0],
-        key = _ref2[1];
-
-    var val = coerce(getAttrConfig(attr));
-
-    if (val !== undefined && val !== null) {
-      initial[key] = val;
-    }
-  });
-}
-
-var _default = {
-  familyPrefix: DEFAULT_FAMILY_PREFIX,
-  replacementClass: DEFAULT_REPLACEMENT_CLASS,
-  autoReplaceSvg: true,
-  autoAddCss: true,
-  autoA11y: true,
-  searchPseudoElements: false,
-  observeMutations: true,
-  mutateApproach: 'async',
-  keepOriginalSource: true,
-  measurePerformance: false,
-  showMissingIcons: true
-};
-
-var _config = _objectSpread$1({}, _default, initial);
-
-if (!_config.autoReplaceSvg) _config.observeMutations = false;
-
-var config$1 = _objectSpread$1({}, _config);
-
-WINDOW.FontAwesomeConfig = config$1;
-
-var w$1 = WINDOW || {};
-if (!w$1[NAMESPACE_IDENTIFIER]) w$1[NAMESPACE_IDENTIFIER] = {};
-if (!w$1[NAMESPACE_IDENTIFIER].styles) w$1[NAMESPACE_IDENTIFIER].styles = {};
-if (!w$1[NAMESPACE_IDENTIFIER].hooks) w$1[NAMESPACE_IDENTIFIER].hooks = {};
-if (!w$1[NAMESPACE_IDENTIFIER].shims) w$1[NAMESPACE_IDENTIFIER].shims = [];
-var namespace = w$1[NAMESPACE_IDENTIFIER];
-
-var functions = [];
-
-var listener = function listener() {
-  DOCUMENT.removeEventListener('DOMContentLoaded', listener);
-  loaded = 1;
-  functions.map(function (fn) {
-    return fn();
-  });
-};
-
-var loaded = false;
-
-if (IS_DOM) {
-  loaded = (DOCUMENT.documentElement.doScroll ? /^loaded|^c/ : /^loaded|^i|^c/).test(DOCUMENT.readyState);
-  if (!loaded) DOCUMENT.addEventListener('DOMContentLoaded', listener);
-}
-var asyncSetTimer = typeof setImmediate === 'undefined' ? setTimeout : setImmediate;
-var meaninglessTransform = {
-  size: 16,
-  x: 0,
-  y: 0,
-  rotate: 0,
-  flipX: false,
-  flipY: false
-};
-function insertCss(css) {
-  if (!css || !IS_DOM) {
-    return;
-  }
-
-  var style = DOCUMENT.createElement('style');
-  style.setAttribute('type', 'text/css');
-  style.innerHTML = css;
-  var headChildren = DOCUMENT.head.childNodes;
-  var beforeChild = null;
-
-  for (var i = headChildren.length - 1; i > -1; i--) {
-    var child = headChildren[i];
-    var tagName = (child.tagName || '').toUpperCase();
-
-    if (['STYLE', 'LINK'].indexOf(tagName) > -1) {
-      beforeChild = child;
-    }
-  }
-
-  DOCUMENT.head.insertBefore(style, beforeChild);
-  return css;
-}
-var idPool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-function nextUniqueId() {
-  var size = 12;
-  var id = '';
-
-  while (size-- > 0) {
-    id += idPool[Math.random() * 62 | 0];
-  }
-
-  return id;
-}
-function htmlEscape(str) {
-  return "".concat(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-function joinAttributes(attributes) {
-  return Object.keys(attributes || {}).reduce(function (acc, attributeName) {
-    return acc + "".concat(attributeName, "=\"").concat(htmlEscape(attributes[attributeName]), "\" ");
-  }, '').trim();
-}
-function joinStyles(styles) {
-  return Object.keys(styles || {}).reduce(function (acc, styleName) {
-    return acc + "".concat(styleName, ": ").concat(styles[styleName], ";");
-  }, '');
-}
-function transformIsMeaningful(transform) {
-  return transform.size !== meaninglessTransform.size || transform.x !== meaninglessTransform.x || transform.y !== meaninglessTransform.y || transform.rotate !== meaninglessTransform.rotate || transform.flipX || transform.flipY;
-}
-function transformForSvg(_ref) {
-  var transform = _ref.transform,
-      containerWidth = _ref.containerWidth,
-      iconWidth = _ref.iconWidth;
-  var outer = {
-    transform: "translate(".concat(containerWidth / 2, " 256)")
-  };
-  var innerTranslate = "translate(".concat(transform.x * 32, ", ").concat(transform.y * 32, ") ");
-  var innerScale = "scale(".concat(transform.size / 16 * (transform.flipX ? -1 : 1), ", ").concat(transform.size / 16 * (transform.flipY ? -1 : 1), ") ");
-  var innerRotate = "rotate(".concat(transform.rotate, " 0 0)");
-  var inner = {
-    transform: "".concat(innerTranslate, " ").concat(innerScale, " ").concat(innerRotate)
-  };
-  var path = {
-    transform: "translate(".concat(iconWidth / 2 * -1, " -256)")
-  };
-  return {
-    outer: outer,
-    inner: inner,
-    path: path
-  };
-}
-
-var ALL_SPACE = {
-  x: 0,
-  y: 0,
-  width: '100%',
-  height: '100%'
-};
-
-function fillBlack(abstract) {
-  var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-  if (abstract.attributes && (abstract.attributes.fill || force)) {
-    abstract.attributes.fill = 'black';
-  }
-
-  return abstract;
-}
-
-function deGroup(abstract) {
-  if (abstract.tag === 'g') {
-    return abstract.children;
-  } else {
-    return [abstract];
-  }
-}
-
-function makeIconMasking (_ref) {
-  var children = _ref.children,
-      attributes = _ref.attributes,
-      main = _ref.main,
-      mask = _ref.mask,
-      explicitMaskId = _ref.maskId,
-      transform = _ref.transform;
-  var mainWidth = main.width,
-      mainPath = main.icon;
-  var maskWidth = mask.width,
-      maskPath = mask.icon;
-  var trans = transformForSvg({
-    transform: transform,
-    containerWidth: maskWidth,
-    iconWidth: mainWidth
-  });
-  var maskRect = {
-    tag: 'rect',
-    attributes: _objectSpread$1({}, ALL_SPACE, {
-      fill: 'white'
-    })
-  };
-  var maskInnerGroupChildrenMixin = mainPath.children ? {
-    children: mainPath.children.map(fillBlack)
-  } : {};
-  var maskInnerGroup = {
-    tag: 'g',
-    attributes: _objectSpread$1({}, trans.inner),
-    children: [fillBlack(_objectSpread$1({
-      tag: mainPath.tag,
-      attributes: _objectSpread$1({}, mainPath.attributes, trans.path)
-    }, maskInnerGroupChildrenMixin))]
-  };
-  var maskOuterGroup = {
-    tag: 'g',
-    attributes: _objectSpread$1({}, trans.outer),
-    children: [maskInnerGroup]
-  };
-  var maskId = "mask-".concat(explicitMaskId || nextUniqueId());
-  var clipId = "clip-".concat(explicitMaskId || nextUniqueId());
-  var maskTag = {
-    tag: 'mask',
-    attributes: _objectSpread$1({}, ALL_SPACE, {
-      id: maskId,
-      maskUnits: 'userSpaceOnUse',
-      maskContentUnits: 'userSpaceOnUse'
-    }),
-    children: [maskRect, maskOuterGroup]
-  };
-  var defs = {
-    tag: 'defs',
-    children: [{
-      tag: 'clipPath',
-      attributes: {
-        id: clipId
-      },
-      children: deGroup(maskPath)
-    }, maskTag]
-  };
-  children.push(defs, {
-    tag: 'rect',
-    attributes: _objectSpread$1({
-      fill: 'currentColor',
-      'clip-path': "url(#".concat(clipId, ")"),
-      mask: "url(#".concat(maskId, ")")
-    }, ALL_SPACE)
-  });
-  return {
-    children: children,
-    attributes: attributes
-  };
-}
-
-function makeIconStandard (_ref) {
-  var children = _ref.children,
-      attributes = _ref.attributes,
-      main = _ref.main,
-      transform = _ref.transform,
-      styles = _ref.styles;
-  var styleString = joinStyles(styles);
-
-  if (styleString.length > 0) {
-    attributes['style'] = styleString;
-  }
-
-  if (transformIsMeaningful(transform)) {
-    var trans = transformForSvg({
-      transform: transform,
-      containerWidth: main.width,
-      iconWidth: main.width
-    });
-    children.push({
-      tag: 'g',
-      attributes: _objectSpread$1({}, trans.outer),
-      children: [{
-        tag: 'g',
-        attributes: _objectSpread$1({}, trans.inner),
-        children: [{
-          tag: main.icon.tag,
-          children: main.icon.children,
-          attributes: _objectSpread$1({}, main.icon.attributes, trans.path)
-        }]
-      }]
-    });
-  } else {
-    children.push(main.icon);
-  }
-
-  return {
-    children: children,
-    attributes: attributes
-  };
-}
-
-function asIcon (_ref) {
-  var children = _ref.children,
-      main = _ref.main,
-      mask = _ref.mask,
-      attributes = _ref.attributes,
-      styles = _ref.styles,
-      transform = _ref.transform;
-
-  if (transformIsMeaningful(transform) && main.found && !mask.found) {
-    var width = main.width,
-        height = main.height;
-    var offset = {
-      x: width / height / 2,
-      y: 0.5
-    };
-    attributes['style'] = joinStyles(_objectSpread$1({}, styles, {
-      'transform-origin': "".concat(offset.x + transform.x / 16, "em ").concat(offset.y + transform.y / 16, "em")
-    }));
-  }
-
-  return [{
-    tag: 'svg',
-    attributes: attributes,
-    children: children
-  }];
-}
-
-function asSymbol (_ref) {
-  var prefix = _ref.prefix,
-      iconName = _ref.iconName,
-      children = _ref.children,
-      attributes = _ref.attributes,
-      symbol = _ref.symbol;
-  var id = symbol === true ? "".concat(prefix, "-").concat(config$1.familyPrefix, "-").concat(iconName) : symbol;
-  return [{
-    tag: 'svg',
-    attributes: {
-      style: 'display: none;'
-    },
-    children: [{
-      tag: 'symbol',
-      attributes: _objectSpread$1({}, attributes, {
-        id: id
-      }),
-      children: children
-    }]
-  }];
-}
-
-function makeInlineSvgAbstract(params) {
-  var _params$icons = params.icons,
-      main = _params$icons.main,
-      mask = _params$icons.mask,
-      prefix = params.prefix,
-      iconName = params.iconName,
-      transform = params.transform,
-      symbol = params.symbol,
-      title = params.title,
-      maskId = params.maskId,
-      titleId = params.titleId,
-      extra = params.extra,
-      _params$watchable = params.watchable,
-      watchable = _params$watchable === void 0 ? false : _params$watchable;
-
-  var _ref = mask.found ? mask : main,
-      width = _ref.width,
-      height = _ref.height;
-
-  var widthClass = "fa-w-".concat(Math.ceil(width / height * 16));
-  var attrClass = [config$1.replacementClass, iconName ? "".concat(config$1.familyPrefix, "-").concat(iconName) : '', widthClass].filter(function (c) {
-    return extra.classes.indexOf(c) === -1;
-  }).concat(extra.classes).join(' ');
-  var content = {
-    children: [],
-    attributes: _objectSpread$1({}, extra.attributes, {
-      'data-prefix': prefix,
-      'data-icon': iconName,
-      'class': attrClass,
-      'role': extra.attributes.role || 'img',
-      'xmlns': 'http://www.w3.org/2000/svg',
-      'viewBox': "0 0 ".concat(width, " ").concat(height)
-    })
-  };
-
-  if (watchable) {
-    content.attributes[DATA_FA_I2SVG] = '';
-  }
-
-  if (title) content.children.push({
-    tag: 'title',
-    attributes: {
-      id: content.attributes['aria-labelledby'] || "title-".concat(titleId || nextUniqueId())
-    },
-    children: [title]
-  });
-
-  var args = _objectSpread$1({}, content, {
-    prefix: prefix,
-    iconName: iconName,
-    main: main,
-    mask: mask,
-    maskId: maskId,
-    transform: transform,
-    symbol: symbol,
-    styles: extra.styles
-  });
-
-  var _ref2 = mask.found && main.found ? makeIconMasking(args) : makeIconStandard(args),
-      children = _ref2.children,
-      attributes = _ref2.attributes;
-
-  args.children = children;
-  args.attributes = attributes;
-
-  if (symbol) {
-    return asSymbol(args);
-  } else {
-    return asIcon(args);
-  }
-}
-
-/**
- * Internal helper to bind a function known to have 4 arguments
- * to a given context.
- */
-
-var bindInternal4 = function bindInternal4(func, thisContext) {
-  return function (a, b, c, d) {
-    return func.call(thisContext, a, b, c, d);
-  };
-};
-
-/**
- * # Reduce
- *
- * A fast object `.reduce()` implementation.
- *
- * @param  {Object}   subject      The object to reduce over.
- * @param  {Function} fn           The reducer function.
- * @param  {mixed}    initialValue The initial value for the reducer, defaults to subject[0].
- * @param  {Object}   thisContext  The context for the reducer.
- * @return {mixed}                 The final result.
- */
-
-
-var reduce = function fastReduceObject(subject, fn, initialValue, thisContext) {
-  var keys = Object.keys(subject),
-      length = keys.length,
-      iterator = thisContext !== undefined ? bindInternal4(fn, thisContext) : fn,
-      i,
-      key,
-      result;
-
-  if (initialValue === undefined) {
-    i = 1;
-    result = subject[keys[0]];
-  } else {
-    i = 0;
-    result = initialValue;
-  }
-
-  for (; i < length; i++) {
-    key = keys[i];
-    result = iterator(result, subject[key], key, subject);
-  }
-
-  return result;
-};
-
-function defineIcons(prefix, icons) {
-  var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var _params$skipHooks = params.skipHooks,
-      skipHooks = _params$skipHooks === void 0 ? false : _params$skipHooks;
-  var normalized = Object.keys(icons).reduce(function (acc, iconName) {
-    var icon = icons[iconName];
-    var expanded = !!icon.icon;
-
-    if (expanded) {
-      acc[icon.iconName] = icon.icon;
-    } else {
-      acc[iconName] = icon;
-    }
-
-    return acc;
-  }, {});
-
-  if (typeof namespace.hooks.addPack === 'function' && !skipHooks) {
-    namespace.hooks.addPack(prefix, normalized);
-  } else {
-    namespace.styles[prefix] = _objectSpread$1({}, namespace.styles[prefix] || {}, normalized);
-  }
-  /**
-   * Font Awesome 4 used the prefix of `fa` for all icons. With the introduction
-   * of new styles we needed to differentiate between them. Prefix `fa` is now an alias
-   * for `fas` so we'll easy the upgrade process for our users by automatically defining
-   * this as well.
-   */
-
-
-  if (prefix === 'fas') {
-    defineIcons('fa', icons);
-  }
-}
-
-var styles = namespace.styles,
-    shims = namespace.shims;
-var _byUnicode = {};
-var _byLigature = {};
-var _byOldName = {};
-var build = function build() {
-  var lookup = function lookup(reducer) {
-    return reduce(styles, function (o, style, prefix) {
-      o[prefix] = reduce(style, reducer, {});
-      return o;
-    }, {});
-  };
-
-  _byUnicode = lookup(function (acc, icon, iconName) {
-    if (icon[3]) {
-      acc[icon[3]] = iconName;
-    }
-
-    return acc;
-  });
-  _byLigature = lookup(function (acc, icon, iconName) {
-    var ligatures = icon[2];
-    acc[iconName] = iconName;
-    ligatures.forEach(function (ligature) {
-      acc[ligature] = iconName;
-    });
-    return acc;
-  });
-  var hasRegular = 'far' in styles;
-  _byOldName = reduce(shims, function (acc, shim) {
-    var oldName = shim[0];
-    var prefix = shim[1];
-    var iconName = shim[2];
-
-    if (prefix === 'far' && !hasRegular) {
-      prefix = 'fas';
-    }
-
-    acc[oldName] = {
-      prefix: prefix,
-      iconName: iconName
-    };
-    return acc;
-  }, {});
-};
-build();
-function iconFromMapping(mapping, prefix, iconName) {
-  if (mapping && mapping[prefix] && mapping[prefix][iconName]) {
-    return {
-      prefix: prefix,
-      iconName: iconName,
-      icon: mapping[prefix][iconName]
-    };
-  }
-}
-
-function toHtml(abstractNodes) {
-  var tag = abstractNodes.tag,
-      _abstractNodes$attrib = abstractNodes.attributes,
-      attributes = _abstractNodes$attrib === void 0 ? {} : _abstractNodes$attrib,
-      _abstractNodes$childr = abstractNodes.children,
-      children = _abstractNodes$childr === void 0 ? [] : _abstractNodes$childr;
-
-  if (typeof abstractNodes === 'string') {
-    return htmlEscape(abstractNodes);
-  } else {
-    return "<".concat(tag, " ").concat(joinAttributes(attributes), ">").concat(children.map(toHtml).join(''), "</").concat(tag, ">");
-  }
-}
-
-var parseTransformString = function parseTransformString(transformString) {
-  var transform = {
-    size: 16,
-    x: 0,
-    y: 0,
-    flipX: false,
-    flipY: false,
-    rotate: 0
-  };
-
-  if (!transformString) {
-    return transform;
-  } else {
-    return transformString.toLowerCase().split(' ').reduce(function (acc, n) {
-      var parts = n.toLowerCase().split('-');
-      var first = parts[0];
-      var rest = parts.slice(1).join('-');
-
-      if (first && rest === 'h') {
-        acc.flipX = true;
-        return acc;
-      }
-
-      if (first && rest === 'v') {
-        acc.flipY = true;
-        return acc;
-      }
-
-      rest = parseFloat(rest);
-
-      if (isNaN(rest)) {
-        return acc;
-      }
-
-      switch (first) {
-        case 'grow':
-          acc.size = acc.size + rest;
-          break;
-
-        case 'shrink':
-          acc.size = acc.size - rest;
-          break;
-
-        case 'left':
-          acc.x = acc.x - rest;
-          break;
-
-        case 'right':
-          acc.x = acc.x + rest;
-          break;
-
-        case 'up':
-          acc.y = acc.y - rest;
-          break;
-
-        case 'down':
-          acc.y = acc.y + rest;
-          break;
-
-        case 'rotate':
-          acc.rotate = acc.rotate + rest;
-          break;
-      }
-
-      return acc;
-    }, transform);
-  }
-};
-
-function MissingIcon(error) {
-  this.name = 'MissingIcon';
-  this.message = error || 'Icon unavailable';
-  this.stack = new Error().stack;
-}
-MissingIcon.prototype = Object.create(Error.prototype);
-MissingIcon.prototype.constructor = MissingIcon;
-
-var FILL = {
-  fill: 'currentColor'
-};
-var ANIMATION_BASE = {
-  attributeType: 'XML',
-  repeatCount: 'indefinite',
-  dur: '2s'
-};
-var RING = {
-  tag: 'path',
-  attributes: _objectSpread$1({}, FILL, {
-    d: 'M156.5,447.7l-12.6,29.5c-18.7-9.5-35.9-21.2-51.5-34.9l22.7-22.7C127.6,430.5,141.5,440,156.5,447.7z M40.6,272H8.5 c1.4,21.2,5.4,41.7,11.7,61.1L50,321.2C45.1,305.5,41.8,289,40.6,272z M40.6,240c1.4-18.8,5.2-37,11.1-54.1l-29.5-12.6 C14.7,194.3,10,216.7,8.5,240H40.6z M64.3,156.5c7.8-14.9,17.2-28.8,28.1-41.5L69.7,92.3c-13.7,15.6-25.5,32.8-34.9,51.5 L64.3,156.5z M397,419.6c-13.9,12-29.4,22.3-46.1,30.4l11.9,29.8c20.7-9.9,39.8-22.6,56.9-37.6L397,419.6z M115,92.4 c13.9-12,29.4-22.3,46.1-30.4l-11.9-29.8c-20.7,9.9-39.8,22.6-56.8,37.6L115,92.4z M447.7,355.5c-7.8,14.9-17.2,28.8-28.1,41.5 l22.7,22.7c13.7-15.6,25.5-32.9,34.9-51.5L447.7,355.5z M471.4,272c-1.4,18.8-5.2,37-11.1,54.1l29.5,12.6 c7.5-21.1,12.2-43.5,13.6-66.8H471.4z M321.2,462c-15.7,5-32.2,8.2-49.2,9.4v32.1c21.2-1.4,41.7-5.4,61.1-11.7L321.2,462z M240,471.4c-18.8-1.4-37-5.2-54.1-11.1l-12.6,29.5c21.1,7.5,43.5,12.2,66.8,13.6V471.4z M462,190.8c5,15.7,8.2,32.2,9.4,49.2h32.1 c-1.4-21.2-5.4-41.7-11.7-61.1L462,190.8z M92.4,397c-12-13.9-22.3-29.4-30.4-46.1l-29.8,11.9c9.9,20.7,22.6,39.8,37.6,56.9 L92.4,397z M272,40.6c18.8,1.4,36.9,5.2,54.1,11.1l12.6-29.5C317.7,14.7,295.3,10,272,8.5V40.6z M190.8,50 c15.7-5,32.2-8.2,49.2-9.4V8.5c-21.2,1.4-41.7,5.4-61.1,11.7L190.8,50z M442.3,92.3L419.6,115c12,13.9,22.3,29.4,30.5,46.1 l29.8-11.9C470,128.5,457.3,109.4,442.3,92.3z M397,92.4l22.7-22.7c-15.6-13.7-32.8-25.5-51.5-34.9l-12.6,29.5 C370.4,72.1,384.4,81.5,397,92.4z'
-  })
-};
-
-var OPACITY_ANIMATE = _objectSpread$1({}, ANIMATION_BASE, {
-  attributeName: 'opacity'
-});
-
-var DOT = {
-  tag: 'circle',
-  attributes: _objectSpread$1({}, FILL, {
-    cx: '256',
-    cy: '364',
-    r: '28'
-  }),
-  children: [{
-    tag: 'animate',
-    attributes: _objectSpread$1({}, ANIMATION_BASE, {
-      attributeName: 'r',
-      values: '28;14;28;28;14;28;'
-    })
-  }, {
-    tag: 'animate',
-    attributes: _objectSpread$1({}, OPACITY_ANIMATE, {
-      values: '1;0;1;1;0;1;'
-    })
-  }]
-};
-var QUESTION = {
-  tag: 'path',
-  attributes: _objectSpread$1({}, FILL, {
-    opacity: '1',
-    d: 'M263.7,312h-16c-6.6,0-12-5.4-12-12c0-71,77.4-63.9,77.4-107.8c0-20-17.8-40.2-57.4-40.2c-29.1,0-44.3,9.6-59.2,28.7 c-3.9,5-11.1,6-16.2,2.4l-13.1-9.2c-5.6-3.9-6.9-11.8-2.6-17.2c21.2-27.2,46.4-44.7,91.2-44.7c52.3,0,97.4,29.8,97.4,80.2 c0,67.6-77.4,63.5-77.4,107.8C275.7,306.6,270.3,312,263.7,312z'
-  }),
-  children: [{
-    tag: 'animate',
-    attributes: _objectSpread$1({}, OPACITY_ANIMATE, {
-      values: '1;0;0;0;0;1;'
-    })
-  }]
-};
-var EXCLAMATION = {
-  tag: 'path',
-  attributes: _objectSpread$1({}, FILL, {
-    opacity: '0',
-    d: 'M232.5,134.5l7,168c0.3,6.4,5.6,11.5,12,11.5h9c6.4,0,11.7-5.1,12-11.5l7-168c0.3-6.8-5.2-12.5-12-12.5h-23 C237.7,122,232.2,127.7,232.5,134.5z'
-  }),
-  children: [{
-    tag: 'animate',
-    attributes: _objectSpread$1({}, OPACITY_ANIMATE, {
-      values: '0;0;1;1;0;0;'
-    })
-  }]
-};
-function asFoundIcon(icon) {
-  var width = icon[0];
-  var height = icon[1];
-
-  var _icon$slice = icon.slice(4),
-      _icon$slice2 = _slicedToArray(_icon$slice, 1),
-      vectorData = _icon$slice2[0];
-
-  var element = null;
-
-  if (Array.isArray(vectorData)) {
-    element = {
-      tag: 'g',
-      attributes: {
-        class: "".concat(config$1.familyPrefix, "-").concat(DUOTONE_CLASSES.GROUP)
-      },
-      children: [{
-        tag: 'path',
-        attributes: {
-          class: "".concat(config$1.familyPrefix, "-").concat(DUOTONE_CLASSES.SECONDARY),
-          fill: 'currentColor',
-          d: vectorData[0]
-        }
-      }, {
-        tag: 'path',
-        attributes: {
-          class: "".concat(config$1.familyPrefix, "-").concat(DUOTONE_CLASSES.PRIMARY),
-          fill: 'currentColor',
-          d: vectorData[1]
-        }
-      }]
-    };
-  } else {
-    element = {
-      tag: 'path',
-      attributes: {
-        fill: 'currentColor',
-        d: vectorData
-      }
-    };
-  }
-
-  return {
-    found: true,
-    width: width,
-    height: height,
-    icon: element
-  };
-}
-
-var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}\n\n.svg-inline--fa .fa-primary {\n  fill: var(--fa-primary-color, currentColor);\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa .fa-secondary {\n  fill: var(--fa-secondary-color, currentColor);\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-primary {\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-secondary {\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa mask .fa-primary,\n.svg-inline--fa mask .fa-secondary {\n  fill: black;\n}\n\n.fad.fa-inverse {\n  color: #fff;\n}";
-
-function css$1 () {
-  var dfp = DEFAULT_FAMILY_PREFIX;
-  var drc = DEFAULT_REPLACEMENT_CLASS;
-  var fp = config$1.familyPrefix;
-  var rc = config$1.replacementClass;
-  var s = baseStyles;
-
-  if (fp !== dfp || rc !== drc) {
-    var dPatt = new RegExp("\\.".concat(dfp, "\\-"), 'g');
-    var customPropPatt = new RegExp("\\--".concat(dfp, "\\-"), 'g');
-    var rPatt = new RegExp("\\.".concat(drc), 'g');
-    s = s.replace(dPatt, ".".concat(fp, "-")).replace(customPropPatt, "--".concat(fp, "-")).replace(rPatt, ".".concat(rc));
-  }
-
-  return s;
-}
-
-var Library =
-/*#__PURE__*/
-function () {
-  function Library() {
-    _classCallCheck$2(this, Library);
-
-    this.definitions = {};
-  }
-
-  _createClass$2(Library, [{
-    key: "add",
-    value: function add() {
-      var _this = this;
-
-      for (var _len = arguments.length, definitions = new Array(_len), _key = 0; _key < _len; _key++) {
-        definitions[_key] = arguments[_key];
-      }
-
-      var additions = definitions.reduce(this._pullDefinitions, {});
-      Object.keys(additions).forEach(function (key) {
-        _this.definitions[key] = _objectSpread$1({}, _this.definitions[key] || {}, additions[key]);
-        defineIcons(key, additions[key]);
-        build();
-      });
-    }
-  }, {
-    key: "reset",
-    value: function reset() {
-      this.definitions = {};
-    }
-  }, {
-    key: "_pullDefinitions",
-    value: function _pullDefinitions(additions, definition) {
-      var normalized = definition.prefix && definition.iconName && definition.icon ? {
-        0: definition
-      } : definition;
-      Object.keys(normalized).map(function (key) {
-        var _normalized$key = normalized[key],
-            prefix = _normalized$key.prefix,
-            iconName = _normalized$key.iconName,
-            icon = _normalized$key.icon;
-        if (!additions[prefix]) additions[prefix] = {};
-        additions[prefix][iconName] = icon;
-      });
-      return additions;
-    }
-  }]);
-
-  return Library;
-}();
-
-function ensureCss() {
-  if (config$1.autoAddCss && !_cssInserted) {
-    insertCss(css$1());
-
-    _cssInserted = true;
-  }
-}
-
-function apiObject(val, abstractCreator) {
-  Object.defineProperty(val, 'abstract', {
-    get: abstractCreator
-  });
-  Object.defineProperty(val, 'html', {
-    get: function get() {
-      return val.abstract.map(function (a) {
-        return toHtml(a);
-      });
-    }
-  });
-  Object.defineProperty(val, 'node', {
-    get: function get() {
-      if (!IS_DOM) return;
-      var container = DOCUMENT.createElement('div');
-      container.innerHTML = val.html;
-      return container.children;
-    }
-  });
-  return val;
-}
-
-function findIconDefinition(iconLookup) {
-  var _iconLookup$prefix = iconLookup.prefix,
-      prefix = _iconLookup$prefix === void 0 ? 'fa' : _iconLookup$prefix,
-      iconName = iconLookup.iconName;
-  if (!iconName) return;
-  return iconFromMapping(library.definitions, prefix, iconName) || iconFromMapping(namespace.styles, prefix, iconName);
-}
-
-function resolveIcons(next) {
-  return function (maybeIconDefinition) {
-    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var iconDefinition = (maybeIconDefinition || {}).icon ? maybeIconDefinition : findIconDefinition(maybeIconDefinition || {});
-    var mask = params.mask;
-
-    if (mask) {
-      mask = (mask || {}).icon ? mask : findIconDefinition(mask || {});
-    }
-
-    return next(iconDefinition, _objectSpread$1({}, params, {
-      mask: mask
-    }));
-  };
-}
-
-var library = new Library();
-var _cssInserted = false;
-var parse = {
-  transform: function transform(transformString) {
-    return parseTransformString(transformString);
-  }
-};
-var icon = resolveIcons(function (iconDefinition) {
-  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var _params$transform = params.transform,
-      transform = _params$transform === void 0 ? meaninglessTransform : _params$transform,
-      _params$symbol = params.symbol,
-      symbol = _params$symbol === void 0 ? false : _params$symbol,
-      _params$mask = params.mask,
-      mask = _params$mask === void 0 ? null : _params$mask,
-      _params$maskId = params.maskId,
-      maskId = _params$maskId === void 0 ? null : _params$maskId,
-      _params$title = params.title,
-      title = _params$title === void 0 ? null : _params$title,
-      _params$titleId = params.titleId,
-      titleId = _params$titleId === void 0 ? null : _params$titleId,
-      _params$classes = params.classes,
-      classes = _params$classes === void 0 ? [] : _params$classes,
-      _params$attributes = params.attributes,
-      attributes = _params$attributes === void 0 ? {} : _params$attributes,
-      _params$styles = params.styles,
-      styles = _params$styles === void 0 ? {} : _params$styles;
-  if (!iconDefinition) return;
-  var prefix = iconDefinition.prefix,
-      iconName = iconDefinition.iconName,
-      icon = iconDefinition.icon;
-  return apiObject(_objectSpread$1({
-    type: 'icon'
-  }, iconDefinition), function () {
-    ensureCss();
-
-    if (config$1.autoA11y) {
-      if (title) {
-        attributes['aria-labelledby'] = "".concat(config$1.replacementClass, "-title-").concat(titleId || nextUniqueId());
-      } else {
-        attributes['aria-hidden'] = 'true';
-        attributes['focusable'] = 'false';
-      }
-    }
-
-    return makeInlineSvgAbstract({
-      icons: {
-        main: asFoundIcon(icon),
-        mask: mask ? asFoundIcon(mask.icon) : {
-          found: false,
-          width: null,
-          height: null,
-          icon: {}
-        }
-      },
-      prefix: prefix,
-      iconName: iconName,
-      transform: _objectSpread$1({}, meaninglessTransform, transform),
-      symbol: symbol,
-      title: title,
-      maskId: maskId,
-      titleId: titleId,
-      extra: {
-        attributes: attributes,
-        styles: styles,
-        classes: classes
-      }
-    });
-  });
-});
-
-function _typeof(obj) {
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
-function _defineProperty$2(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty$2(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
-function _objectWithoutPropertiesLoose$1(source, excluded) {
-  if (source == null) return {};
-  var target = {};
-  var sourceKeys = Object.keys(source);
-  var key, i;
-
-  for (i = 0; i < sourceKeys.length; i++) {
-    key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0) continue;
-    target[key] = source[key];
-  }
-
-  return target;
-}
-
-function _objectWithoutProperties(source, excluded) {
-  if (source == null) return {};
-
-  var target = _objectWithoutPropertiesLoose$1(source, excluded);
-
-  var key, i;
-
-  if (Object.getOwnPropertySymbols) {
-    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-
-    for (i = 0; i < sourceSymbolKeys.length; i++) {
-      key = sourceSymbolKeys[i];
-      if (excluded.indexOf(key) >= 0) continue;
-      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
-      target[key] = source[key];
-    }
-  }
-
-  return target;
-}
-
-function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
-}
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
-}
-
-function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-}
-
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
-}
-
-// Get CSS class list from a props object
-function classList(props) {
-  var _classes;
-
-  var spin = props.spin,
-      pulse = props.pulse,
-      fixedWidth = props.fixedWidth,
-      inverse = props.inverse,
-      border = props.border,
-      listItem = props.listItem,
-      flip = props.flip,
-      size = props.size,
-      rotation = props.rotation,
-      pull = props.pull; // map of CSS class names to properties
-
-  var classes = (_classes = {
-    'fa-spin': spin,
-    'fa-pulse': pulse,
-    'fa-fw': fixedWidth,
-    'fa-inverse': inverse,
-    'fa-border': border,
-    'fa-li': listItem,
-    'fa-flip-horizontal': flip === 'horizontal' || flip === 'both',
-    'fa-flip-vertical': flip === 'vertical' || flip === 'both'
-  }, _defineProperty$2(_classes, "fa-".concat(size), typeof size !== 'undefined' && size !== null), _defineProperty$2(_classes, "fa-rotate-".concat(rotation), typeof rotation !== 'undefined' && rotation !== null), _defineProperty$2(_classes, "fa-pull-".concat(pull), typeof pull !== 'undefined' && pull !== null), _defineProperty$2(_classes, 'fa-swap-opacity', props.swapOpacity), _classes); // map over all the keys in the classes object
-  // return an array of the keys where the value for the key is not null
-
-  return Object.keys(classes).map(function (key) {
-    return classes[key] ? key : null;
-  }).filter(function (key) {
-    return key;
-  });
-}
-
-// Camelize taken from humps
-// humps is copyright © 2012+ Dom Christie
-// Released under the MIT license.
-// Performant way to determine if object coerces to a number
-function _isNumerical(obj) {
-  obj = obj - 0; // eslint-disable-next-line no-self-compare
-
-  return obj === obj;
-}
-
-function camelize(string) {
-  if (_isNumerical(string)) {
-    return string;
-  } // eslint-disable-next-line no-useless-escape
-
-
-  string = string.replace(/[\-_\s]+(.)?/g, function (match, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }); // Ensure 1st char is always lowercase
-
-  return string.substr(0, 1).toLowerCase() + string.substr(1);
-}
-
-function capitalize(val) {
-  return val.charAt(0).toUpperCase() + val.slice(1);
-}
-
-function styleToObject(style) {
-  return style.split(';').map(function (s) {
-    return s.trim();
-  }).filter(function (s) {
-    return s;
-  }).reduce(function (acc, pair) {
-    var i = pair.indexOf(':');
-    var prop = camelize(pair.slice(0, i));
-    var value = pair.slice(i + 1).trim();
-    prop.startsWith('webkit') ? acc[capitalize(prop)] = value : acc[prop] = value;
-    return acc;
-  }, {});
-}
-
-function convert(createElement, element) {
-  var extraProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-  if (typeof element === 'string') {
-    return element;
-  }
-
-  var children = (element.children || []).map(function (child) {
-    return convert(createElement, child);
-  });
-  /* eslint-disable dot-notation */
-
-  var mixins = Object.keys(element.attributes || {}).reduce(function (acc, key) {
-    var val = element.attributes[key];
-
-    switch (key) {
-      case 'class':
-        acc.attrs['className'] = val;
-        delete element.attributes['class'];
-        break;
-
-      case 'style':
-        acc.attrs['style'] = styleToObject(val);
-        break;
-
-      default:
-        if (key.indexOf('aria-') === 0 || key.indexOf('data-') === 0) {
-          acc.attrs[key.toLowerCase()] = val;
-        } else {
-          acc.attrs[camelize(key)] = val;
-        }
-
-    }
-
-    return acc;
-  }, {
-    attrs: {}
-  });
-
-  var _extraProps$style = extraProps.style,
-      existingStyle = _extraProps$style === void 0 ? {} : _extraProps$style,
-      remaining = _objectWithoutProperties(extraProps, ["style"]);
-
-  mixins.attrs['style'] = _objectSpread2({}, mixins.attrs['style'], {}, existingStyle);
-  /* eslint-enable */
-
-  return createElement.apply(void 0, [element.tag, _objectSpread2({}, mixins.attrs, {}, remaining)].concat(_toConsumableArray(children)));
-}
-
-var PRODUCTION$1 = false;
-
-try {
-  PRODUCTION$1 = process.env.NODE_ENV === 'production';
-} catch (e) {}
-
-function log () {
-  if (!PRODUCTION$1 && console && typeof console.error === 'function') {
-    var _console;
-
-    (_console = console).error.apply(_console, arguments);
-  }
-}
-
-// Normalize icon arguments
-function normalizeIconArgs(icon) {
-  // if the icon is null, there's nothing to do
-  if (icon === null) {
-    return null;
-  } // if the icon is an object and has a prefix and an icon name, return it
-
-
-  if (_typeof(icon) === 'object' && icon.prefix && icon.iconName) {
-    return icon;
-  } // if it's an array with length of two
-
-
-  if (Array.isArray(icon) && icon.length === 2) {
-    // use the first item as prefix, second as icon name
-    return {
-      prefix: icon[0],
-      iconName: icon[1]
-    };
-  } // if it's a string, use it as the icon name
-
-
-  if (typeof icon === 'string') {
-    return {
-      prefix: 'fas',
-      iconName: icon
-    };
-  }
-}
-
-// creates an object with a key of key
-// and a value of value
-// if certain conditions are met
-function objectWithKey(key, value) {
-  // if the value is a non-empty array
-  // or it's not an array but it is truthy
-  // then create the object with the key and the value
-  // if not, return an empty array
-  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty$2({}, key, value) : {};
-}
-
-function FontAwesomeIcon(props) {
-  var iconArgs = props.icon,
-      maskArgs = props.mask,
-      symbol = props.symbol,
-      className = props.className,
-      title = props.title;
-  var iconLookup = normalizeIconArgs(iconArgs);
-  var classes = objectWithKey('classes', [].concat(_toConsumableArray(classList(props)), _toConsumableArray(className.split(' '))));
-  var transform = objectWithKey('transform', typeof props.transform === 'string' ? parse.transform(props.transform) : props.transform);
-  var mask = objectWithKey('mask', normalizeIconArgs(maskArgs));
-  var renderedIcon = icon(iconLookup, _objectSpread2({}, classes, {}, transform, {}, mask, {
-    symbol: symbol,
-    title: title
   }));
-
-  if (!renderedIcon) {
-    log('Could not find icon', iconLookup);
-    return null;
-  }
-
-  var abstract = renderedIcon.abstract;
-  var extraProps = {};
-  Object.keys(props).forEach(function (key) {
-    // eslint-disable-next-line no-prototype-builtins
-    if (!FontAwesomeIcon.defaultProps.hasOwnProperty(key)) {
-      extraProps[key] = props[key];
-    }
-  });
-  return convertCurry(abstract[0], extraProps);
-}
-FontAwesomeIcon.displayName = 'FontAwesomeIcon';
-FontAwesomeIcon.propTypes = {
-  border: propTypes.bool,
-  className: propTypes.string,
-  mask: propTypes.oneOfType([propTypes.object, propTypes.array, propTypes.string]),
-  fixedWidth: propTypes.bool,
-  inverse: propTypes.bool,
-  flip: propTypes.oneOf(['horizontal', 'vertical', 'both']),
-  icon: propTypes.oneOfType([propTypes.object, propTypes.array, propTypes.string]),
-  listItem: propTypes.bool,
-  pull: propTypes.oneOf(['right', 'left']),
-  pulse: propTypes.bool,
-  rotation: propTypes.oneOf([90, 180, 270]),
-  size: propTypes.oneOf(['lg', 'xs', 'sm', '1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x']),
-  spin: propTypes.bool,
-  symbol: propTypes.oneOfType([propTypes.bool, propTypes.string]),
-  title: propTypes.string,
-  transform: propTypes.oneOfType([propTypes.string, propTypes.object]),
-  swapOpacity: propTypes.bool
-};
-FontAwesomeIcon.defaultProps = {
-  border: false,
-  className: '',
-  mask: null,
-  fixedWidth: false,
-  inverse: false,
-  flip: null,
-  icon: null,
-  listItem: false,
-  pull: null,
-  pulse: false,
-  rotation: null,
-  size: null,
-  spin: false,
-  symbol: false,
-  title: '',
-  transform: null,
-  swapOpacity: false
-};
-var convertCurry = convert.bind(null, React__default.createElement);
-
-var faEllipsisV = {
-  prefix: 'fas',
-  iconName: 'ellipsis-v',
-  icon: [192, 512, [], "f142", "M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z"]
 };
 
 var RouteContainer = function RouteContainer(props) {
@@ -34070,312 +28443,187 @@ var RouteContainer = function RouteContainer(props) {
       id = _props$match$params.id,
       mode = _props$match$params.mode,
       controller = _props$match$params.controller;
+  var componentMapper = props.componentMapper;
   var search = props.location.search;
   var values = queryString.parse(search);
-  var shapeName = values.shapeName;
-  if (!shapeName) shapeName = controller;
-  var shapeConfiguration = props.componentMapper.getShapeConfiguration(shapeName);
-  return /*#__PURE__*/React__default.createElement(ConnectedContainer$1, {
+  var shapeName = values.shapeName || controller;
+  var containerMode = getContainerMode(mode);
+  var shapeConfiguration = componentMapper.getShapeConfiguration(shapeName) || {};
+  var history = reactRouterDom.useHistory();
+
+  var _onCreateFinish = function _onCreateFinish(entity) {
+    createEntity(componentMapper.api, controller, entity).then(function (createdEntity) {
+      if (shapeConfiguration.onCreateFinish) {
+        shapeConfiguration.onCreateFinish(createdEntity, history);
+      }
+    });
+  };
+
+  var creationMode = containerMode === ArenaContainerMode.CREATE;
+  return /*#__PURE__*/React__default.createElement(ArenaContainer, {
     controller: controller,
-    mode: CONTAINER_MODE[mode],
-    id: id,
-    level: 1,
-    className: "card p-5",
-    shapeConfiguration: shapeConfiguration,
-    componentMapper: props.componentMapper
+    id: Number(id) ? Number(id) : undefined,
+    mode: containerMode,
+    level: shapeConfiguration.level || 2,
+    componentMapper: props.componentMapper,
+    entity: creationMode ? {} : undefined,
+    onCreateFinish: creationMode ? _onCreateFinish : undefined,
+    entityRenderConfiguration: shapeConfiguration.entityRenderConfiguration
   });
 };
 
-var RouteListContainer = function RouteListContainer(props) {
+var RoutListContainer = function RoutListContainer(props) {
   var _props$match$params2 = props.match.params,
       mode = _props$match$params2.mode,
       controller = _props$match$params2.controller;
-  var search = props.location.search;
+  var componentMapper = props.componentMapper;
+  var search = props.location.search || {};
   var values = queryString.parse(search);
-  var screenName = values.screenName;
-  var template = {};
-  if (screenName) template.entity = props.componentMapper.templatesMap(screenName);
-  if (!template.entity) template.entity = {};
-  var filterName = values.filterName;
-  if (!filterName) filterName = controller;
-  var filter = props.componentMapper.filtersMap[filterName];
-  if (typeof filter === "function") filter = filter(props, values);
-  var level = values.level;
-  if (!level) level = 1;
-  var shapeName = values.shapeName;
-  if (!shapeName) shapeName = controller;
-  var shapeConfiguration = props.componentMapper.getShapeConfiguration(shapeName);
-  return /*#__PURE__*/React__default.createElement(ConnectedContainer, {
+  var shapeName = values.shapeName || controller;
+  var containerMode = getContainerMode(mode);
+
+  var shapeConfiguration = _extends({
+    list: {
+      showCreateModal: false
+    }
+  }, componentMapper.getShapeConfiguration(shapeName));
+
+  return /*#__PURE__*/React__default.createElement(ArenaListContainer, {
     controller: controller,
-    mode: CONTAINER_MODE[mode],
-    level: level,
-    className: "card p-5",
-    example: filter,
-    template: {
-      entity: {}
-    },
-    shapeConfiguration: shapeConfiguration ? shapeConfiguration : {},
-    componentMapper: props.componentMapper
+    mode: containerMode,
+    level: 2,
+    filter: values,
+    componentMapper: props.componentMapper,
+    showCreateModal: shapeConfiguration.list.showCreateModal,
+    shapeConfiguration: shapeConfiguration.list
   });
 };
 
-var ConectedRoutListContainer = reactRedux.connect(mapStateToProps)(RouteListContainer);
+var getContainerMode = function getContainerMode(mode) {
+  switch (mode) {
+    case 'view':
+      return ArenaContainerMode.VIEW;
 
-function App(props) {
-  var search = props.location.search;
-  var values = queryString.parse(search);
-  var screenName = values.screenName;
-  var screenConfiguration = props.componentMapper.getScreenConfiguration(screenName);
+    case 'edit':
+      return ArenaContainerMode.EDIT;
+
+    case 'create':
+      return ArenaContainerMode.CREATE;
+
+    default:
+      return ArenaContainerMode.SEARCH;
+  }
+};
+
+var App = function App(props) {
+  sessionStorage.clear();
   return /*#__PURE__*/React__default.createElement("div", {
-    className: "App"
-  }, screenConfiguration.topDecorator && /*#__PURE__*/React__default.createElement("img", {
-    src: screenConfiguration.topDecorator,
-    className: "w-100",
-    alt: "topDecorator"
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "navbar navbar-expand navbar-dark bd-navbar px-0"
-  }, /*#__PURE__*/React__default.createElement("div", {
     className: "container"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "row w-100 m-auto"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "col-2"
-  }, screenConfiguration.leftAction && /*#__PURE__*/React__default.createElement("a", {
-    href: "/"
-  }, /*#__PURE__*/React__default.createElement("img", {
-    className: "w-100",
-    src: logo,
-    alt: "logo"
-  }))), /*#__PURE__*/React__default.createElement("div", {
-    className: "col-8 m-auto text-center"
-  }, /*#__PURE__*/React__default.createElement("div", null, screenConfiguration.title && screenConfiguration.title(values, props.context))), /*#__PURE__*/React__default.createElement("div", {
-    className: "col-2"
-  }, screenConfiguration.rigthAction && /*#__PURE__*/React__default.createElement("a", {
-    href: "/"
-  }, /*#__PURE__*/React__default.createElement("img", {
-    className: "w-100",
-    src: logo,
-    alt: "logo"
-  }))), /*#__PURE__*/React__default.createElement("div", {
-    className: "top-actions-bar"
-  }, screenConfiguration.actions && /*#__PURE__*/React__default.createElement("div", {
-    className: "dropdown"
-  }, /*#__PURE__*/React__default.createElement("button", {
-    className: "btn bmd-btn-icon btn-primary dropdown-toggle active",
-    type: "button",
-    id: "ex1",
-    "data-toggle": "dropdown",
-    "aria-haspopup": "true",
-    "aria-expanded": "false"
-  }, /*#__PURE__*/React__default.createElement(FontAwesomeIcon, {
-    color: "#d7d5e9",
-    icon: faEllipsisV
-  })), /*#__PURE__*/React__default.createElement("div", {
-    className: "dropdown-menu dropdown-menu-left",
-    "aria-labelledby": "ex1"
-  }, screenConfiguration.actions(values, props).map(function (item) {
-    return /*#__PURE__*/React__default.createElement("button", _extends({
-      className: "dropdown-item",
-      type: "button"
-    }, item.props), item.label);
-  }))))))), /*#__PURE__*/React__default.createElement("div", {
-    className: "container"
-  }, /*#__PURE__*/React__default.createElement(BrowserRouter, null, /*#__PURE__*/React__default.createElement(reactRouter.Switch, null, /*#__PURE__*/React__default.createElement(reactRouter.Route, {
-    path: "/build/container/:mode/:controller/:id",
-    render: function render(containerProps) {
-      return /*#__PURE__*/React__default.createElement(RouteContainer, _extends({}, containerProps, {
-        componentMapper: props.componentMapper
-      }));
-    }
-  }), /*#__PURE__*/React__default.createElement(reactRouter.Route, {
-    path: "/build/listContainer/:mode/:controller",
-    render: function render(containerProps) {
-      return /*#__PURE__*/React__default.createElement(ConectedRoutListContainer, _extends({}, containerProps, {
-        componentMapper: props.componentMapper
-      }));
-    }
-  })))));
-}
-
-var App$1 = reactRedux.connect(mapContextToProps)(App);
-
-var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
-
-function unregister() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(function (registration) {
-      registration.unregister();
-    });
-  }
-}
-
-var shapes = function shapes(state, action) {
-  if (state === void 0) {
-    state = {
-      loadingShape: {}
-    };
-  }
-
-  switch (action.type) {
-    case 'SHAPE_LOADED':
-      return _extends({}, state, {}, action.shape);
-
-    case 'SHAPE_LOADING':
-      return _extends({}, state, {
-        loadingShape: _extends({}, action.loadingShape)
-      });
-
-    default:
-      return state;
-  }
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.BrowserRouter, null, /*#__PURE__*/React__default.createElement(ArenaApp, props)));
 };
 
-var context = function context(state, action) {
-  if (state === void 0) {
-    state = {
-      usuario: 137
-    };
-  }
+var backendMiddleware = function backendMiddleware(store) {
+  return function (next) {
+    return function (action) {
+      if (action.type) {
+        var endpoint = action.endpoint,
+            controller = action.controller,
+            id = action.id;
 
-  switch (action.type) {
-    default:
-      return state;
-  }
-};
+        if (action.type == types.ENTITY_REQUEST) {
+          var requesting = sessionStorage.getItem("request_" + controller + "_" + id);
+          if (requesting) return;
+          var key = "request_" + controller + "_" + id;
+          sessionStorage.setItem(key, Date.now());
+          fetch(endpoint + "/" + controller + "/" + id).then(function (res) {
+            return res.json();
+          }).then(function (res) {
+            sessionStorage.removeItem(key);
+            store.dispatch(createEntityLoad(controller, res));
+          });
+        }
 
-var rootReducer = redux.combineReducers({
-  shapes: shapes,
-  context: context
-});
+        if (action.type == types.SHAPE_REQUEST) {
+          var _requesting = sessionStorage.getItem("request_" + controller + "_shape");
 
-var toDeep = function toDeep(obj, defaultReturn, path) {
-  if (!obj) return defaultReturn;
-  if (!path || path.length === 0) if (typeof obj === 'string') return obj;else return defaultReturn;
-  return toDeep(obj[path[0]], defaultReturn, path.slice(1));
-};
+          if (_requesting) return;
 
-var Mapper = function Mapper(parentComponentsMap, templatesMap, componentsMap, screenConfigurationMap, shapeConfigurationMap, filtersMap, componentsTypeMap, textMap, apiUrl) {
-  var _this = this;
+          var _key = "request_" + controller + "_shape";
 
-  if (parentComponentsMap === void 0) {
-    parentComponentsMap = {};
-  }
+          var controllerState = store.getState().controller[controller];
 
-  if (templatesMap === void 0) {
-    templatesMap = {};
-  }
-
-  if (componentsMap === void 0) {
-    componentsMap = {};
-  }
-
-  if (screenConfigurationMap === void 0) {
-    screenConfigurationMap = {
-      "default": {}
-    };
-  }
-
-  if (shapeConfigurationMap === void 0) {
-    shapeConfigurationMap = {};
-  }
-
-  if (filtersMap === void 0) {
-    filtersMap = {};
-  }
-
-  if (componentsTypeMap === void 0) {
-    componentsTypeMap = {};
-  }
-
-  if (textMap === void 0) {
-    textMap = {};
-  }
-
-  this.getComponent = function (name, controller, parentController, type, superType, parentType, level) {
-    var components = _this.getComponents(controller)[level];
-
-    if (components) return components;
-
-    if (parentType && name) {
-      var parentComponents = _this.getFieldComponents(parentType, name)[level];
-
-      if (parentComponents) {
-        return components ? _extends({}, components, {}, parentComponents) : parentComponents;
+          if (controllerState && !controllerState.shape) {
+            sessionStorage.setItem(_key, Date.now());
+            fetch(endpoint + "/" + controller + "/shape").then(function (res) {
+              return res.json();
+            }).then(function (res) {
+              sessionStorage.removeItem(_key);
+              store.dispatch(createShapeLoad(controller, res));
+            });
+          }
+        }
       }
-    }
 
-    if (components) return components;
-    components = _this.getComponentsByType(type)[level];
-    if (components) return components;
-    if (superType) components = _this.getComponentsByType(superType)[level];
-    return components ? components : {};
+      next(action);
+    };
   };
-
-  this.getFieldComponents = function (parentController, name) {
-    var parentComponentArray = _this.parentComponentsMap[parentController];
-    var fieldComponentArray = parentComponentArray ? parentComponentArray[name] : {};
-    return fieldComponentArray;
-  };
-
-  this.getComponents = function (repository) {
-    var componentArray = _this.componentsMap[repository];
-    return componentArray ? componentArray : {};
-  };
-
-  this.getComponentsByType = function (type) {
-    var componentArray = _this.componentsTypeMap[type];
-    return componentArray ? componentArray : {};
-  };
-
-  this.getScreenConfiguration = function (name) {
-    if (!name) return _this.screenConfigurationMap["default"];
-    return _extends({}, _this.screenConfigurationMap["default"], {}, _this.screenConfigurationMap[name]);
-  };
-
-  this.getShapeConfiguration = function (name) {
-    return _this.shapeConfigurationMap[name];
-  };
-
-  this.getTemplates = function (controller) {
-    var templates = _this.templatesMap[controller];
-    return templates ? templates : {};
-  };
-
-  this.t = function (key) {
-    return toDeep(_this.textMap, key, key.split('.'));
-  };
-
-  if (!apiUrl) throw new Error("Api url must not be undefined.");
-  this.api = apiUrl;
-  this.parentComponentsMap = parentComponentsMap;
-  this.templatesMap = templatesMap;
-  this.componentsMap = componentsMap;
-  this.screenConfigurationMap = screenConfigurationMap;
-  this.shapeConfigurationMap = shapeConfigurationMap;
-  this.filtersMap = filtersMap;
-  this.componentsTypeMap = componentsTypeMap;
-  this.textMap = textMap;
 };
+var updateEntityMiddleware = function updateEntityMiddleware(store) {
+  return function (next) {
+    return function (action) {
+      if (action.type && action.type == types.ENTITY_UPDATE) {
+        var endpoint = action.endpoint,
+            controller = action.controller;
+        var data = buildPostBody(action);
+        fetch(endpoint + "/" + controller, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(function (res) {
+          return res.json();
+        }).then(function (response) {
+          if (action.callback) action.callback(response);
+          store.dispatch(createEntityLoad(controller, response));
+        });
+        return;
+      }
+
+      next(action);
+    };
+  };
+};
+
+function buildPostBody(action) {
+  var id = action.id,
+      field = action.field,
+      value = action.value,
+      entity = action.entity;
+  if (entity) return entity;
+  var data = {
+    id: id
+  };
+  data[field] = value;
+  return data;
+}
 
 var ArenaMapper = Mapper;
-var ArenaApp = function ArenaApp(props) {
-  return /*#__PURE__*/React__default.createElement(reactRedux.Provider, {
-    store: props.store
-  }, /*#__PURE__*/React__default.createElement(App$1, {
+var ArenaApp$1 = function ArenaApp(props) {
+  return /*#__PURE__*/React__default.createElement(App, {
     componentMapper: props.componentMapper,
     location: props.location
-  }));
+  });
 };
 var arenaReducer = rootReducer;
-var ArenaContainer$1 = ConnectedContainer$1;
-var ArenaListContainer$1 = ConnectedContainer;
-var ContainerMode = CONTAINER_MODE;
-unregister();
+var ArenaContainer$1 = ArenaContainer;
+var ArenaListContainer$1 = ArenaListContainer;
+var arenaMiddlewares = [backendMiddleware, updateEntityMiddleware];
 
-exports.ArenaApp = ArenaApp;
+exports.ArenaApp = ArenaApp$1;
 exports.ArenaContainer = ArenaContainer$1;
 exports.ArenaListContainer = ArenaListContainer$1;
 exports.ArenaMapper = ArenaMapper;
-exports.ContainerMode = ContainerMode;
+exports.arenaMiddlewares = arenaMiddlewares;
 exports.arenaReducer = arenaReducer;
 //# sourceMappingURL=index.js.map
