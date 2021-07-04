@@ -16,7 +16,11 @@ button[class^="arena-"][ class$="-button"]{
 	font-family: Raleway;
 	font-weight: 450;
 }
-
+[class$="-inline-search"]{
+	li{
+		list-style:none;
+	}
+}
 .arena-open-create-modal-button {
 	@extend .btn-primary, .btn-lg;	
 }
@@ -85,8 +89,10 @@ button[class^="arena-"][ class$="-button"]{
 }
 
 .arena-field-mode-VIEW {
+	.label{
+		@extend .pr-2;
+	}
 	display: flex;
-
 }
 
 .tingle-modal {
@@ -143,7 +149,9 @@ button[class^="arena-"][ class$="-button"]{
 		right: 0;
 
 	}
-	
+	button{
+		display: none !important;
+	}
 	// .arena-field-value{
 	// 	@extend .col;
 	// }
@@ -161,7 +169,7 @@ button[class^="arena-"][ class$="-button"]{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
 			// font-size: 8.3pt;
-			border-bottom: black 1px solid;
+			border-bottom:  map-get($theme-colors, "dark") 1px solid;
 			// @extend .card-header
 			@extend .my-2;
 		}
@@ -232,6 +240,69 @@ button[class^="arena-"][ class$="-button"]{
 		@extend .d-none;
 	}
 }
+
+
+
+.radio {
+	@extend .m-auto;
+}
+
+.react-datepicker{
+	@extend .form-group;
+	font-family: 'Roboto Cn';
+	text-transform: capitalize;
+	.react-datepicker__header{
+		font-family: 'Raleway';
+		padding: 0px;
+	}
+	.react-datepicker__day{
+		@extend .rounded-circle;
+	}
+	.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected, .react-datepicker__close-icon, .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected{
+				background-color: map-get($theme-colors, "primary");
+			}
+	.react-datepicker__time-list-item{
+		cursor: pointer;
+	}
+	input{
+		@extend  .arena-edit-field;
+	}
+}
+
+.radio input {
+	@extend .rounded-pill;
+	@extend .mx-2;
+	@extend .px-5;
+	width: auto;
+	height: 100%;
+	appearance: none;
+	outline: none;
+	cursor: pointer;
+	border-radius: 2px;
+	padding: 4px 8px;
+	background: map-get($theme-colors, "light");
+	font-size: 14px;
+	color:  map-get($theme-colors, "secondary");
+	font-family: Roboto;
+	transition: all 100ms linear;
+	border: 1px solid rgba(0, 0, 0, 0.26);
+}
+
+.radio input:checked {
+	background:  map-get($theme-colors, "secondary");
+	background-image:  map-get($theme-colors, "primary");
+	color:  map-get($theme-colors, "light");
+	box-shadow: 0 1px 1px #0000002e;
+	text-shadow: 0 1px 0px map-get($theme-colors, "dark");
+}
+
+.radio input:before {
+	content: attr(label);
+	display: inline-block;
+	text-align: center;
+	width: 100%;
+}
+
 
 // ::-webkit-input-placeholder, ::-moz-placeholder, ::-ms-input-placeholder, ::-moz-placeholder{
 

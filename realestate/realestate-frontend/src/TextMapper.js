@@ -1,6 +1,7 @@
 export const textMap = {
 
     es:{
+	clear: "Nueva búsqueda",
         list: {
             appointment: {
                 label: "Tasaciones",
@@ -14,8 +15,12 @@ export const textMap = {
                 label: "Nueva Tasación"
             },
             operation:{
-                placeholder:"Tipo de operación",
+                placeholder:"Operación",
                 label:"Tipo de operación"
+            },
+            estateType:{
+                placeholder:"seleccione el tipo de inmueble a tasar",
+                label:"Tipo de inmueble"
             },
             placeId:{
                 label: "Lugar de la tasación"

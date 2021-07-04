@@ -12,7 +12,6 @@ import { shapeConfigurationMap } from './ShapeMapper.js';
 import { textMap } from './TextMapper.js';
 import { filtersMap } from './FiltersMap.js';
 import 'bootstrap/dist/js/bootstrap.min.js';
-import '@algolia/autocomplete-theme-classic';
 import './custom.scss';
 
 import { BrowserRouter as Router, Redirect, Switch, Route} from 'react-router-dom'
@@ -33,7 +32,7 @@ const componentMapper = new ArenaMapper(
 	componentsTypeMap,
 	textMap.es,
 	// "http://localhost:1312/"
-	"http://192.168.0.16:1312/"
+	"http://192.168.0.14:1312/"
 );
 
 

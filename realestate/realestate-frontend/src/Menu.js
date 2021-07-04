@@ -13,7 +13,7 @@ const Menu = ({options}) => {
             </button>
             <a className="navbar-brand" href="https://gonzalomz.github.io/costoya/"><img style={{width:'80px'}} src='/LogoCostoya.svg'></img></a>
 
-            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+            <div className="collapse navbar-collapse " id="navbarSupportedContent">
                 <ul className="navbar-nav mr-auto text-left mt-3" >
                     {
                         options.map((option, i)=>{
