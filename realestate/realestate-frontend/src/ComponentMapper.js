@@ -18,11 +18,11 @@ export const componentsMap = {
             render: {
                 afterRender: ({entity,t, mode, history})=>{
                     // if(!entity.appointmentDate){
-                        return (<div className='appointment-date'>
-                            {!entity.appointmentDate && <samp className='text-warning'>{t('withoutDate', 'Sin cita')}</samp>}
+                        return (<div >
                             { mode !== 'CREATE' && 
                                <button className='arena-button' onClick={()=>{history.push('/build/container/create/assessment?appointment='+entity.id)}}>{t('createAssessment', 'Tasar ahora')}</button>
                             }
+                            
                         </div>)
                     // }
                     // const date = new Date (entity.appointmentDate);

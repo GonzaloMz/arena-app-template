@@ -7,10 +7,12 @@ package app.backend.service;
 
 import app.backend.model.Appointment;
 import app.backend.model.Assessment;
+import app.backend.model.dto.AssessmentFieldsDTO;
 import app.backend.repository.AssessmentRepository;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
@@ -38,24 +40,31 @@ public class AssessmentService extends ArenaService<Assessment,Assessment>{
 
 	@Override
 	public Assessment create(Optional<Assessment> ent) {
-		
-		Assessment entity = new Assessment();
-		if(ent.isPresent()) {
-			Long appointment = ent.get().getAppointment();
-			if (appointment!=null) {
-				Appointment app = appointmentService.get(appointment);
-				if(app!=null) {
-					BeanUtils.copyProperties(app, entity);
-				}
-			}
-		}
-		return this.getRepository().save(entity);
+//		Assessment assessment =  new Assessment();
+//		BeanUtils.copyProperties(ent.get(), assessment);
+//		BeanUtils.copyProperties((AssessmentFieldsDTO) ent.get(), assessment);
+		return this.getRepository().save(ent.get());
 	}
 
 	@Override
 	public List<Assessment> searchInLine(String query) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Assessment buildTemplate(Map<String, String> parameters) {
+		try {
+			Assessment assessment = new Assessment();
+			Long appointment = Long.valueOf(parameters.get("appointment"));
+			Appointment app = appointmentService.get(appointment);
+			if(app!=null) {
+				BeanUtils.copyProperties(app, assessment,"id");
+			}
+			return assessment;
+		}catch (Exception e) {
+			return super.buildTemplate(parameters);
+		}
 	}
 	
 }

@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom'
 const Menu = ({options}) => {
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light" style={{fontFamily: 'Roboto Cn'}}>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light navbar navbar-default navbar-fixed-top" style={{fontFamily: 'Roboto Cn'}}>
+            <div className='container'>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"></span>
             </button>
@@ -26,6 +27,8 @@ const Menu = ({options}) => {
                     }
                 </ul>
             </div>
+            </div>
+            
         </nav>)
 }
 

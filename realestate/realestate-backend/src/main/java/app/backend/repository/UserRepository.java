@@ -9,8 +9,10 @@ import app.backend.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User>{
 
-	List<User> findByPhoneLikeOrEmailLike(String query, String query2);
+	List<User> findTop5ByPhoneContainingOrEmailContainingOrderByNameAsc(String query, String query2);
 
-	List<User> findByEmailLike(String query);
+	List<User> findTop5ByEmailContainingOrderByNameAsc(String query);
+
+	List<User> findTop5ByOrderByNameAsc();
 
 }

@@ -109,7 +109,8 @@ export const textMap = {
                         },
                         EstateOperations:{
                             SALE: 'Venta',
-                            RENT: 'Alquiler'
+                            RENT: 'Alquiler',
+                            null: 'No definido'
                         }
                     }
                 }

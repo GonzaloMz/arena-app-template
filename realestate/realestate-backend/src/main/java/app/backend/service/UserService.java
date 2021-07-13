@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  *
@@ -38,9 +39,12 @@ public class UserService extends ArenaService<User,User>{
 
 	@Override
 	public List<User> searchInLine(String query) {
+		if (StringUtils.isEmpty(query)) {
+			return userRepository.findTop5ByOrderByNameAsc();
+		}
 		if (query.contains("@"))
-			return userRepository.findByEmailLike(query);
-		return userRepository.findByPhoneLikeOrEmailLike(query, query);
+			return userRepository.findTop5ByEmailContainingOrderByNameAsc(query);
+		return userRepository.findTop5ByPhoneContainingOrEmailContainingOrderByNameAsc(query, query);
 	}
 	
 }

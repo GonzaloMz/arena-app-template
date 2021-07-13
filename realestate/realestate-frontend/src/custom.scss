@@ -4,7 +4,8 @@ $theme-colors: (
     "primary": #dd6401,
     "danger": #ff4136,
     "warning": #f9cd00,
-    "success": #61b83c
+	"success": #61b83c,
+	"ligth-background": #F0F0F0
 );
 @import "../node_modules/bootstrap-material-design/scss/core";
 @import "../node_modules/bootstrap/scss/bootstrap";
@@ -19,6 +20,9 @@ button[class^="arena-"][ class$="-button"]{
 [class$="-inline-search"]{
 	li{
 		list-style:none;
+		.arena-container{
+			@extend .my-1;
+		}
 	}
 }
 .arena-open-create-modal-button {
@@ -36,7 +40,7 @@ button[class^="arena-"][ class$="-button"]{
 	@extend .card;
 	// @extend .p-2;
 	@extend .radius;
-	max-width: 450px;
+	max-width: 550px;
 	@extend .my-3;
 	@extend .mx-auto;
 }
@@ -47,7 +51,9 @@ button[class^="arena-"][ class$="-button"]{
 
  .arena-edit-field {
 	@extend .form-control;
-	@extend .my-1;	
+	@extend .my-1;
+	 border-radius: 2px;
+
 }
 
 .arena-container-mode-edit:not(:hover) .arena-open-search-modal-button{
@@ -60,33 +66,6 @@ button[class^="arena-"][ class$="-button"]{
 }
 
 
-.top-actions-bar{
-    background-color: #454165;
-    width: 100%;
-}
-
-:root {
-	--aa-icon-color-rgb: 221, 100, 1;
-	--aa-primary-color-rgb:223, 101, 1;
-	--aa-panel-border-color-rgb: 221, 100, 1;
-	
-	--aa-selected-color-rgb:221, 100, 1;
-	--aa-icon-color-alpha: 0.25;
-	--aa-primary-color-alpha:0.25;
-	--aa-panel-border-color-alpha:0.25;
-	--aa-background-color-alpha:0.95;
-	--aa-selected-color-alpha:0.25;
-}
-
-  
-.aa-Panel{
-	position: absolute;
-	z-index: 1000000;
-}
-
-.aa-InputWrapper {
-	@extend .pr-1;
-}
 
 .arena-field-mode-VIEW {
 	.label{
@@ -103,6 +82,12 @@ button[class^="arena-"][ class$="-button"]{
 	background-color:  map-get($theme-colors, "dark");
 	color: map-get($theme-colors, "light");
 }
+
+.background-secondary-color-ligth{
+	background-color:  map-get($theme-colors, "secondary");
+	color: map-get($theme-colors, "light");
+}
+
 
 .arena-list-item-wrapper{
 	cursor: pointer;
@@ -128,8 +113,8 @@ button[class^="arena-"][ class$="-button"]{
 			font-size: medium; 
 			@extend .w-100;
 			@extend .text-center;
-			@extend .background-dark-color-ligth;
-			@extend .radius;
+			@extend .background-secondary-color-ligth;
+			border-radius: 3px 3px 0px 0px;
 			span.arena-field-value{
 				@extend .w-100;
 
@@ -139,13 +124,77 @@ button[class^="arena-"][ class$="-button"]{
 			@extend .float-left-width-50;
 		}
 	}
+	.assessment-container {
+		.arena-field-name-estateType{
+			@extend .w-25;
+		}
+		.assessment-user-container {
+			.arena-field-name-name{
+				font-family: 'Roboto Cn';
+				font-size: medium; 
+				@extend .w-100;
+				@extend .text-center;
+				@extend .background-secondary-color-ligth;
+				border-radius: 3px 3px 0px 0px;
+				span.arena-field-value{
+					@extend .w-100;
+
+				}
+			}
+			
+			.arena-field-name-phone {
+				@extend .float-left-width-50;
+			}
+		}
+		.assessment-place-container {
+			.arena-field-name-formattedAddress > .arena-field-value{
+				width: 100%;
+				text-align: center;
+				text-transform: uppercase;
+				font-size: 9pt;
+				font-family: 'Roboto Cn';
+				background-color:  map-get($theme-colors, "ligth-background");;
+				@extend .mb-2;
+			}
+		}
+		// .arena-field-name-sugestedValue::before{
+		// 	content: "U$D";
+		// }
+		.arena-field-name-sugestedValue{
+			.arena-field-value::before{
+				content: "U$D";
+				@extend .pr-1
+			}
+			@extend .py-1;
+			font-family: 'Roboto';
+			font-size: large;
+			font-weight: bold; 
+			@extend .w-100;
+			@extend .text-center;
+			@extend .background-dark-color-ligth;
+			border-radius: 0px 0px 3px 3px;
+			span.arena-field-value{
+				@extend .w-100;
+
+			}
+		}
+	}
+	.arena-field-name-formattedAddress{
+		
+		.arena-field-value{
+			white-space: nowrap;
+			display: inline-block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	} 
 	.appointment-date{
 		@extend .position-absolute;
 		@extend .p-2;
 		@extend .mr-2;
 		@extend .badge, .rounded-pill;
-		@extend .background-dark-color-ligth;
-			top:50%;
+		@extend .background-secondary-color-ligth;
+			top:4.5rem;
 		right: 0;
 
 	}
@@ -163,18 +212,20 @@ button[class^="arena-"][ class$="-button"]{
 	// }
 }
 
-:not(.arena-list-item-wrapper) > .arena-container{
-
+// :not(.arena-list-item-wrapper) > .arena-container{
+.arena-create-appointment-screen{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
 			// font-size: 8.3pt;
 			border-bottom:  map-get($theme-colors, "dark") 1px solid;
 			// @extend .card-header
-			@extend .my-2;
+			@extend .mt-5, .mb-2;
 		}
 	}
+	@extend .mt-5, .mb-5;
 }
+
 
 .arena-list-container .arena-controller-appointment .arena-text.label{
 	display: none;
@@ -184,14 +235,15 @@ button[class^="arena-"][ class$="-button"]{
 	@extend .h1;
 	@extend .mx-auto;
 	color:  map-get($theme-colors, "dark");
-	max-width: 368px;
 	&.label{
+		max-width: 368px;
 		@extend .text-left;
 		@extend .mt-2;
 		@extend .mb-0;
 		@extend .pl-1;
 	}
 	&.sublabel{
+		max-width: 368px;
 		@extend .text-right;
 		@extend .my-0;
 		@extend .pr-1;
@@ -206,6 +258,10 @@ button[class^="arena-"][ class$="-button"]{
  input {
 	 @extend .pt-2;
 	 @extend .pl-2;
+}
+
+.react-autosuggest__input, .pac-target-input {
+	@extend .arena-edit-field;
 }
 
 
@@ -251,9 +307,26 @@ button[class^="arena-"][ class$="-button"]{
 	@extend .form-group;
 	font-family: 'Roboto Cn';
 	text-transform: capitalize;
+	.react-datepicker__month-container{
+		.react-datepicker__header{
+			padding: 0 2.5rem 0 2.5rem;
+		}
+	}
 	.react-datepicker__header{
 		font-family: 'Raleway';
 		padding: 0px;
+		@extend .py-1;
+		background-color: map-get($theme-colors, "primary");
+		.react-datepicker__current-month{
+			font-size: x-large;
+		}
+		.react-datepicker__day-name, .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header{
+			font-weight: normal;
+			color:map-get($theme-colors, "light");
+		}
+		.react-datepicker__navigation-icon::before{
+			border-color: white;
+		}
 	}
 	.react-datepicker__day{
 		@extend .rounded-circle;
@@ -264,10 +337,12 @@ button[class^="arena-"][ class$="-button"]{
 	.react-datepicker__time-list-item{
 		cursor: pointer;
 	}
-	input{
+	.react-datepicker__input-container>input{
 		@extend  .arena-edit-field;
 	}
 }
+
+
 
 .radio input {
 	@extend .rounded-pill;
