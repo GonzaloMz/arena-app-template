@@ -5,12 +5,6 @@
  */
 package app.backend.service;
 
-import app.backend.model.Appointment;
-import app.backend.model.Assessment;
-import app.backend.model.dto.AssessmentFieldsDTO;
-import app.backend.repository.AssessmentRepository;
-import arena.backend.service.ArenaService;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,12 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
+import app.backend.model.Appointment;
+import app.backend.model.Assessment;
+import app.backend.model.PlaceDescription;
+import app.backend.model.dto.AssessmentDTO;
+import app.backend.model.dto.AssessmentFieldsDTO;
+import app.backend.model.enums.AppointmentStatus;
+import app.backend.repository.AssessmentRepository;
+import arena.backend.service.ArenaService;
+
 /**
  *
  * @author 
  */
 @Component
-public class AssessmentService extends ArenaService<Assessment,Assessment>{
+public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 	
 	@Autowired
 	AssessmentRepository assessmentRepository;
@@ -33,17 +36,37 @@ public class AssessmentService extends ArenaService<Assessment,Assessment>{
 	@Autowired
 	AppointmentService appointmentService;
 
+	@Autowired
+	PlaceDescriptionService placeDescriptionService;
+	
+	
 	@Override
 	protected JpaRepository<Assessment, Long> getRepository() {
 		return assessmentRepository;
 	}
 
 	@Override
-	public Assessment create(Optional<Assessment> ent) {
-//		Assessment assessment =  new Assessment();
-//		BeanUtils.copyProperties(ent.get(), assessment);
-//		BeanUtils.copyProperties((AssessmentFieldsDTO) ent.get(), assessment);
-		return this.getRepository().save(ent.get());
+	public Assessment create(Optional<AssessmentDTO> ent) {
+		Assessment assessment =  new Assessment();
+		BeanUtils.copyProperties(ent.get(), assessment);
+		BeanUtils.copyProperties((AssessmentFieldsDTO) ent.get(), assessment);
+		PlaceDescription description = placeDescriptionService.create(
+				Optional.of(ent.get().getPlaceDescription()));
+		updateAppointment(assessment.getPlaceId());
+		assessment.setPlaceDescription(description.getId());
+		assessment = this.getRepository().save(assessment);
+		return assessment;
+	}
+
+	private void updateAppointment(Long placeId) {
+		Appointment a = new Appointment();
+		a.setPlaceId(placeId);
+		List<Appointment> apps = appointmentService.get(a);
+		if(!apps.isEmpty()) {
+			Appointment first = apps.get(0);
+			first.setStatus(AppointmentStatus.CONCRETED);
+			appointmentService.update(first);
+		}
 	}
 
 	@Override
@@ -53,9 +76,9 @@ public class AssessmentService extends ArenaService<Assessment,Assessment>{
 	}
 
 	@Override
-	public Assessment buildTemplate(Map<String, String> parameters) {
+	public AssessmentDTO buildTemplate(Map<String, String> parameters) {
 		try {
-			Assessment assessment = new Assessment();
+			AssessmentDTO assessment = new AssessmentDTO();
 			Long appointment = Long.valueOf(parameters.get("appointment"));
 			Appointment app = appointmentService.get(appointment);
 			if(app!=null) {

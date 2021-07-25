@@ -51,6 +51,9 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 		app.setPlaceId(p.getId());
 		app.setUserId(u.getId());
 		BeanUtils.copyProperties((AppointmentFieldsDTO) appointment.get(), app);
+		app.setStatus(app.getAppointmentDate()==null ?
+							AppointmentStatus.WITHOUT_DATE:
+								AppointmentStatus.ACTIVE);
 		return this.appointmentRepository.save(app);
 	}
 
@@ -64,7 +67,7 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 	public Appointment update(Appointment arg0) {
 		// TODO Auto-generated method stub
 		Appointment updated = super.update(arg0);
-		if(updated.getUserId()!=null && updated.getPlaceId()!=null) {
+		if(updated.getStatus()==null && updated.getUserId()!=null && updated.getPlaceId()!=null) {
 			updated.setStatus(
 					updated.getAppointmentDate()==null ?
 							AppointmentStatus.WITHOUT_DATE:

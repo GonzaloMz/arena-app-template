@@ -6,6 +6,10 @@ export const textMap = {
             appointment: {
                 label: "Tasaciones",
                 sublabel: "Pendientes"
+            },
+            assessment: {
+                label: "Tasaciones",
+                sublabel: "Realizadas"
             }
         },
         appointment: {
@@ -87,10 +91,57 @@ export const textMap = {
             userId: {
                 label: "Interesado"
             },
+            estateType:{
+                placeholder:"seleccione el tipo de inmueble a tasar",
+                label:"Tipo de inmueble"
+            },
             sugestedValue:{
                 label: "Valor sugerido",
-                placeholder: "Ingrese el valor sugerido para este inmueble"
+                placeholder: "Ingrese el valor sugerido en U$D para este inmueble"
             }
+        },
+        placeDescription:{
+            environments:{
+                label: "Ambientes"
+            },
+            squareMeterCovered:{
+                label: "m2 cubiertos",
+                placeholder: "Rango de metros cuadrados cuebiertos"
+            },
+            squareMeterTotal:{
+                label: "m2 totales",
+                placeholder: "Rango de metros cuadrados totales"
+            },
+            toilets:{
+                label: "Baños"
+            },
+            toilete:{
+                label: "Baño"
+            },
+            carPlaces:{
+                label: "Entrada de vehículos"
+            },
+            coveredGarage:{
+                label: "Cochera cubierta"
+            },
+            laundry:{
+                    placeholder: "Lavadero"
+            },
+            electricity:{
+                    placeholder: "Luz"
+            },
+            gas:{
+                    placeholder: "Gas"
+            },
+            waterNetworkConnection:{
+                    placeholder: "Agua"
+            },
+            sewerConnection:{
+                    placeholder: "Cloacas"
+            },
+            extraNotes:{
+                    placeholder: "Notas"
+            }, 
         },
         app:{
             backend:{
@@ -111,7 +162,14 @@ export const textMap = {
                             SALE: 'Venta',
                             RENT: 'Alquiler',
                             null: 'No definido'
-                        }
+                        },
+                        SquareMeterRange:{
+                            UP_TO_20:"Hasta 20",
+                            UP_TO_40:"De 20 a 40",
+                            UP_TO_80:"De 40 a 80",
+                            UP_TO_150:"De 80 a 150",
+                            MORE_THAN_150:"Mas de 150"
+                        }   
                     }
                 }
             }

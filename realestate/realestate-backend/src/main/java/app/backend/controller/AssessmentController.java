@@ -6,6 +6,7 @@
 package app.backend.controller;
 
 import app.backend.model.Assessment;
+import app.backend.model.dto.AssessmentDTO;
 import app.backend.service.AssessmentService;
 import arena.backend.controller.ArenaController;
 import arena.backend.model.extension.ShapeFactory;
@@ -20,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/assessment")
-public class AssessmentController extends ArenaController<Assessment,Assessment>{
+public class AssessmentController extends ArenaController<Assessment,AssessmentDTO>{
 		
 	@Autowired
 	private AssessmentService assessmentService;
 
 	@Override
-	public ArenaService<Assessment,Assessment> getService() {
+	public ArenaService<Assessment,AssessmentDTO> getService() {
 		return this.assessmentService;
 	}
 

@@ -1,29 +1,39 @@
 package app.backend.model.dto;
 
-import app.backend.model.Place;
-import app.backend.model.User;
+import app.backend.model.PlaceDescription;
 
 public class AssessmentDTO  extends AssessmentFieldsDTO{
 
-	private User userId;
+	private Long userId;
 	
-	private Place placeId;
+	private Long placeId;
+	
+	private PlaceDescription placeDescription;
 
-	public User getUserId() {
+	public Long getUserId() {
 		return userId;
 	}
 
-	public void setUserId(User userId) {
+	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
-	public Place getPlaceId() {
+	public Long getPlaceId() {
 		return placeId;
 	}
 
-	public void setPlaceId(Place placeId) {
+	public void setPlaceId(Long placeId) {
 		this.placeId = placeId;
 	}
+
+	public PlaceDescription getPlaceDescription() {
+		return placeDescription;
+	}
+
+	public void setPlaceDescription(PlaceDescription placeDescription) {
+		this.placeDescription = placeDescription;
+	}
+	
 	
 	
 }

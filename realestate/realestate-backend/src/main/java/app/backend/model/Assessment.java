@@ -10,6 +10,7 @@ public class Assessment extends AssessmentFieldsDTO{
 
 	private Long placeId;
 	private Long userId;
+	private Long placeDescription;
 
 
 	@Key(type = Place.class)
@@ -29,6 +30,16 @@ public class Assessment extends AssessmentFieldsDTO{
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
+
+	@Key(type=PlaceDescription.class, allowInLineCreate = true)
+	public Long getPlaceDescription() {
+		return placeDescription;
+	}
+
+	public void setPlaceDescription(Long placeDescription) {
+		this.placeDescription = placeDescription;
+	}
+	
 	
 }
 

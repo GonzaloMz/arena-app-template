@@ -20,7 +20,7 @@ export const componentsMap = {
                     // if(!entity.appointmentDate){
                         return (<div >
                             { mode !== 'CREATE' && 
-                               <button className='arena-button' onClick={()=>{history.push('/build/container/create/assessment?appointment='+entity.id)}}>{t('createAssessment', 'Tasar ahora')}</button>
+                               <button className='arena-button' onClick={()=>{history.push('/build/container/create/assessment?shapeName=assessmentCreation&appointment='+entity.id)}}>{t('createAssessment', 'Tasar ahora')}</button>
                             }
                             
                         </div>)
@@ -38,9 +38,23 @@ export const componentsMap = {
     },
     assessment: {
         default:{
-            createTemplate: (search) => {
-                return {
-                    appointment:search.appointment
+            render: {
+                afterRender: ({entity,t, mode, history})=>{
+                    // if(!entity.appointmentDate){
+                        return (<div >
+                            { mode !== 'CREATE' && 
+                               <button className='arena-button' onClick={()=>{history.push('/build/container/create/estate?assessment='+entity.id)}}>{t('createEstate', 'Alta de propiedad')}</button>
+                            }
+                            
+                        </div>)
+                    // }
+                    // const date = new Date (entity.appointmentDate);
+
+                    // return (
+                    //     <div className='appointment-date'>
+                    //         <div>{`${date.getDate()+1}/${date.getMonth()+1}`}</div>
+                    //     </div>
+                    // )
                 }
             }
         }

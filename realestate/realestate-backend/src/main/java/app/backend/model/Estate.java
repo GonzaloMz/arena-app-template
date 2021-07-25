@@ -1,25 +1,22 @@
 package app.backend.model;
 
+import java.util.HashMap;
+
 import javax.persistence.Entity;
 
-import app.backend.model.enums.EstateOperations;
-import app.backend.model.enums.EstateStatus;
-import app.backend.model.enums.EstateType;
-import arena.backend.model.AbstractEntity;
-import arena.backend.model.extension.AbstractDataTransferObject;
+import app.backend.model.dto.EstateFieldsDTO;
 import arena.backend.model.extension.Key;
-import arena.backend.model.extension.Serchable;
+import arena.backend.model.extension.TemplateField;
 
 @Entity
-public class Estate extends AbstractEntity implements AbstractDataTransferObject{
+public class Estate extends EstateFieldsDTO{
 
 	private Long placeId;
-	private Long userId;
-	private Double price;
-	private EstateOperations operation;
-	private EstateType estateType;
-	private EstateStatus status;
+	
+	private Long owner;
 
+	private Long placeDescription;
+	
 	@Key(type = Place.class)
 	public Long getPlaceId() {
 		return placeId;
@@ -29,48 +26,35 @@ public class Estate extends AbstractEntity implements AbstractDataTransferObject
 		this.placeId = placeId;
 	}
 
-	@Serchable
-	@Key(type = User.class)
-	public Long getUserId() {
-		return userId;
+	@Key(type=Owner.class)
+	public Long getOwner() {
+		return owner;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setOwner(Long owner) {
+		this.owner = owner;
 	}
 
-	public Double getPrice() {
-		return price;
+	@Key(type = PlaceDescription.class)
+	public Long getPlaceDescription() {
+		return placeDescription;
 	}
 
-	public void setPrice(Double price) {
-		this.price = price;
+	public void setPlaceDescription(Long placeDescription) {
+		this.placeDescription = placeDescription;
 	}
 
-	public EstateOperations getOperation() {
-		return operation;
+	@Key(type=Photo.class, allowInLineCreate = true)
+	@TemplateField
+	public HashMap<String, String> getPhotos() {
+		HashMap<String, String> filter = null;
+		if(this.placeId!=null) {
+			filter =new HashMap<>();			
+			filter.put("place", this.placeId.toString());
+		}
+		return filter;
 	}
 
-	public void setOperation(EstateOperations operation) {
-		this.operation = operation;
-	}
-
-	public EstateStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(EstateStatus status) {
-		this.status = status;
-	}
-
-	public EstateType getEstateType() {
-		return estateType;
-	}
-
-	public void setEstateType(EstateType estateType) {
-		this.estateType = estateType;
-	}
-	
 	
 	
 }

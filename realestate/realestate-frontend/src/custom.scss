@@ -25,6 +25,8 @@ button[class^="arena-"][ class$="-button"]{
 		}
 	}
 }
+
+
 .arena-open-create-modal-button {
 	@extend .btn-primary, .btn-lg;	
 }
@@ -56,6 +58,15 @@ button[class^="arena-"][ class$="-button"]{
 
 }
 
+.arena-checkbox{
+	.arena-edit-field{
+		width: unset !important;
+		display: inline !important;
+	}
+	label{
+		display: inline;
+	}
+}
 .arena-container-mode-edit:not(:hover) .arena-open-search-modal-button{
 		@extend .d-none;
 }	
@@ -201,6 +212,7 @@ button[class^="arena-"][ class$="-button"]{
 	button{
 		display: none !important;
 	}
+	
 	// .arena-field-value{
 	// 	@extend .col;
 	// }
@@ -212,8 +224,27 @@ button[class^="arena-"][ class$="-button"]{
 	// }
 }
 
+.arena-photo-list-container{
+	.place-photo{
+		max-width: 100px;
+		max-height: 100px;
+		@extend .img-thumbnail;
+	}
+	display: flex;
+	.arena-list-item-wrapper{
+		max-width: 100px;
+		@extend .m-0;
+	}
+}
+.react-html5-camera-photo {
+	video{
+		max-width: 100%;
+		max-height: 100%;
+	}
+}
+
 // :not(.arena-list-item-wrapper) > .arena-container{
-.arena-create-appointment-screen{
+.arena-create-appointment-screen, .arena-create-assessment-screen{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
@@ -222,6 +253,9 @@ button[class^="arena-"][ class$="-button"]{
 			// @extend .card-header
 			@extend .mt-5, .mb-2;
 		}
+	}
+	.arena-container{
+		@extend .mb-2;
 	}
 	@extend .mt-5, .mb-5;
 }

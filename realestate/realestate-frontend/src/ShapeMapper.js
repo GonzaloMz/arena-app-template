@@ -5,6 +5,10 @@ import Swal from 'sweetalert2';
 import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
+
+import Camera, { FACING_MODES }  from '@rinse/react-html5-camera-photo';
+import '@rinse/react-html5-camera-photo/build/css/index.css';
+
 registerLocale('es', es)
 
 export const shapeConfigurationMap = {
@@ -118,11 +122,24 @@ export const shapeConfigurationMap = {
         // }
     // }
     },
-    assessment: {
-        visibility:{
-            // visible:['userId', 'placeId', 'estateType', 'operation'],
-
+    assessmentCreation:{
+        entityRenderConfiguration:{
+            shapeConfiguration:{
+    
+                visibility:{
+                    visible:['userId', 'placeId', 'estateType', 'operation', 'placeDescription'],
+        
+                }
+            },
+            allowInLineCreate:true
         },
+        onCreateFinish:(e,history)=>{
+            Swal.fire("Creación finalizada").then(()=>{history.push('/build/listContainer/view/assessment?status=ACTIVE,:,WITHOUT_DATE')});
+            return null
+        },
+    },
+    assessment: {
+        
         entityRenderConfiguration:{
 
             allowInLineCreate:true,
@@ -140,11 +157,21 @@ export const shapeConfigurationMap = {
                         </div>
                     </div>)
                 }
+            },
+            placeDescription:{
+                visibility:{
+                    visible:['environments', 'toilets', 'squareMeterCovered', 'squareMeterTotal', 'carPlaces', 'laundry', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection', 'extraNotes' ],
+                    hidden:[]
+                }
             }
         },
         list:{
+            onItemClick:  (item, history)=>{
+                history.push('/build/container/view/assessment/'+item);
+            },
             visibility:{
-                visible:['userId', 'estateType', 'operation', 'placeId', 'sugestedValue']
+                visible:['userId', 'estateType', 'operation', 'placeId', 'sugestedValue'],
+                hidden:[]
             },
             fields:{
                 userId:{
@@ -163,7 +190,7 @@ export const shapeConfigurationMap = {
                     render:({mode, value})=> {
                         if(mode!=='VIEW') return false;
                         return (
-                            <div class="arena-field-name-sugestedValue"><span class="arena-field-value">{value.toLocaleString()}</span></div>
+                            <div class="arena-field-name-sugestedValue"><span class="arena-field-value">{new Number(value).toLocaleString()}</span></div>
                             );
                     }
                 }
@@ -173,6 +200,23 @@ export const shapeConfigurationMap = {
     place:{
 
        
+    },
+    estate:{
+        entityRenderConfiguration:{
+            allowInLineCreate:true
+        }
+    },
+    photo:{
+        fields:{
+            view:{
+                render:({value, update})=>{
+                    if(!value) return <Camera 
+                    idealFacingMode = {FACING_MODES.ENVIRONMENT}
+                    onTakePhoto = { (dataUri) => { update(dataUri); } }></Camera>;
+                    return <img className='place-photo' src={value}></img>
+                }
+            }
+        }
     }
 }
 
@@ -184,18 +228,33 @@ const Place = ({update, value})=>{
     const updatePlace= place=>{
         setFormattedAddress(place.formatted_address)
     }
+    useEffect(()=>{
+        update(formattedAddress);
+    },[])
     return <Autocomplete
         apiKey={'AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U'}
         onPlaceSelected={updatePlace}
+        placeholder='Ingrese una dirección'
         defaultValue={value}
+        language='es_AR'
         options={{
             types: ["address"],
             componentRestrictions: { country: "ar" },
-          }}
+            bounds: 
+                {
+                    north:-34.969962,
+                    west: -56.36917670614324,                
+                    south:-37.31999594951397,
+                    east: -56.298109887936505
+                }
+            // ,
+            // strictBounds:true
+        }}
         />;
 }
 
 const DateDisplay = ({value, className})=>{
+    if(!value) return <div className={className}>--/--</div>
     const dateToDisplay = new Date(value);
     const dd = String(dateToDisplay.getDate()).padStart(2, '0');
     const mm = String(dateToDisplay.getMonth() + 1).padStart(2, '0'); //January is 0!

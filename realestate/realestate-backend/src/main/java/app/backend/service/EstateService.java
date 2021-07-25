@@ -5,13 +5,18 @@
  */
 package app.backend.service;
 
+import app.backend.model.Assessment;
 import app.backend.model.Estate;
+import app.backend.model.Owner;
+import app.backend.model.dto.EstateDTO;
 import app.backend.repository.EstateRepository;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -21,10 +26,16 @@ import org.springframework.stereotype.Component;
  * @author 
  */
 @Component
-public class EstateService extends ArenaService<Estate,Estate>{
+public class EstateService extends ArenaService<Estate,EstateDTO>{
 	
 	@Autowired
 	EstateRepository estateRepository;
+	
+	@Autowired
+	AssessmentService assessmentService;
+	
+	@Autowired
+	OwnerService ownerService;
 
 	@Override
 	protected JpaRepository<Estate, Long> getRepository() {
@@ -32,8 +43,13 @@ public class EstateService extends ArenaService<Estate,Estate>{
 	}
 
 	@Override
-	public Estate create(Optional<Estate> ent) {
-		return new Estate();
+	public Estate create(Optional<EstateDTO> ent) {
+		
+		Estate est = new Estate();
+		BeanUtils.copyProperties(ent.get(), est,"id", "owner");
+		Owner owner = ownerService.create(Optional.of(ent.get().getOwner()));
+		est.setOwner(owner.getId());
+		return est;
 	}
 
 	@Override
@@ -41,5 +57,21 @@ public class EstateService extends ArenaService<Estate,Estate>{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public EstateDTO buildTemplate(Map<String, String> parameters) {
+		Long assessment = Long.valueOf(parameters.get("assessment"));
+		Assessment assessmentEntity = assessmentService.get(assessment);
+		EstateDTO estate = new EstateDTO();
+		if (assessmentEntity!=null) {
+			BeanUtils.copyProperties(assessmentEntity, estate,"id");
+			Owner owner = new Owner();
+			owner.setUser(assessmentEntity.getUserId());
+			estate.setOwner(owner);
+		}
+		return estate;
+	}
+	
+	
 	
 }
