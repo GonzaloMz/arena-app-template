@@ -8,6 +8,9 @@ package app.backend.service;
 import app.backend.model.{ENTITY};
 import app.backend.repository.{ENTITY}Repository;
 import arena.backend.service.ArenaService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -17,7 +20,7 @@ import org.springframework.stereotype.Component;
  * @author 
  */
 @Component
-public class {ENTITY}Service extends ArenaService<{ENTITY}>{
+public class {ENTITY}Service extends ArenaService<{ENTITY},{ENTITY}>{
 	
 	@Autowired
 	{ENTITY}Repository {ENTITY_LOWER}Repository;
@@ -26,10 +29,10 @@ public class {ENTITY}Service extends ArenaService<{ENTITY}>{
 	protected JpaRepository<{ENTITY}, Long> getRepository() {
 		return {ENTITY_LOWER}Repository;
 	}
-
-	@Override
-	public {ENTITY} create() {
-		return new {ENTITY}();
-	}
 	
+	@Override
+	public List<{ENTITY}> searchInLine(String query) {
+		return null;
+	}
+
 }

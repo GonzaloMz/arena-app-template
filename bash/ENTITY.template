@@ -2,9 +2,10 @@ package app.backend.model;
 
 import javax.persistence.Entity;
 import arena.backend.model.AbstractEntity;
+import arena.backend.model.extension.AbstractDataTransferObject;
 
 @Entity
-public class {ENTITY} extends AbstractEntity {
+public class {ENTITY} extends AbstractEntity implements AbstractDataTransferObject {
 
 	
 }

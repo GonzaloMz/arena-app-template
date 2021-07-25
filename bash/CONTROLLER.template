@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/{ENTITY_LOWER}")
-public class {ENTITY}Controller extends ArenaController<{ENTITY}>{
+public class {ENTITY}Controller extends ArenaController<{ENTITY},{ENTITY}>{
 		
 	@Autowired
 	private {ENTITY}Service {ENTITY_LOWER}Service;
 
 	@Override
-	public ArenaService<{ENTITY}> getService() {
+	public ArenaService<{ENTITY},{ENTITY}> getService() {
 		return this.{ENTITY_LOWER}Service;
 	}
 
