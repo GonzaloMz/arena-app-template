@@ -1,4 +1,4 @@
-FROM node
+FROM node:15-alpine
 ADD . /frontend/realestate-frontend
 WORKDIR /frontend/realestate-frontend
 
