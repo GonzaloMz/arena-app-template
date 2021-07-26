@@ -4,4 +4,6 @@ WORKDIR /frontend/realestate-frontend
 
 RUN npm install -g node-pre-gyp
 RUN npm install -g serve
+RUN npm cache clear --force
+RUN npm rebuild node-sass --unsafe-perm
 RUN npm install
