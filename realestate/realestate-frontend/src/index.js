@@ -57,7 +57,7 @@ ReactDOM.render(
 					href: "/assessments"
 				},{
 					label: "Propiedades Disponibles",
-					href: "/build/listContainer/view/estate"
+					href: "/estates"
 				}
 			]}></Menu>
 			<Switch>
@@ -65,6 +65,7 @@ ReactDOM.render(
 				<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
 				<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
 				<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
+				<Redirect from="/estates" push={true} to="/build/listContainer/view/estate" />
 				<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
 			</Switch>
 		</Router>

@@ -1,0 +1,9 @@
+FROM maven:3.6.3-ibmjava-8-alpine                                                                                                                                         
+
+ADD ./arena-backend/ .
+ADD ./realestate/realestate-backend /backend
+RUN mvn install:install-file -Dfile=arena-backend.jar -DgroupId=arena -DartifactId=backend -Dversion=0.0.4444 -Dpackaging=jar
+WORKDIR /backend
+RUN mvn clean install
+RUN mvn clean package
+

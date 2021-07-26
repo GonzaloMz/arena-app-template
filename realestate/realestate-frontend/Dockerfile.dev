@@ -2,4 +2,5 @@ FROM node
 ADD . /frontend/realestate-frontend
 WORKDIR /frontend/realestate-frontend
 
-RUN npm start
+RUN npm install
+RUN npm install -g serve

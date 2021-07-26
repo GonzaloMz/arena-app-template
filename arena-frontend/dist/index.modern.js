@@ -4,6 +4,7 @@ import { useDispatch, useStore, useSelector, shallowEqual } from 'react-redux';
 import tingle from 'tingle.js';
 import Autosuggest from 'react-autosuggest';
 import { useHistory, BrowserRouter, Switch, Route } from 'react-router-dom';
+import _, { isObject } from 'lodash';
 import 'tingle.js/dist/tingle.css';
 
 function _extends() {
@@ -426,6 +427,7 @@ var ArenaField = function ArenaField(_ref) {
       return /*#__PURE__*/React.createElement("div", {
         className: contentClasses
       }, textComponent, /*#__PURE__*/React.createElement(ArenaInputField, {
+        name: name,
         placeholder: placeholder,
         value: value,
         onBlur: update,
@@ -495,6 +497,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
   var placeholderIsString = typeof placeholder === 'string';
   var placeholderString = placeholderIsString ? placeholder : undefined;
   var commonProps = {
+    name: type + "." + name,
     id: type + "." + name,
     className: "arena-edit-field",
     value: currentValue,
@@ -507,6 +510,16 @@ var ArenaInputField = function ArenaInputField(_ref3) {
     switch (type) {
       case 'enum':
         return buildSelect(commonProps, options, placeholderString);
+
+      case 'boolean':
+        return buildCheckbox(commonProps, placeholderString);
+
+      case 'number':
+        return /*#__PURE__*/React.createElement("input", _extends({
+          className: "arena-edit-field",
+          type: "number",
+          placeholder: placeholderString
+        }, commonProps));
 
       default:
         return /*#__PURE__*/React.createElement("input", _extends({
@@ -533,6 +546,31 @@ var buildSelect = function buildSelect(commonProps, options, placeholder) {
       value: option.value
     }, option.text);
   }));
+};
+
+var buildCheckbox = function buildCheckbox(commonProps, placeholder) {
+  var _onChange = function _onChange(e) {
+    console.log(e);
+    commonProps.onBlur({
+      target: {
+        value: e.target.checked
+      }
+    });
+  };
+
+  return /*#__PURE__*/React.createElement("span", {
+    className: "arena-checkbox"
+  }, /*#__PURE__*/React.createElement("input", _extends({
+    type: "checkbox"
+  }, commonProps, {
+    onBlur: undefined,
+    onChange: _onChange,
+    style: {
+      height: 'unset'
+    }
+  })), placeholder && /*#__PURE__*/React.createElement("label", {
+    "for": commonProps.id
+  }, placeholder));
 };
 
 var getClassName = function getClassName(prefix, name, parentController, type, superType, parentType, level, mode, extraClass) {
@@ -680,6 +718,28 @@ var createEntity = function createEntity(api, controller, entity) {
     }
   }).then(function (res) {
     return res.json();
+  });
+};
+var createEntityTemplate = function createEntityTemplate(api, controller, example) {
+  var url = new URL(api + "/" + controller + "/template");
+  var params = {};
+  Object.keys(example).forEach(function (key) {
+    if (example[key] !== undefined) params[key] = example[key];
+  });
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (res) {
+    return new Promise(function (r) {
+      res.json().then(function (j) {
+        return r(j);
+      })["catch"](function (e) {
+        r({});
+      });
+    });
   });
 };
 
@@ -27504,13 +27564,16 @@ var ArenaContainer = function ArenaContainer(_ref) {
       updateFunctionBuilder = _useUpdate[1];
 
   var entityToUse = getEntityToUse(mode, entityInState, entityFromCentralMemory);
+  var calculatedConfiguration = useMemo(function () {
+    var _entityRenderConfiguration = _.merge(_extends({}, entityRenderConfiguration), {
+      shapeConfiguration: componentMapper.getShapeConfiguration(controller)
+    });
 
-  var _entityRenderConfiguration = entityRenderConfiguration || componentMapper.getShapeConfiguration(controller);
-
-  var calculatedConfiguration = _extends({}, _entityRenderConfiguration, {
-    wrapperConfiguration: componentMapper.getComponent(name, controller, type, parentController, level)
-  });
-
+    console.log(_entityRenderConfiguration);
+    return _extends({}, _entityRenderConfiguration, {
+      wrapperConfiguration: componentMapper.getComponent(name, controller, type, parentController, level)
+    });
+  }, [name, controller, type, parentController, level, mode]);
   var keys = getTextKeys$1(parentController ? parentController : controller, name, mode);
 
   var _onCreateFinish = mode !== ArenaContainerMode.CREATE ? undefined : function () {
@@ -27647,8 +27710,21 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
     };
 
     if (!field.hidden) {
+      var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
+
+      if (currentFieldShapeConfiguration && currentFieldShapeConfiguration.render) {
+        var renderResult = currentFieldShapeConfiguration.render({
+          mode: mode,
+          t: componentMapper.t,
+          value: entity[fieldName],
+          update: update,
+          updateBuilder: updateBuilder
+        });
+        if (renderResult !== false) return renderResult;
+      }
+
       if (field.key) {
-        return drawKeyField(currentFieldCommonProps, field, entity[fieldName], shapeConfigurationForFields[fieldName]);
+        return drawKeyField(currentFieldCommonProps, field, entity[fieldName], currentFieldShapeConfiguration);
       } else {
         return drawSimpleField(currentFieldCommonProps, field, entity[fieldName]);
       }
@@ -27677,8 +27753,8 @@ var drawKeyField = function drawKeyField(props, field, value, shapeConfiguration
     }
   });
 
-  if (!field.collection) {
-    var valueProp = props.mode === ArenaContainerMode.CREATE ? {
+  if (!field.collection && !field.templateField) {
+    var valueProp = isObject(value) ? {
       entity: value
     } : {
       id: value
@@ -27691,7 +27767,8 @@ var drawKeyField = function drawKeyField(props, field, value, shapeConfiguration
     }
   } else {
     return /*#__PURE__*/React.createElement(ArenaListContainer, _extends({
-      filter: value
+      filter: value,
+      showCreateModal: field.allowInLineCreate
     }, containerCommonProps));
   }
 };
@@ -27700,7 +27777,7 @@ function getEntityToUse(mode, entity, entityFromCentralMemory) {
   switch (mode) {
     case ArenaContainerMode.CREATE:
     case ArenaContainerMode.SEARCH:
-      return entity;
+      return entity || entityFromCentralMemory;
 
     default:
       return entityFromCentralMemory;
@@ -27796,20 +27873,22 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
   var history = useHistory();
   var endpoint = componentMapper.api;
   useEffect(function () {
-    findEntities(endpoint, controller, filter).then(function (res) {
-      dispatch(createEntityLoad(controller, res));
-      setItems(res.map(function (e) {
-        return {
-          id: e.id
-        };
-      }));
-    });
+    if (filter) {
+      findEntities(endpoint, controller, filter).then(function (res) {
+        dispatch(createEntityLoad(controller, res));
+        setItems(res.map(function (e) {
+          return {
+            id: e.id
+          };
+        }));
+      });
+    }
   }, [controller, filter, reRender]);
   var selectionFunction = useMemo(function () {
     return createListItemSelectionFunction(mode, setItems);
   }, [mode]);
   return /*#__PURE__*/React.createElement("div", {
-    className: "arena-list-container list"
+    className: "arena-list-container list arena-" + controller + "-list-container"
   }, /*#__PURE__*/React.createElement(ArenaText, {
     k: "list." + controller + ".label",
     t: componentMapper.t
@@ -27822,14 +27901,15 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
   }), /*#__PURE__*/React.createElement(ArenaText, {
     k: "list." + controller + "." + mode.toLocaleLowerCase() + ".sublabel",
     t: componentMapper.t
-  }), mode === ArenaListContainerMode.VIEW && showCreateModal && /*#__PURE__*/React.createElement(ArenaCreateModal, {
+  }), showCreateModal && /*#__PURE__*/React.createElement(ArenaCreateModal, {
     controller: controller,
     parentController: parentController,
     componentMapper: componentMapper,
     entity: filter,
     onCloseModal: function onCloseModal(value) {
-      createEntity(endpoint, controller, value);
-      setReRender(!reRender);
+      createEntity(endpoint, controller, value).then(function () {
+        setReRender(!reRender);
+      });
     }
   }), items.map(function (i) {
     return /*#__PURE__*/React.createElement("div", {
@@ -27927,24 +28007,26 @@ var ArenaCreateModal = function ArenaCreateModal(_ref7) {
       stickyFooter: false,
       cssClass: [controller + "-arena-create-modal"]
     });
-    setPortal(reactDom.createPortal( /*#__PURE__*/React.createElement(ArenaContainer, {
-      mode: ArenaContainerMode.CREATE,
-      controller: controller,
-      entity: entity,
-      level: 2,
-      onCreateFinish: function onCreateFinish(entity) {
-        onCloseModal(entity);
-        modalInstance.close();
-        modalInstance.destroy();
-        setPortal(null);
-      },
-      parentController: parentController,
-      componentMapper: componentMapper,
-      entityRenderConfiguration: {
-        allowInLineCreate: true
-      }
-    }), modalInstance.getContent()));
-    modalInstance.open();
+    createEntityTemplate(componentMapper.api, controller, entity).then(function (template) {
+      setPortal(reactDom.createPortal( /*#__PURE__*/React.createElement(ArenaContainer, {
+        mode: ArenaContainerMode.CREATE,
+        controller: controller,
+        entity: template || {},
+        level: 2,
+        onCreateFinish: function onCreateFinish(entity) {
+          onCloseModal(entity);
+          modalInstance.close();
+          modalInstance.destroy();
+          setPortal(null);
+        },
+        parentController: parentController,
+        componentMapper: componentMapper,
+        entityRenderConfiguration: {
+          allowInLineCreate: true
+        }
+      }), modalInstance.getContent()));
+      modalInstance.open();
+    });
   }
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
     className: "arena-create-start-button arena-open-modal-button",
@@ -28054,7 +28136,7 @@ var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
 
     default:
       return /*#__PURE__*/React.createElement("div", {
-        className: "arena-entity-reder"
+        className: "arena-entity-render"
       }, actions.showClearSelection && /*#__PURE__*/React.createElement("button", {
         className: "arena-clear-field-button",
         onClick: resetEntity
@@ -28178,6 +28260,7 @@ var ArenaDefaultRenderWrapper = function ArenaDefaultRenderWrapper(_ref11) {
       error = _ref11.error,
       updateEntity = _ref11.updateEntity,
       mode = _ref11.mode;
+  var history = useHistory();
   return /*#__PURE__*/React.createElement("div", {
     className: "arena-default-render-wrapper"
   }, configuration.beforeRender && configuration.beforeRender({
@@ -28185,13 +28268,15 @@ var ArenaDefaultRenderWrapper = function ArenaDefaultRenderWrapper(_ref11) {
     mode: mode,
     updateEntity: updateEntity,
     error: error,
-    t: t
+    t: t,
+    history: history
   }), children, configuration.afterRender && configuration.afterRender({
     entity: entity,
     mode: mode,
     updateEntity: updateEntity,
     error: error,
-    t: t
+    t: t,
+    history: history
   }));
 };
 
@@ -28446,6 +28531,11 @@ var RouteContainer = function RouteContainer(props) {
   var shapeName = values.shapeName || controller;
   var containerMode = getContainerMode(mode);
   var shapeConfiguration = componentMapper.getShapeConfiguration(shapeName) || {};
+
+  var _useState = useState(),
+      templateEntity = _useState[0],
+      setTemplateEntity = _useState[1];
+
   var history = useHistory();
 
   var _onCreateFinish = function _onCreateFinish(entity) {
@@ -28457,16 +28547,26 @@ var RouteContainer = function RouteContainer(props) {
   };
 
   var creationMode = containerMode === ArenaContainerMode.CREATE;
-  return /*#__PURE__*/React.createElement(ArenaContainer, {
+
+  if (creationMode && !templateEntity) {
+    createEntityTemplate(componentMapper.api, controller, values).then(function (templateFromBackend) {
+      setTemplateEntity(templateFromBackend || {});
+    });
+    return null;
+  }
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "arena-" + mode + "-" + controller + "-screen"
+  }, /*#__PURE__*/React.createElement(ArenaContainer, {
     controller: controller,
     id: Number(id) ? Number(id) : undefined,
     mode: containerMode,
     level: shapeConfiguration.level || 2,
     componentMapper: props.componentMapper,
-    entity: creationMode ? {} : undefined,
+    entity: creationMode ? templateEntity : undefined,
     onCreateFinish: creationMode ? _onCreateFinish : undefined,
     entityRenderConfiguration: shapeConfiguration.entityRenderConfiguration
-  });
+  }));
 };
 
 var RoutListContainer = function RoutListContainer(props) {
@@ -28485,7 +28585,9 @@ var RoutListContainer = function RoutListContainer(props) {
     }
   }, componentMapper.getShapeConfiguration(shapeName));
 
-  return /*#__PURE__*/React.createElement(ArenaListContainer, {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "arena-list-" + mode + "-" + controller + "-screen"
+  }, /*#__PURE__*/React.createElement(ArenaListContainer, {
     controller: controller,
     mode: containerMode,
     level: 2,
@@ -28493,7 +28595,7 @@ var RoutListContainer = function RoutListContainer(props) {
     componentMapper: props.componentMapper,
     showCreateModal: shapeConfiguration.list.showCreateModal,
     shapeConfiguration: shapeConfiguration.list
-  });
+  }));
 };
 
 var getContainerMode = function getContainerMode(mode) {
