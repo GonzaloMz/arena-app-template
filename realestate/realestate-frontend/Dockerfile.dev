@@ -2,6 +2,6 @@ FROM node
 ADD . /frontend/realestate-frontend
 WORKDIR /frontend/realestate-frontend
 
-RUN npm install
-RUN npm install -g serve
 RUN npm install -g node-pre-gyp
+RUN npm install -g serve
+RUN npm install
