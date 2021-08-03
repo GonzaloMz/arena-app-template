@@ -12,6 +12,18 @@ export const textMap = {
                 sublabel: "Realizadas"
             }
         },
+        estate: {
+            create: {
+                finish: "Finalizar alta de propiedad"
+            }
+        },
+        photo: {
+            create: {
+                start: "Agregar foto",
+                finish: "Listo",
+                label: "Tome una nueva fotografía de este lugar"
+            }
+        },
         appointment: {
             create: {
                 start: "Nueva Tasación",
@@ -27,6 +39,7 @@ export const textMap = {
                 label:"Tipo de inmueble"
             },
             placeId:{
+          
                 label: "Lugar de la tasación"
             },
             userId: {
@@ -65,15 +78,15 @@ export const textMap = {
         place:{
             unit:{
                 label: "Departamento",
-                placeholder: "Ingrese número de unidad del inmueble a tasar"
+                placeholder: "Ingrese número de unidad "
             },
             floor:{
                 label: "Piso",
-                placeholder: "Ingrese el piso del inmueble a tasar"
+                placeholder: "Ingrese el piso"
             },
             formattedAddress:{
                 label: "Dirección",
-                placeholder: "Ingrese la dirección de la propiedad"
+                placeholder: "Ingrese la dirección"
             }
         },
         assessment: {
@@ -122,26 +135,178 @@ export const textMap = {
                 label: "Entrada de vehículos"
             },
             coveredGarage:{
-                label: "Cochera cubierta"
+                view:{
+                    label: "Cochera cubierta"
+                },
+                placeholder: "Cochera cubierta"
             },
             laundry:{
-                    placeholder: "Lavadero"
+                view:{
+                    label: "Lavadero"
+                },
+                placeholder: "Lavadero"
             },
             electricity:{
+                view:{
+                    label: "Luz"
+                },
                     placeholder: "Luz"
             },
             gas:{
+                view:{
+                    label: "Gas"
+                },
                     placeholder: "Gas"
             },
             waterNetworkConnection:{
+                view:{
+                    label: "Agua"
+                },
                     placeholder: "Agua"
             },
             sewerConnection:{
+                view:{
+                    label: "Cloacas"
+                },
                     placeholder: "Cloacas"
             },
             extraNotes:{
                     placeholder: "Notas"
             }, 
+        },
+        estate:{
+            create:{
+                finish:"Finalizar alta de propiedad"
+            },
+            owner:{
+                label: "Cliente"
+            },
+            placeId:{
+                label: "Propiedad"
+            },
+            photos:{
+                label: "Fotos"
+            },
+            status:{
+                placeholder: "Estado de la publicación",
+                label: "Publicación"
+            },
+            operation:{
+                view: {
+                    sublabel: "en"
+                }
+            }
+        },
+        estateSearch:{
+            environments:{
+                label: "Ambientes"
+            },
+            estateType:{
+                placeholder:"Selecciona el tipo de inmueble que estás buscando",
+                label:"Tipo de inmueble"
+            },
+            squareMeterCovered:{
+                label: "m2 cubiertos",
+                placeholder: "Rango de metros cuadrados cuebiertos"
+            },
+            squareMeterTotal:{
+                label: "m2 totales",
+                placeholder: "Rango de metros cuadrados totales"
+            },
+            toilets:{
+                label: "Baños"
+            },
+            toilete:{
+                label: "Baño"
+            },
+            carPlaces:{
+                label: "Entrada de vehículos"
+            },
+            coveredGarage:{
+                view:{
+                    label: "Cochera cubierta"
+                },
+                placeholder: "Cochera cubierta"
+            },
+            laundry:{
+                view:{
+                    label: "Lavadero"
+                },
+                placeholder: "Lavadero"
+            },
+            electricity:{
+                view:{
+                    label: "Luz"
+                },
+                    placeholder: "Luz"
+            },
+            gas:{
+                view:{
+                    label: "Gas"
+                },
+                    placeholder: "Gas"
+            },
+            waterNetworkConnection:{
+                view:{
+                    label: "Agua"
+                },
+                    placeholder: "Agua"
+            },
+            sewerConnection:{
+                view:{
+                    label: "Cloacas"
+                },
+                    placeholder: "Cloacas"
+            },
+            extraNotes:{
+                    placeholder: "Notas"
+            }, 
+            create:{
+                finish:"Finalizar alta de propiedad"
+            },
+            owner:{
+                label: "Cliente"
+            },
+            placeId:{
+                label: "Propiedad"
+            },
+            photos:{
+                label: "Fotos"
+            },
+            status:{
+                placeholder: "Estado de la publicación",
+                label: "Publicación"
+            },
+            operation:{
+                view: {
+                    sublabel: "en"
+                }
+            }
+        },
+        owner:{
+            address:{
+                sublabel: "Dirección del cliente"
+            },
+            cuit:{
+                placeholder: "Ingrese el CUIT o CUIL del cliente",
+                label: "CUIT/CUIL"
+            },
+            dni:{
+                placeholder: "Ingrese el DNI del cliente",
+                label: "DNI"
+            }
+        },
+        java:{
+            lang:{
+                Boolean:{
+                    null: "No",
+                    true: "Si",
+                    false: "No"
+                },
+                Integer:{
+                    null: "--"
+                }
+            }
         },
         app:{
             backend:{
@@ -165,11 +330,18 @@ export const textMap = {
                         },
                         SquareMeterRange:{
                             UP_TO_20:"Hasta 20",
-                            UP_TO_40:"De 20 a 40",
-                            UP_TO_80:"De 40 a 80",
-                            UP_TO_150:"De 80 a 150",
-                            MORE_THAN_150:"Mas de 150"
-                        }   
+                            UP_TO_40:"20 a 40",
+                            UP_TO_80:"40 a 80",
+                            UP_TO_150:"80 a 150",
+                            MORE_THAN_150:"Mas de 150",
+                            null: "--"
+                        }  ,
+                        EstateStatus:{
+                            null: "No definido",
+                            AVAILABLE: "Disponible",
+                            RESERVED: "Reservada",
+                            NOT_AVAILABLE: "No Disponible"
+                        }
                     }
                 }
             }

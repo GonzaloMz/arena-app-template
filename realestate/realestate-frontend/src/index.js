@@ -32,8 +32,8 @@ const componentMapper = new ArenaMapper(
 	componentsTypeMap,
 	textMap.es,
 	// "http://localhost:1312/"
-	// "http://192.168.0.14:1312/"
-	"https://api.costoya.com.ar/"
+	"http://192.168.0.14:1312/"
+	// "http://api.costoya.com.ar/"
 );
 
 
@@ -67,6 +67,7 @@ ReactDOM.render(
 				<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
 				<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
 				<Redirect from="/estates" push={true} to="/build/listContainer/view/estate" />
+				<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
 				<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
 			</Switch>
 		</Router>

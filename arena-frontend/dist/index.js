@@ -419,7 +419,7 @@ var ArenaField = function ArenaField(_ref) {
   switch (mode) {
     case ArenaFieldMode.VIEW:
       var valueKey = type + "." + value;
-      var viewValue = inputType === 'enum' ? componentMapper.t(valueKey, valueKey) : value;
+      var viewValue = componentMapper.t(valueKey) || value;
       return /*#__PURE__*/React__default.createElement("div", {
         className: contentClasses
       }, textComponent, /*#__PURE__*/React__default.createElement(ArenaViewField, {
@@ -543,7 +543,8 @@ var buildSelect = function buildSelect(commonProps, options, placeholder) {
       height: 'unset'
     }
   }), /*#__PURE__*/React__default.createElement("option", {
-    defaultValue: true
+    defaultValue: true,
+    value: ""
   }, placeholder), options.map(function (option) {
     return /*#__PURE__*/React__default.createElement("option", {
       key: option.value,
@@ -686,7 +687,8 @@ var findEntities = function findEntities(api, controller, example) {
   var url = new URL(api + "/" + controller + "/search");
   var params = {};
   Object.keys(example).forEach(function (key) {
-    if (example[key] !== undefined) params[key] = example[key];
+    var value = example[key];
+    if (value && typeof value !== 'object') params[key] = value;
   });
   url.search = new URLSearchParams(params).toString();
   return fetch(url, {
@@ -27678,6 +27680,7 @@ var ArenaContainerSearchRender = function ArenaContainerSearchRender(_ref3) {
     mode: ArenaContainerMode.CREATE,
     configuration: configuration
   })), /*#__PURE__*/React__default.createElement(ArenaListContainer, _extends({}, commonProps, {
+    shapeConfiguration: configuration && configuration.shapeConfiguration ? configuration.shapeConfiguration.list : undefined,
     filter: filter,
     onSelectFinish: onSelectFinish,
     mode: ArenaListContainerMode.SELECT,
@@ -27716,15 +27719,21 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
     if (!field.hidden) {
       var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
 
-      if (currentFieldShapeConfiguration && currentFieldShapeConfiguration.render) {
-        var renderResult = currentFieldShapeConfiguration.render({
-          mode: mode,
-          t: componentMapper.t,
-          value: entity[fieldName],
-          update: update,
-          updateBuilder: updateBuilder
-        });
-        if (renderResult !== false) return renderResult;
+      if (currentFieldShapeConfiguration) {
+        if (currentFieldShapeConfiguration.render) {
+          var renderResult = currentFieldShapeConfiguration.render({
+            mode: mode,
+            t: componentMapper.t,
+            value: entity[fieldName],
+            update: update,
+            updateBuilder: updateBuilder
+          });
+          if (renderResult !== false) return renderResult;
+        }
+
+        if (currentFieldShapeConfiguration.props) {
+          ___default.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
+        }
       }
 
       if (field.key) {
@@ -27773,7 +27782,9 @@ var drawKeyField = function drawKeyField(props, field, value, shapeConfiguration
     return /*#__PURE__*/React__default.createElement(ArenaListContainer, _extends({
       filter: value,
       showCreateModal: field.allowInLineCreate
-    }, containerCommonProps));
+    }, containerCommonProps, {
+      shapeConfiguration: containerCommonProps.entityRenderConfiguration.shapeConfiguration ? containerCommonProps.entityRenderConfiguration.shapeConfiguration.list : undefined
+    }));
   }
 };
 
@@ -27870,24 +27881,41 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
       items = _useState[0],
       setItems = _useState[1];
 
-  var _useState2 = React.useState(true),
-      reRender = _useState2[0],
-      setReRender = _useState2[1];
+  var _useState2 = React.useState([]),
+      fullItems = _useState2[0],
+      setFullItems = _useState2[1];
+
+  var _useState3 = React.useState(true),
+      reRender = _useState3[0],
+      setReRender = _useState3[1];
 
   var history = reactRouterDom.useHistory();
+
+  var _useState4 = React.useState(false),
+      loading = _useState4[0],
+      setLoading = _useState4[1];
+
   var endpoint = componentMapper.api;
   React.useEffect(function () {
     if (filter) {
+      setItems([]);
+      setFullItems([]);
+      setLoading(true);
       findEntities(endpoint, controller, filter).then(function (res) {
-        dispatch(createEntityLoad(controller, res));
-        setItems(res.map(function (e) {
-          return {
-            id: e.id
-          };
-        }));
+        setLoading(false);
+
+        if (res && res.map) {
+          dispatch(createEntityLoad(controller, res));
+          setFullItems(res);
+          setItems(res.map(function (e) {
+            return {
+              id: e.id
+            };
+          }));
+        }
       });
     }
-  }, [controller, filter, reRender]);
+  }, [controller, JSON.stringify(filter), reRender]);
   var selectionFunction = React.useMemo(function () {
     return createListItemSelectionFunction(mode, setItems);
   }, [mode]);
@@ -27915,7 +27943,13 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
         setReRender(!reRender);
       });
     }
-  }), items.map(function (i) {
+  }), loading && /*#__PURE__*/React__default.createElement("div", {
+    "class": "loader"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    "class": "loader-wheel"
+  }), /*#__PURE__*/React__default.createElement("div", {
+    "class": "loader-text"
+  })), shapeConfiguration && shapeConfiguration.listRender && shapeConfiguration.listRender(fullItems, componentMapper), (!shapeConfiguration || !shapeConfiguration.listRender) && items.map(function (i) {
     return /*#__PURE__*/React__default.createElement("div", {
       className: "arena-list-item-wrapper",
       key: i.id,
@@ -27951,9 +27985,9 @@ var ArenaSearchModal = function ArenaSearchModal(_ref6) {
       parentController = _ref6.parentController,
       componentMapper = _ref6.componentMapper;
 
-  var _useState3 = React.useState(null),
-      portal = _useState3[0],
-      setPortal = _useState3[1];
+  var _useState5 = React.useState(null),
+      portal = _useState5[0],
+      setPortal = _useState5[1];
 
   function openModal() {
     var modalInstance = new modal({
@@ -27996,9 +28030,9 @@ var ArenaCreateModal = function ArenaCreateModal(_ref7) {
       parentController = _ref7.parentController,
       componentMapper = _ref7.componentMapper;
 
-  var _useState4 = React.useState(null),
-      portal = _useState4[0],
-      setPortal = _useState4[1];
+  var _useState6 = React.useState(null),
+      portal = _useState6[0],
+      setPortal = _useState6[1];
 
   function openModal() {
     var modalInstance = new modal({
@@ -28055,9 +28089,9 @@ var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
     return null;
   }
 
-  var _useState5 = React.useState(level - 1),
-      renderLevel = _useState5[0],
-      setRenderLevel = _useState5[1];
+  var _useState7 = React.useState(level - 1),
+      renderLevel = _useState7[0],
+      setRenderLevel = _useState7[1];
 
   var initialActions = {
     showCreateModal: false,
@@ -28067,9 +28101,9 @@ var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
     renderMode: mode
   };
 
-  var _useState6 = React.useState(initialActions),
-      actions = _useState6[0],
-      setActions = _useState6[1];
+  var _useState8 = React.useState(initialActions),
+      actions = _useState8[0],
+      setActions = _useState8[1];
 
   var templateEntity = {};
 
@@ -28186,17 +28220,17 @@ var ArenaInLineSearch = function ArenaInLineSearch(_ref9) {
       templateEntity = _ref9.templateEntity;
   var dispatch = reactRedux.useDispatch();
 
-  var _useState7 = React.useState([]),
-      items = _useState7[0],
-      setItems = _useState7[1];
+  var _useState9 = React.useState([]),
+      items = _useState9[0],
+      setItems = _useState9[1];
 
-  var _useState8 = React.useState(''),
-      value = _useState8[0],
-      setValue = _useState8[1];
+  var _useState10 = React.useState(''),
+      value = _useState10[0],
+      setValue = _useState10[1];
 
-  var _useState9 = React.useState(false),
-      isOpen = _useState9[0],
-      setIsOpen = _useState9[1];
+  var _useState11 = React.useState(false),
+      isOpen = _useState11[0],
+      setIsOpen = _useState11[1];
 
   var endpoint = componentMapper.api;
   React.useEffect(function () {
@@ -28551,6 +28585,7 @@ var RouteContainer = function RouteContainer(props) {
   };
 
   var creationMode = containerMode === ArenaContainerMode.CREATE;
+  var searchMode = containerMode === ArenaContainerMode.SEARCH;
 
   if (creationMode && !templateEntity) {
     createEntityTemplate(componentMapper.api, controller, values).then(function (templateFromBackend) {
@@ -28567,7 +28602,7 @@ var RouteContainer = function RouteContainer(props) {
     mode: containerMode,
     level: shapeConfiguration.level || 2,
     componentMapper: props.componentMapper,
-    entity: creationMode ? templateEntity : undefined,
+    entity: creationMode ? templateEntity : searchMode ? values : undefined,
     onCreateFinish: creationMode ? _onCreateFinish : undefined,
     entityRenderConfiguration: shapeConfiguration.entityRenderConfiguration
   }));

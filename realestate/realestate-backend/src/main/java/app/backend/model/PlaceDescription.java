@@ -1,12 +1,14 @@
 package app.backend.model;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import app.backend.model.enums.SquareMeterRange;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
 
 @Entity
+@Table(name="place_description")
 public class PlaceDescription extends AbstractEntity  implements AbstractDataTransferObject  {
 
 	private SquareMeterRange squareMeterCovered;

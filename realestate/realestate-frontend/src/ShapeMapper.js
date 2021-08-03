@@ -6,8 +6,10 @@ import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
 
-import Camera, { FACING_MODES }  from '@rinse/react-html5-camera-photo';
+import Camera, { FACING_MODES, IMAGE_TYPES }  from '@rinse/react-html5-camera-photo';
 import '@rinse/react-html5-camera-photo/build/css/index.css';
+
+import Carousel from 'react-elastic-carousel';
 
 registerLocale('es', es)
 
@@ -160,7 +162,7 @@ export const shapeConfigurationMap = {
             },
             placeDescription:{
                 visibility:{
-                    visible:['environments', 'toilets', 'squareMeterCovered', 'squareMeterTotal', 'carPlaces', 'laundry', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection', 'extraNotes' ],
+                    visible:['environments', 'toilets', 'squareMeterCovered', 'squareMeterTotal', 'carPlaces', 'coveredGarage', 'laundry', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection', 'extraNotes' ],
                     hidden:[]
                 }
             }
@@ -201,23 +203,164 @@ export const shapeConfigurationMap = {
 
        
     },
-    estate:{
+    estateCreation:{
         entityRenderConfiguration:{
-            allowInLineCreate:true
+            allowInLineCreate:true,
+            shapeConfiguration:{
+
+                visibility:{
+                    visible: ["owner", "placeId", "placeDescription","estateType", "photos", "status"]
+                },
+                fields:{
+                    placeId:{
+                        
+                           visibility:{
+                            visible: ["formattedAddress"]
+                        }
+                    },
+                    placeDescription:{
+                        visibility:{
+                            visible:['environments', 'toilets', 'squareMeterCovered', 'squareMeterTotal', 'carPlaces', 'coveredGarage', 'laundry', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection', 'extraNotes' ]
+                        }
+                    }
+        
+                }
+            }
+            }
+    },
+    estate:{
+        list: {
+            visibility:{
+                visible:['placeId', 'estateType', 'operation', 'photos', 'placeDescription'],
+                hidden:[]
+            },
+            fields:{
+                placeId:{
+                    visibility:{
+                        visible:['formattedAddress'],
+                        hidden:[]
+                    }
+                },
+                photos:{
+                    list:{
+                        
+                        onItemClick: ()=> alert("foto maximizada")
+                    }
+                },
+                placeDescription:{
+                    visibility:{
+                        visible:['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+                        hidden:[]
+                    }
+                },
+                operation: {
+                    //render:({value, t})=>(<span>{`${t('operation.in')} ${value}`}</span>)
+                }
+            },
+            onItemClick:  (item, history)=>{
+                history.push('/build/container/view/estate/'+item);
+            }
+        }
+    },
+    estateSearch:{
+        list:{
+            visibility:{
+                visible:['estate'],
+                hidden:[]
+            },
+            fields:{
+                estate:{
+                    props:{
+                        level:2
+                    },
+                    visibility:{
+                        visible:['placeId', 'estateType', 'operation', 'photos', 'placeDescription'],
+                        hidden:[]
+                    },
+                    fields:{
+                        placeId:{
+                            visibility:{
+                                visible:['formattedAddress'],
+                                hidden:[]
+                            }
+                        },
+                        photos:{
+                            list:{
+                                listRender: (items)=>{
+                                    console.log(items)
+                                    return <Carousel showArrows={true} itemsToShow={3} showEmptySlots={false}>{items.map(i=><img className='place-photo' src={i.view}></img>)}</Carousel>
+                                },
+                                onItemClick: ()=> alert("foto maximizada")
+                            }
+                        },
+                        placeDescription:{
+                            visibility:{
+                                visible:['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+                                hidden:[]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        fields:{
+            operation:{
+                render: ({update, value, t, mode})=>{
+                    if(mode==='VIEW') return false;
+                    return (
+                    <div style={{textAlign:'center'}}>
+                        <div className='radio' >
+                            <input label='Venta' type="radio" onClick={e=>update(e.target.value)} id="SALE" value="SALE" checked={value==="SALE"}></input>
+                            <input label='Alquiler' type="radio" onClick={e=>update(e.target.value)} id="RENT" value="RENT" checked={value==="RENT"}></input>
+                        </div>
+                    </div>)
+                }
+            }
+        },
+        onItemClick:  (item, history)=>{
+            history.push('/build/container/view/estate/'+item);
         }
     },
     photo:{
         fields:{
             view:{
                 render:({value, update})=>{
-                    if(!value) return <Camera 
+                    if(!value) return <Camera imageType={ IMAGE_TYPES.JPG} 
+                    imageCompression={.5}
                     idealFacingMode = {FACING_MODES.ENVIRONMENT}
                     onTakePhoto = { (dataUri) => { update(dataUri); } }></Camera>;
                     return <img className='place-photo' src={value}></img>
                 }
             }
         }
-    }
+    },
+    owner:{
+      
+                fields:{
+                    
+
+
+                    address: {
+                        visibility:{
+                            visible:['formattedAddress']
+                        },
+                        fields:{
+                            formattedAddress:{
+                                render:({update, mode, value})=>{
+                                    if(mode==='VIEW' || mode==='EDIT') return false;
+                                    
+                                    return <Place update={update} value={value}/>;
+                                }
+                            }
+                        }
+                    },
+
+
+
+
+                }
+            }
+       
 }
 
 const Place = ({update, value})=>{

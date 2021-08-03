@@ -9,6 +9,7 @@ import app.backend.model.Assessment;
 import app.backend.model.Estate;
 import app.backend.model.Owner;
 import app.backend.model.dto.EstateDTO;
+import app.backend.model.dto.OwnerDTO;
 import app.backend.repository.EstateRepository;
 import arena.backend.service.ArenaService;
 
@@ -49,7 +50,7 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 		BeanUtils.copyProperties(ent.get(), est,"id", "owner");
 		Owner owner = ownerService.create(Optional.of(ent.get().getOwner()));
 		est.setOwner(owner.getId());
-		return est;
+		return this.estateRepository.save(est);
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 		EstateDTO estate = new EstateDTO();
 		if (assessmentEntity!=null) {
 			BeanUtils.copyProperties(assessmentEntity, estate,"id");
-			Owner owner = new Owner();
+			OwnerDTO owner = new OwnerDTO();
 			owner.setUser(assessmentEntity.getUserId());
 			estate.setOwner(owner);
 		}

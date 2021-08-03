@@ -5,9 +5,8 @@
  */
 package app.backend.controller;
 
-import app.backend.model.Owner;
-import app.backend.model.dto.OwnerDTO;
-import app.backend.service.OwnerService;
+import app.backend.model.EstateSearch;
+import app.backend.service.EstateSearchService;
 import arena.backend.controller.ArenaController;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
@@ -20,21 +19,21 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 
  */
 @RestController
-@RequestMapping(value = "/owner")
-public class OwnerController extends ArenaController<Owner,OwnerDTO>{
+@RequestMapping(value = "/estateSearch")
+public class EstateSearchController extends ArenaController<EstateSearch,EstateSearch>{
 		
 	@Autowired
-	private OwnerService ownerService;
+	private EstateSearchService estateSearchService;
 
 	@Override
-	public ArenaService<Owner,OwnerDTO> getService() {
-		return this.ownerService;
+	public ArenaService<EstateSearch,EstateSearch> getService() {
+		return this.estateSearchService;
 	}
 
 	@Override
 	public
 	ShapeFactory getShapeFactory() {
-		return new ShapeFactory(Owner.class);
+		return new ShapeFactory(EstateSearch.class);
 	}
 	
 }

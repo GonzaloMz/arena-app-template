@@ -2,21 +2,19 @@ package app.backend.model.dto;
 
 import java.util.HashMap;
 
-import app.backend.model.Owner;
-
 public class EstateDTO extends EstateFieldsDTO{
 	
-	private Owner owner;
+	private OwnerDTO owner;
 	
 	private Long placeDescription;
 	
 	private Long placeId;
 
-	public Owner getOwner() {
+	public OwnerDTO getOwner() {
 		return owner;
 	}
 
-	public void setOwner(Owner owner) {
+	public void setOwner(OwnerDTO owner) {
 		this.owner = owner;
 	}
 

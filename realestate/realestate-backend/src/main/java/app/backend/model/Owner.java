@@ -3,17 +3,18 @@ package app.backend.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
+import app.backend.model.dto.OwnerFieldsDTO;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
 import arena.backend.model.extension.Key;
 
 @Entity
-public class Owner extends AbstractEntity implements AbstractDataTransferObject {
+public class Owner extends OwnerFieldsDTO {
 
 	@Column(unique = true)
 	private Long user;
 	
-	private String address;
+	private Long address;
 	
 	private Long dni;
 	
@@ -28,11 +29,12 @@ public class Owner extends AbstractEntity implements AbstractDataTransferObject 
 		this.user = user;
 	}
 
-	public String getAddress() {
+	@Key(type=Place.class, allowInLineCreate = true)
+	public Long getAddress() {
 		return address;
 	}
 
-	public void setAddress(String address) {
+	public void setAddress(Long address) {
 		this.address = address;
 	}
 

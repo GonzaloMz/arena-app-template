@@ -102,6 +102,10 @@ button[class^="arena-"][ class$="-button"]{
 
 .arena-list-item-wrapper{
 	cursor: pointer;
+
+	.arena-field-mode-VIEW .label{
+		padding: 0 !important;
+	}
 	
 	font-family: 'Roboto';
 	.arena-text.label {
@@ -242,9 +246,15 @@ button[class^="arena-"][ class$="-button"]{
 		max-height: 100%;
 	}
 }
+.photo-arena-create-modal{
+	.place-photo{
+		width: 100%;
+	}
+}
+
 
 // :not(.arena-list-item-wrapper) > .arena-container{
-.arena-create-appointment-screen, .arena-create-assessment-screen{
+.arena-create-appointment-screen, .arena-create-assessment-screen, .arena-create-estate-screen{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
@@ -260,6 +270,108 @@ button[class^="arena-"][ class$="-button"]{
 	@extend .mt-5, .mb-5;
 }
 
+.arena-estateSearch-list-container{
+	.arena-list-selection-finish{
+		@extend .d-none;
+	}
+}
+
+.arena-list-view-estate-screen, .arena-search-estate-screen, .arena-estateSearch-list-container{
+	.arena-field-name-operation, .arena-field-name-estateType{
+				text-align: center;
+				text-transform: uppercase;
+				font-size: 9pt;
+				font-family: 'Roboto Cn';
+				background-color:  map-get($theme-colors, "ligth-background");;
+				@extend .mb-2;
+	}
+	.arena-field-name-operation{
+		:first-child{
+			margin: auto 0;
+		}
+	}
+	
+	.arena-photo-list-container{
+		.arena-list-item-wrapper{
+			margin: 0 auto !important;
+		}
+	}
+	.arena-field-name-estateType{
+		.arena-field-value{
+			text-align: right;
+			width: 100%;
+		}
+	}
+
+	.arena-field-name-formattedAddress{
+		@extend .background-secondary-color-ligth;
+		border-radius: 3px 3px 0px 0px;
+		.arena-field-value{
+			margin: 0 auto;
+		}
+	}
+	.estate-placeDescription-container{
+		font-family: 'Roboto Cn';
+		.arena-field-parentController-placeDescription > *{
+			margin: auto 0;
+		}
+		.arena-text.label{
+			display: inline-block;
+		}
+		.arena-text.label::after{
+			content: ":";
+		}
+
+		@extend .container;
+		.arena-container-default-render{
+			@extend .row;
+			.arena-field-name-environments{
+				@extend .col-4;
+				border-top:  map-get($theme-colors, "secondary") 1px solid;
+			}
+			.arena-field-name-carPlaces{
+				@extend .col-4;
+				border-top:  map-get($theme-colors, "secondary") 1px solid;
+			}
+
+			.arena-field-name-squareMeterTotal{
+				@extend .col-4;
+				border-top:  map-get($theme-colors, "secondary") 1px solid;
+			}
+
+			.arena-field-name-toilets{
+				@extend .col-4;
+				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+			}
+
+			.arena-field-name-laundry{
+				@extend .col-4;
+				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+			}
+
+			.arena-field-name-squareMeterCovered{
+				@extend .col-4;
+				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+			}
+
+			.arena-field-name-electricity{
+				@extend .col-3;
+			}
+
+			.arena-field-name-gas{
+				@extend .col-3;
+			}
+
+			.arena-field-name-waterNetworkConnection{
+				@extend .col-3;
+			}
+
+			.arena-field-name-sewerConnection{
+				@extend .col-3;
+			}
+		}
+	}
+}
 
 .arena-list-container .arena-controller-appointment .arena-text.label{
 	display: none;
@@ -413,33 +525,45 @@ button[class^="arena-"][ class$="-button"]{
 }
 
 
-// ::-webkit-input-placeholder, ::-moz-placeholder, ::-ms-input-placeholder, ::-moz-placeholder{
 
-// 	font-size:8.3pt !important;
-// 	vertical-align:middle;
-// // }
-// ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-// 	font-family: 'Roboto';
-// 	font-size: 6.8pt !important;
-// 	color: #AAA;
-// 	transform:translate3d(0,-40px,0);
-//   }
-//   ::-moz-placeholder { /* Firefox 19+ */
-// 	font-family: 'Roboto';
-// 	font-size: 6.8pt !important;
-// 	@extend .m-auto;
-// 	vertical-align: middle !important;
-//   }
-//   ::-ms-input-placeholder { /* IE 10+ */
-// 	font-family: 'Roboto';
-// 	font-size: 6.8pt !important;
-// 	@extend .m-auto;
-// 	vertical-align: middle !important;
-//   }
-//   ::-moz-placeholder { /* Firefox 18- */
-// 	font-family: 'Roboto';
-// 	font-size: 6.8pt !important;
-// 	top: 10px;
-// 	padding-top: 10px;
-// 	margin-top: 10px;
-//   }
+  .loader {
+	width: 60px;
+	margin: auto;
+  }
+  
+  .loader-wheel {
+	animation: spin 1s infinite linear;
+	border: 2px solid map-get($theme-colors, "primary");
+	border-left: 4px solid map-get($theme-colors, "light");
+	border-radius: 50%;
+	height: 20px;
+	margin-bottom: 10px;
+	width: 20px;
+  }
+  
+  .loader-text {
+	color: #fff;
+	font-family: arial, sans-serif;
+  }
+  
+  
+  @keyframes spin {
+	0% {
+	  transform: rotate(0deg);
+	}
+	100% {
+	  transform: rotate(360deg);
+	}
+  }
+  
+.rec-carousel-wrapper {
+
+	 button.rec-arrow{
+		@extend .d-inline;
+		@extend .btn;
+		@extend .btn-link, .rounded-pill;
+		
+	}
+
+	@extend .px-2;
+}

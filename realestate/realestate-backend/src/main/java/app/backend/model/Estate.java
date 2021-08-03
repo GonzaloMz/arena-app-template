@@ -2,6 +2,7 @@ package app.backend.model;
 
 import java.util.HashMap;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import app.backend.model.dto.EstateFieldsDTO;
@@ -15,6 +16,7 @@ public class Estate extends EstateFieldsDTO{
 	
 	private Long owner;
 
+	@Column(name="place_description")
 	private Long placeDescription;
 	
 	@Key(type = Place.class)
@@ -26,7 +28,7 @@ public class Estate extends EstateFieldsDTO{
 		this.placeId = placeId;
 	}
 
-	@Key(type=Owner.class)
+	@Key(type=Owner.class, allowInLineCreate = true)
 	public Long getOwner() {
 		return owner;
 	}
@@ -54,7 +56,5 @@ public class Estate extends EstateFieldsDTO{
 		}
 		return filter;
 	}
-
-	
 	
 }
