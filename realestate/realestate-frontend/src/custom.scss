@@ -406,7 +406,7 @@ button[class^="arena-"][ class$="-button"]{
 .arena-list-container .arena-controller-appointment .arena-text.label{
 	display: none;
 }
-.list, .create{
+.list, .create, .search{
 	font-family: Raleway !important;
 	@extend .h1;
 	@extend .mx-auto;
