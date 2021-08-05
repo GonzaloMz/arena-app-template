@@ -254,7 +254,6 @@ button[class^="arena-"][ class$="-button"]{
 
 
 // :not(.arena-list-item-wrapper) > .arena-container{
-.arena-create-appointment-screen, .arena-create-assessment-screen, .arena-create-estate-screen{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
@@ -264,6 +263,7 @@ button[class^="arena-"][ class$="-button"]{
 			@extend .mt-5, .mb-2;
 		}
 	}
+.arena-create-appointment-screen, .arena-create-assessment-screen, .arena-create-estate-screen{
 	.arena-container{
 		@extend .mb-2;
 	}
@@ -273,6 +273,36 @@ button[class^="arena-"][ class$="-button"]{
 .arena-estateSearch-list-container{
 	.arena-list-selection-finish{
 		@extend .d-none;
+	}
+}
+
+.inline-search-item{
+	@extend .pl-1;
+	font-family: 'Roboto';
+	font-size: small;
+	.arena-container{
+		border-bottom:  map-get($theme-colors, "dark") 1px solid;
+		cursor: pointer;
+	}
+}
+.inline-search-item:hover{
+	.arena-container{
+		@extend .background-secondary-color-ligth;
+	}
+}
+
+.user-inline-search {
+	.arena-field-name-phone{
+		width: 50%;
+		float: left;
+	}
+	.arena-field-name-email{
+		width: 50%;
+	}
+	.arena-field-name-name{
+		.label{
+			display: none;
+		}
 	}
 }
 
@@ -408,6 +438,9 @@ button[class^="arena-"][ class$="-button"]{
 
 .react-autosuggest__input, .pac-target-input {
 	@extend .arena-edit-field;
+}
+.react-autosuggest__suggestions-list{
+	@extend .pl-2
 }
 
 

@@ -111,6 +111,9 @@ export const textMap = {
             sugestedValue:{
                 label: "Valor sugerido",
                 placeholder: "Ingrese el valor sugerido en U$D para este inmueble"
+            },
+            placeDescription:{
+                label: "Descripción de la propiedad"
             }
         },
         placeDescription:{
@@ -190,6 +193,10 @@ export const textMap = {
             status:{
                 placeholder: "Estado de la publicación",
                 label: "Publicación"
+            },
+            price:{
+                label:"Precio",
+                placeholder: "Ingrese el valor en dólares de la propiedad"
             },
             operation:{
                 view: {
@@ -281,6 +288,10 @@ export const textMap = {
                 view: {
                     sublabel: "en"
                 }
+            },
+            price:{
+                label:"Precio",
+                placeholder: "Ingrese el valor en dólares de la propiedad"
             }
         },
         owner:{

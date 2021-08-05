@@ -140,6 +140,17 @@ export const shapeConfigurationMap = {
             return null
         },
     },
+    user : {
+        entityRenderConfiguration:{
+            shapeConfiguration:{
+    
+            }
+        },
+                        visibility:{
+                            visible:['name', 'phone', 'email'],
+                            hidden:[]
+                        }
+    },
     assessment: {
         
         entityRenderConfiguration:{
@@ -212,6 +223,18 @@ export const shapeConfigurationMap = {
                     visible: ["owner", "placeId", "placeDescription","estateType", "photos", "status"]
                 },
                 fields:{
+                    operation:{
+                        render: ({update, value, t, mode})=>{
+                            if(mode==='VIEW') return false;
+                            return (
+                            <div style={{textAlign:'center'}}>
+                                <div className='radio' >
+                                    <input label='Venta' type="radio" onClick={e=>update(e.target.value)} id="SALE" value="SALE" checked={value==="SALE"}></input>
+                                    <input label='Alquiler' type="radio" onClick={e=>update(e.target.value)} id="RENT" value="RENT" checked={value==="RENT"}></input>
+                                </div>
+                            </div>)
+                        }
+                    },
                     placeId:{
                         
                            visibility:{
