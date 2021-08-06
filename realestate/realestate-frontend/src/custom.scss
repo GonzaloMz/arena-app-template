@@ -27,7 +27,7 @@ button[class^="arena-"][ class$="-button"]{
 	}
 }
 
-.arena-container{
+.arena-container-default-render{
 	@extend .animate__animated, .animate__fadeIn;
 }
 
