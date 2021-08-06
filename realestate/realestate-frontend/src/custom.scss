@@ -482,6 +482,10 @@ button[class^="arena-"][ class$="-button"]{
 	@extend .m-auto;
 }
 
+input[type="file"]{
+	display: none;
+}
+
 .react-datepicker{
 	@extend .form-group;
 	font-family: 'Roboto Cn';

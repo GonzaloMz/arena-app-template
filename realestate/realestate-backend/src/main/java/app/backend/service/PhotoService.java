@@ -11,6 +11,7 @@ import arena.backend.service.ArenaService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,6 +42,13 @@ public class PhotoService extends ArenaService<Photo,Photo>{
 		Photo p = new Photo();
 		p.setPlace(Long.valueOf(parameters.get("place")));
 		return p;
+	}
+
+	@Override
+	public Photo create(Optional<Photo> optional) {
+		if(optional.get().getView()==null)
+			return null;
+		return super.create(optional);
 	}
 	
 	

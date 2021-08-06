@@ -7,9 +7,12 @@ package app.backend.service;
 
 import app.backend.model.EstateSearch;
 import app.backend.repository.EstateSearchRepository;
+import arena.backend.model.extension.Shape;
 import arena.backend.service.ArenaService;
 
+import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +38,11 @@ public class EstateSearchService extends ArenaService<EstateSearch,EstateSearch>
 		return null;
 	}
 
+	@Override
+	public List<EstateSearch> searchBySpecification(Map<String, String> parameters, Shape shape) throws ParseException {
+		parameters.put("estate", "0,;,");	
+		return super.searchBySpecification(parameters, shape);
+	}
+
+	
 }

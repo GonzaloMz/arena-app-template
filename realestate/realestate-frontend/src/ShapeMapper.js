@@ -347,12 +347,71 @@ export const shapeConfigurationMap = {
     photo:{
         fields:{
             view:{
-                render:({value, update})=>{
-                    if(!value) return <Camera imageType={ IMAGE_TYPES.JPG} 
-                    imageCompression={.5}
-                    idealFacingMode = {FACING_MODES.ENVIRONMENT}
-                    onTakePhoto = { (dataUri) => { update(dataUri); } }></Camera>;
-                    return <img className='place-photo' src={value}></img>
+                render:({value, update, t})=>{
+                    return (<div>
+                        {
+                            !value &&
+                            <div>
+                                <label class="custom-file-upload">
+
+                                <input type="file" accept="image/*" capture={false} onChange={(e)=>{
+                                    const imageFile = e.target.files[0];
+                                    console.log(imageFile);
+                                    let imageArguments,imageType, image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl,newWidth;
+
+                                    // Provide default values
+                                    imageType = imageType || "image/png";
+                                    imageArguments = imageArguments || 0.7;
+
+                                    // Create a temporary image so that we can compute the height of the downscaled image.
+                                    image = new Image();
+                                   
+
+                                    // Create a temporary canvas to draw the downscaled image on.
+                                    canvas = document.createElement("canvas");
+
+                                    // Draw the downscaled image on the canvas and return the new data URL.
+                                    ctx = canvas.getContext("2d");
+                                    
+                                    var reader  = new FileReader();
+                                    reader.onloadend = function () {
+                                        console.log(reader.result)
+                                        image.onloadend = function() {
+                                            oldWidth = image.width;
+                                            oldHeight = image.height;
+                                            newWidth=Math.min(350, image.width);
+                                            newHeight = Math.floor(oldHeight / oldWidth * newWidth)
+                                            canvas.width=newWidth;
+                                            canvas.height=newHeight
+                                            ctx.drawImage(image, 0, 0, newWidth, newHeight);
+                                            newDataUrl = canvas.toDataURL(imageType, imageArguments);
+                                            update(newDataUrl)
+                                        };
+                                        image.src=reader.result;
+                                    }
+                                    reader.readAsDataURL(imageFile);
+
+                                }}/>
+                                    <div className="btn btn-primary btn-block">
+                                        {t("selectImageFromGallery", "Seleccionar de la galeria")}
+                                        </div>
+                                </label>
+                                <Camera 
+                                    imageType={ IMAGE_TYPES.JPG} 
+                                    imageCompression={.5}
+                                    idealFacingMode = {FACING_MODES.ENVIRONMENT}
+                                    onTakePhoto = { (dataUri) => { update(dataUri); } }>
+                                </Camera>
+                            </div>
+                        }
+
+                        {
+                            value &&
+                            <img className='place-photo' src={value}></img>
+                        }
+                    </div>
+                    
+                    )
                 }
             }
         }
