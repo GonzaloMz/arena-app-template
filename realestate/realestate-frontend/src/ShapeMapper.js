@@ -354,7 +354,7 @@ export const shapeConfigurationMap = {
                             <div>
                                 <label class="custom-file-upload">
 
-                                <input type="file" accept="image/*" capture={false} onChange={(e)=>{
+                                <input type="file" id="image" name="image" accept="image/*" capture={false} onChange={(e)=>{
                                     const imageFile = e.target.files[0];
                                     console.log(imageFile);
                                     let imageArguments,imageType, image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl,newWidth;
@@ -366,7 +366,6 @@ export const shapeConfigurationMap = {
                                     // Create a temporary image so that we can compute the height of the downscaled image.
                                     image = new Image();
                                    
-
                                     // Create a temporary canvas to draw the downscaled image on.
                                     canvas = document.createElement("canvas");
 
@@ -376,7 +375,7 @@ export const shapeConfigurationMap = {
                                     var reader  = new FileReader();
                                     reader.onloadend = function () {
                                         console.log(reader.result)
-                                        image.onloadend = function() {
+                                        image.onload = function() {
                                             oldWidth = image.width;
                                             oldHeight = image.height;
                                             newWidth=Math.min(350, image.width);
@@ -392,7 +391,7 @@ export const shapeConfigurationMap = {
                                     reader.readAsDataURL(imageFile);
 
                                 }}/>
-                                    <div className="btn btn-primary btn-block">
+                                    <div className="btn btn-primary btn-block" data-trigger="fileinput">
                                         {t("selectImageFromGallery", "Seleccionar de la galeria")}
                                         </div>
                                 </label>
