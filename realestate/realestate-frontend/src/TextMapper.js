@@ -27,7 +27,7 @@ export const textMap = {
         appointment: {
             create: {
                 start: "Nueva Tasación",
-                finish: "Agendar Tasación",
+                finish: "Guardar",
                 label: "Nueva Tasación"
             },
             operation:{
@@ -35,7 +35,6 @@ export const textMap = {
                 label:"Tipo de operación"
             },
             estateType:{
-                placeholder:"seleccione el tipo de inmueble a tasar",
                 label:"Tipo de inmueble"
             },
             placeId:{
@@ -55,7 +54,7 @@ export const textMap = {
             },
             search: {
                 inline:{
-                    placeholder: "Ingrese email o teléfono"
+                    placeholder: "Realice una búsqueda por email o teléfono"
                 }
             },
             lastName:{
@@ -105,7 +104,6 @@ export const textMap = {
                 label: "Interesado"
             },
             estateType:{
-                placeholder:"seleccione el tipo de inmueble a tasar",
                 label:"Tipo de inmueble"
             },
             sugestedValue:{

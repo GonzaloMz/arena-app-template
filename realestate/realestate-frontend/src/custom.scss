@@ -58,7 +58,7 @@ button[class^="arena-"][ class$="-button"]{
 
  .arena-edit-field {
 	@extend .form-control;
-	@extend .my-1;
+	@extend .mb-3;
 	 border-radius: 2px;
 
 }
@@ -71,6 +71,10 @@ button[class^="arena-"][ class$="-button"]{
 	label{
 		display: inline;
 	}
+}
+
+.arena-create-finish-button{
+	@extend .btn-block, .mt-4;
 }
 .arena-container-mode-edit:not(:hover) .arena-open-search-modal-button{
 		@extend .d-none;
@@ -88,6 +92,13 @@ button[class^="arena-"][ class$="-button"]{
 		@extend .pr-2;
 	}
 	display: flex;
+}
+
+.arena-container-default-render{
+	
+input::placeholder{
+	color: rgba(0, 0, 0, 0.26);
+}
 }
 
 .tingle-modal {
@@ -262,7 +273,7 @@ button[class^="arena-"][ class$="-button"]{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
-			// font-size: 8.3pt;
+			font-size: large;
 			border-bottom:  map-get($theme-colors, "dark") 1px solid;
 			// @extend .card-header
 			@extend .mt-5, .mb-2;
@@ -431,7 +442,7 @@ button[class^="arena-"][ class$="-button"]{
 	}
 }
 .create.label{
-	@extend .h3;
+	@extend .h1;
 	@extend.text-center;
 }
 
@@ -545,7 +556,7 @@ input[type="file"]{
 	border-radius: 2px;
 	padding: 4px 8px;
 	background: map-get($theme-colors, "light");
-	font-size: 14px;
+	font-size: large;
 	color:  map-get($theme-colors, "secondary");
 	font-family: Roboto;
 	transition: all 100ms linear;
@@ -610,3 +621,4 @@ input[type="file"]{
 
 	@extend .px-2;
 }
+
