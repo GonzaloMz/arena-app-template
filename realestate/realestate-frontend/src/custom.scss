@@ -11,6 +11,20 @@ $theme-colors: (
 @import "../node_modules/bootstrap/scss/bootstrap";
 @import "../node_modules/animate.css/animate";
 
+html {
+	font-size: 16px;
+  }
+  @media screen and (min-width: 320px) {
+	html {
+	  font-size: calc(16px + 6 * ((100vw - 320px) / 680));
+	}
+  }
+  @media screen and (min-width: 1000px) {
+	html {
+	  font-size: 22px;
+	}
+  }
+
 button[class^="arena-"][ class$="-button"]{
 	@extend .btn;
 	@extend .btn-raised;
@@ -18,6 +32,7 @@ button[class^="arena-"][ class$="-button"]{
 	font-family: Raleway;
 	font-weight: 450;
 }
+
 [class$="-inline-search"]{
 	li{
 		list-style:none;
@@ -27,7 +42,7 @@ button[class^="arena-"][ class$="-button"]{
 	}
 }
 
-.arena-container-default-render{
+.arena-container-default-render, .animation_in{
 	@extend .animate__animated, .animate__fadeIn;
 }
 
@@ -141,7 +156,7 @@ input::placeholder{
 	.appointment-user-container {
 		.arena-field-name-name{
 			font-family: 'Roboto Cn';
-			font-size: medium; 
+			//font-size: medium; 
 			@extend .w-100;
 			@extend .text-center;
 			@extend .background-secondary-color-ligth;
@@ -157,12 +172,12 @@ input::placeholder{
 	}
 	.assessment-container {
 		.arena-field-name-estateType{
-			@extend .w-25;
+			@extend .w-50;
 		}
 		.assessment-user-container {
 			.arena-field-name-name{
 				font-family: 'Roboto Cn';
-				font-size: medium; 
+				//font-size: medium; 
 				@extend .w-100;
 				@extend .text-center;
 				@extend .background-secondary-color-ligth;
@@ -182,7 +197,7 @@ input::placeholder{
 				width: 100%;
 				text-align: center;
 				text-transform: uppercase;
-				font-size: 9pt;
+				//font-size: 9pt;
 				font-family: 'Roboto Cn';
 				background-color:  map-get($theme-colors, "ligth-background");;
 				@extend .mb-2;
@@ -198,7 +213,7 @@ input::placeholder{
 			}
 			@extend .py-1;
 			font-family: 'Roboto';
-			font-size: large;
+			//font-size: large;
 			font-weight: bold; 
 			@extend .w-100;
 			@extend .text-center;
@@ -220,6 +235,7 @@ input::placeholder{
 		}
 	} 
 	.appointment-date{
+		@extend .animation_in;
 		@extend .position-absolute;
 		@extend .p-2;
 		@extend .mr-2;
@@ -273,7 +289,7 @@ input::placeholder{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
-			font-size: large;
+			//font-size: large;
 			border-bottom:  map-get($theme-colors, "dark") 1px solid;
 			// @extend .card-header
 			@extend .mt-5, .mb-2;
@@ -295,7 +311,7 @@ input::placeholder{
 .inline-search-item{
 	@extend .pl-1;
 	font-family: 'Roboto';
-	font-size: small;
+	//font-size: small;
 	.arena-container{
 		border-bottom:  map-get($theme-colors, "dark") 1px solid;
 		cursor: pointer;
@@ -326,14 +342,17 @@ input::placeholder{
 	.arena-field-name-operation, .arena-field-name-estateType{
 				text-align: center;
 				text-transform: uppercase;
-				font-size: 9pt;
+				//font-size: 9pt;
 				font-family: 'Roboto Cn';
 				background-color:  map-get($theme-colors, "ligth-background");;
 				@extend .mb-2;
+				width: unset !important;
 	}
 	.arena-field-name-operation{
+		width:auto;
 		:first-child{
 			margin: auto 0;
+
 		}
 	}
 	
@@ -343,9 +362,10 @@ input::placeholder{
 		}
 	}
 	.arena-field-name-estateType{
+		width:auto;
 		.arena-field-value{
-			text-align: right;
-			width: 100%;
+			// text-align: right;
+			// width: 100%;
 		}
 	}
 
@@ -506,10 +526,10 @@ input[type="file"]{
 	@extend .form-group;
 	font-family: 'Roboto Cn';
 	text-transform: capitalize;
-	min-width: 395px;
+	// min-width: 395px;
 	.react-datepicker__month-container{
 		.react-datepicker__header{
-			padding: 0 2.5rem 0 2.5rem;
+			// padding: 0 .25rem 0 .25rem;
 		}
 	}
 	.react-datepicker__header{
@@ -518,7 +538,7 @@ input[type="file"]{
 		@extend .py-1;
 		background-color: map-get($theme-colors, "primary");
 		.react-datepicker__current-month{
-			font-size: x-large;
+			//font-size: x-large;
 		}
 		.react-datepicker__day-name, .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header{
 			font-weight: normal;
@@ -547,7 +567,7 @@ input[type="file"]{
 .radio input {
 	@extend .rounded-pill;
 	@extend .mx-2;
-	@extend .px-5;
+	@extend .px-4;
 	width: auto;
 	height: 100%;
 	appearance: none;
@@ -556,7 +576,7 @@ input[type="file"]{
 	border-radius: 2px;
 	padding: 4px 8px;
 	background: map-get($theme-colors, "light");
-	font-size: large;
+	//font-size: large;
 	color:  map-get($theme-colors, "secondary");
 	font-family: Roboto;
 	transition: all 100ms linear;

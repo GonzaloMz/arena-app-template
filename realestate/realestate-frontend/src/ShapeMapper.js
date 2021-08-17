@@ -310,7 +310,7 @@ export const shapeConfigurationMap = {
                         photos:{
                             list:{
                                 listRender: (items)=>{
-                                    console.log(items)
+                                    if (!items || items.length === 0) return null;
                                     return <Carousel showArrows={true} itemsToShow={3} showEmptySlots={false}>{items.map(i=><img className='place-photo' src={i.view}></img>)}</Carousel>
                                 },
                                 onItemClick: ()=> alert("foto maximizada")
