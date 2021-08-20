@@ -249,7 +249,11 @@ export const shapeConfigurationMap = {
         
                 }
             }
-            }
+        },
+        onCreateFinish:(e,history)=>{
+            Swal.fire("Creación finalizada").then(()=>{history.push('/build/container/search/estateSearch')});
+            return null
+        }
     },
     estate:{
         list: {
