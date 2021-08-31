@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
+import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
 export const componentsTypeMap = {
 
@@ -69,6 +70,7 @@ export const componentsMap = {
                     return (<div >
                         { mode === 'VIEW' && 
                             <div className="text-right">
+                                <a className='detail-button p-2' href={`/build/container/view/estate/${entity.id}`}><FontAwesomeIcon icon={faEye} /> {t('share', 'Detalle')}</a>
                                 <a className='share-button p-2' href={`https://api.whatsapp.com/send?text=${url}`}><FontAwesomeIcon icon={faWhatsapp} /> {t('share', 'Compartir')}</a>
                             </div>
                         }

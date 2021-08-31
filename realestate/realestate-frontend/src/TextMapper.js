@@ -309,6 +309,20 @@ export const textMap = {
                 label: "DNI"
             }
         },
+        administrator:{
+            password:{
+                label: "Contraseña"
+            },
+            username:{
+                label: "Nombre de usuario"
+            }
+        },
+        logIn:{
+            create:{
+                label:"Acceso",
+                finish: "Ingresar"
+            }
+        },
         java:{
             lang:{
                 Boolean:{
