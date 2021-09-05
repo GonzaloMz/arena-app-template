@@ -25,6 +25,24 @@ html {
 	}
   }
 
+
+.navbar{
+	@media screen and (min-width: 320px) {
+		a.logout{
+			position: absolute;
+			right: 5px;
+			top: 0px;
+		}
+	  }
+	  @media screen and (min-width: 1000px) {
+		a.logout{
+			position: unset;
+			right: unset;
+			top: unset;
+		}
+	  }
+}
+
 button[class^="arena-"][ class$="-button"]{
 	@extend .btn;
 	@extend .btn-raised;
@@ -653,7 +671,7 @@ a.share-button {
 	color: forestgreen !important;
 }
 
-a.navbar-brand.logout, a.navbar-brand.login{
+a.logout{
 	color: map-get($theme-colors, "secondary");
 }
 
