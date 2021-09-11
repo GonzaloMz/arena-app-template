@@ -7,6 +7,12 @@ $theme-colors: (
 	"success": #61b83c,
 	"ligth-background": #F0F0F0
 );
+
+$input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
+//$input-focus-color: rgb(78, 78, 78);
+
+$input-focus-border-color:   rgb(180, 180, 180);
+
 @import "../node_modules/bootstrap-material-design/scss/core";
 @import "../node_modules/bootstrap/scss/bootstrap";
 @import "../node_modules/animate.css/animate";
@@ -51,6 +57,10 @@ button[class^="arena-"][ class$="-button"]{
 	font-weight: 450;
 }
 
+[class$="arena-search-*-screen"]>.arena-container>div>.arena-text{
+	@extend .mb-2
+}
+
 [class$="-inline-search"]{
 	li{
 		list-style:none;
@@ -91,6 +101,7 @@ button[class^="arena-"][ class$="-button"]{
 
  .arena-edit-field {
 	@extend .form-control;
+	background-image: linear-gradient(to top, #a8a8a8 2px, rgba(221, 100, 1, 0) 2px), linear-gradient(to top, rgba(0, 0, 0, 0.26) 1px, rgba(0, 0, 0, 0) 1px);
 	@extend .mb-3;
 	 border-radius: 2px;
 

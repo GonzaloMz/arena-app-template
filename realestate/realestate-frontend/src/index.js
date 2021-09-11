@@ -32,8 +32,8 @@ const componentMapper = new ArenaMapper(
 	componentsTypeMap,
 	textMap.es,
 	// "http://localhost:1312/"
-	// "http://192.168.0.14:1312/"
-	"https://api.costoya.com.ar/"
+	"http://192.168.0.14:1312/"
+	// "https://api.costoya.com.ar/"
 );
 
 

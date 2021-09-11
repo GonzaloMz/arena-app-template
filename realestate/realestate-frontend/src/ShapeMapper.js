@@ -494,6 +494,15 @@ const Place = ({ update, value }) => {
     useEffect(() => {
         update(formattedAddress);
     }, [])
+    const center = { lat: -36.613720, lng: -56.7048044 };
+    // Create a bounding box with sides ~10km away from the center point
+    const defaultBounds = {
+        north: center.lat + 0.25,
+        south: center.lat - 0.25,
+        east: center.lng + 0.25,
+        west: center.lng - 0.25
+    };
+
     return <Autocomplete
         apiKey={'AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U'}
         onPlaceSelected={updatePlace}
@@ -503,13 +512,19 @@ const Place = ({ update, value }) => {
         options={{
             types: ["address"],
             componentRestrictions: { country: "ar" },
-            bounds:
-            {
-                north: -34.969962,
-                west: -56.36917670614324,
-                south: -37.31999594951397,
-                east: -56.298109887936505
-            }
+            bounds:defaultBounds
+            // {
+            //     north: -36.273299958870886,
+            //     west: -56.615140226768425,
+            //     south: -36.97482290301441,
+            //     east: -56.870649405346185
+            // }
+            // {
+            //     north: -34.969962,
+            //     west: -56.36917670614324,
+            //     south: -37.31999594951397,
+            //     east: -56.298109887936505
+            // }
             // ,
             // strictBounds:true
         }}

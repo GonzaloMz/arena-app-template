@@ -204,8 +204,8 @@ export const textMap = {
         },
         estateSearch:{
             search:{
-                label:"Buscar",
-                sublabel:"Propiedades"
+                label:"Propiedades",
+                sublabel:"Disponibles"
             },
             environments:{
                 label: "Ambientes"
