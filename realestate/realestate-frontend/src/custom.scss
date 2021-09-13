@@ -5,12 +5,20 @@ $theme-colors: (
     "danger": #ff4136,
     "warning": #f9cd00,
 	"success": #61b83c,
-	"ligth-background": #F0F0F0
+	"ligth-background": #F0F0F0,
+	"dark":#211E1E
 );
+$gray-100:#F5F5F5;
+$gray-200:#EBEBEB;
+$gray-300:#D6D6D6;
+$gray-400:#C9C7C7;
+$gray-500:#A3A0A0;
+$gray-600:#858384;
+$gray-700:#6B6868;
+$gray-800:#5E5B5B;
+$gray-900:#403F3F;
 
 $input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
-//$input-focus-color: rgb(78, 78, 78);
-
 $input-focus-border-color:   rgb(180, 180, 180);
 
 @import "../node_modules/bootstrap-material-design/scss/core";
@@ -31,7 +39,11 @@ html {
 	}
   }
 
-
+.ellipsis{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 .navbar{
 	@media screen and (min-width: 320px) {
 		a.logout{
@@ -101,9 +113,12 @@ button[class^="arena-"][ class$="-button"]{
 
  .arena-edit-field {
 	@extend .form-control;
+	transition: background 0s ease-out;
 	background-image: linear-gradient(to top, #a8a8a8 2px, rgba(221, 100, 1, 0) 2px), linear-gradient(to top, rgba(0, 0, 0, 0.26) 1px, rgba(0, 0, 0, 0) 1px);
-	@extend .mb-3;
-	 border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.10);
+	border-bottom: unset;
+	@extend .mb-2;
+	border-radius: 2px;
 
 }
 
@@ -138,10 +153,15 @@ button[class^="arena-"][ class$="-button"]{
 	display: flex;
 }
 
+div[class*="arena-field-mode"] .arena-text, .formattedAddress.arena-text, .date-input-label{
+	font-family: 'Roboto Cn';	
+	color: $gray-700;
+}
 .arena-container-default-render{
 	
 input::placeholder{
 	color: rgba(0, 0, 0, 0.26);
+	font-size: medium;
 }
 }
 
@@ -151,12 +171,12 @@ input::placeholder{
 
 .background-dark-color-ligth{
 	background-color:  map-get($theme-colors, "dark");
-	color: map-get($theme-colors, "light");
+	color: $gray-100;
 }
 
 .background-secondary-color-ligth{
-	background-color:  map-get($theme-colors, "secondary");
-	color: map-get($theme-colors, "light");
+	background-color:  $gray-600;
+	color: $gray-100;
 }
 
 
@@ -318,10 +338,10 @@ input::placeholder{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
 			font-family: 'Roboto Cn';
-			//font-size: large;
+			// font-size: large;
 			border-bottom:  map-get($theme-colors, "dark") 1px solid;
 			// @extend .card-header
-			@extend .mt-5, .mb-2;
+			@extend .mt-5, .mb-4;
 		}
 	}
 .arena-create-appointment-screen, .arena-create-assessment-screen, .arena-create-estate-screen{
@@ -336,14 +356,31 @@ input::placeholder{
 		@extend .d-none;
 	}
 }
+[class$="-inline-search"]{
+	border: white 1px;
+}
 
 .inline-search-item{
-	@extend .pl-1;
+	// @extend .pl-1;
 	font-family: 'Roboto';
-	//font-size: small;
+	color: $gray-700;
+	font-size: smaller;
 	.arena-container{
-		border-bottom:  map-get($theme-colors, "dark") 1px solid;
+		@extend .pb-1;
+		border-bottom:  $gray-400 1px solid;
 		cursor: pointer;
+	}
+	.arena-create-button {
+		@extend .mt-3;
+		@extend .w-100;
+	}
+	@media screen and (max-width: 520px) {
+		.arena-text{
+			display: none;
+		}
+	}
+	.arena-field-value{
+		@extend .ellipsis;
 	}
 }
 .inline-search-item:hover{
@@ -422,31 +459,31 @@ input::placeholder{
 			@extend .row;
 			.arena-field-name-environments{
 				@extend .col-4;
-				border-top:  map-get($theme-colors, "secondary") 1px solid;
+				border-top:  $gray-600 1px solid;
 			}
 			.arena-field-name-carPlaces{
 				@extend .col-4;
-				border-top:  map-get($theme-colors, "secondary") 1px solid;
+				border-top:  $gray-600 1px solid;
 			}
 
 			.arena-field-name-squareMeterTotal{
 				@extend .col-4;
-				border-top:  map-get($theme-colors, "secondary") 1px solid;
+				border-top:  $gray-600 1px solid;
 			}
 
 			.arena-field-name-toilets{
 				@extend .col-4;
-				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+				border-bottom:  $gray-600 1px solid;
 			}
 
 			.arena-field-name-laundry{
 				@extend .col-4;
-				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+				border-bottom:  $gray-600 1px solid;
 			}
 
 			.arena-field-name-squareMeterCovered{
 				@extend .col-4;
-				border-bottom:  map-get($theme-colors, "secondary") 1px solid;
+				border-bottom:  $gray-600 1px solid;
 			}
 
 			.arena-field-name-electricity{
@@ -505,15 +542,15 @@ input::placeholder{
 	@extend .arena-edit-field;
 }
 .react-autosuggest__suggestions-list{
-	@extend .pl-2
+	@extend .pl-0
 }
 
 
 .user-name{
 	width: 100%;
 	@extend .p-2;
-	background-color: map-get($theme-colors, "secondary");
-	color: map-get($theme-colors, "light");
+	background-color: $gray-600;
+	color: $gray-100;
 	@extend .text-center;
 	@extend .radius;
 	font-weight: bold;
@@ -552,7 +589,7 @@ input[type="file"]{
 }
 
 .react-datepicker{
-	@extend .form-group;
+	// @extend .form-group;
 	font-family: 'Roboto Cn';
 	text-transform: capitalize;
 	// min-width: 395px;
@@ -571,7 +608,7 @@ input[type="file"]{
 		}
 		.react-datepicker__day-name, .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header{
 			font-weight: normal;
-			color:map-get($theme-colors, "light");
+			color:$gray-100;
 		}
 		.react-datepicker__navigation-icon::before{
 			border-color: white;
@@ -587,7 +624,7 @@ input[type="file"]{
 		cursor: pointer;
 	}
 	.react-datepicker__input-container>input{
-		@extend  .arena-edit-field;
+		@extend  .arena-edit-field ;
 	}
 }
 
@@ -599,25 +636,26 @@ input[type="file"]{
 	@extend .px-4;
 	width: auto;
 	height: 100%;
+	width: 35%;
 	appearance: none;
 	outline: none;
 	cursor: pointer;
 	border-radius: 2px;
 	padding: 4px 8px;
-	background: map-get($theme-colors, "light");
+	background: $gray-100;
 	//font-size: large;
-	color:  map-get($theme-colors, "secondary");
+	color:  $gray-600;
 	font-family: Roboto;
 	transition: all 100ms linear;
 	border: 1px solid rgba(0, 0, 0, 0.26);
 }
 
 .radio input:checked {
-	background:  map-get($theme-colors, "secondary");
+	background:  $gray-600;
 	background-image:  map-get($theme-colors, "primary");
-	color:  map-get($theme-colors, "light");
+	color:  $gray-100;
 	box-shadow: 0 1px 1px #0000002e;
-	text-shadow: 0 1px 0px map-get($theme-colors, "dark");
+	//text-shadow: 0 1px 0px map-get($theme-colors, "dark");
 }
 
 .radio input:before {
@@ -637,7 +675,7 @@ input[type="file"]{
 .loader-wheel {
 	animation: spin 1s infinite linear;
 	border: 2px solid map-get($theme-colors, "primary");
-	border-left: 4px solid map-get($theme-colors, "light");
+	border-left: 4px solid $gray-100;
 	border-radius: 50%;
 	height: 20px;
 	margin-bottom: 10px;
@@ -683,7 +721,7 @@ a.share-button {
 }
 
 a.logout{
-	color: map-get($theme-colors, "secondary");
+	color: $gray-600;
 }
 
 .arena-view-estate-screen{

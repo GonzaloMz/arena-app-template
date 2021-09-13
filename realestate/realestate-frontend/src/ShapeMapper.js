@@ -55,7 +55,7 @@ export const shapeConfigurationMap = {
 
                     return (
                         <div>
-                            <div class="arena-text appointment userId label">Cita</div>
+                            <div class="date-input-label">Cita</div>
                             <ReactDatePicker
                                 selected={value ? new Date(value) : undefined}
                                 onChange={(date) => update(date)}
@@ -78,10 +78,10 @@ export const shapeConfigurationMap = {
                 },
                 fields: {
                     formattedAddress: {
-                        render: ({ update, mode, value }) => {
+                        render: ({ update, mode, value, t }) => {
                             if (mode === 'VIEW' || mode === 'EDIT') return false;
 
-                            return <Place update={update} value={value} />;
+                            return <Place update={update} value={value} t={t}/>;
                         }
                     }
                 }
@@ -444,10 +444,10 @@ export const shapeConfigurationMap = {
                 },
                 fields: {
                     formattedAddress: {
-                        render: ({ update, mode, value }) => {
+                        render: ({ update, mode, value, t }) => {
                             if (mode === 'VIEW' || mode === 'EDIT') return false;
 
-                            return <Place update={update} value={value} />;
+                            return <Place update={update} value={value} t={t}/>;
                         }
                     }
                 }
@@ -483,7 +483,7 @@ export const shapeConfigurationMap = {
 
 }
 
-const Place = ({ update, value }) => {
+const Place = ({ update, value, t }) => {
     const [formattedAddress, setFormattedAddress] = useState(value);
     useEffect(() => {
         update(formattedAddress);
@@ -503,32 +503,40 @@ const Place = ({ update, value }) => {
         west: center.lng - 0.25
     };
 
-    return <Autocomplete
-        apiKey={'AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U'}
-        onPlaceSelected={updatePlace}
-        placeholder='Ingrese una dirección'
-        defaultValue={value}
-        language='es_AR'
-        options={{
-            types: ["address"],
-            componentRestrictions: { country: "ar" },
-            bounds:defaultBounds
-            // {
-            //     north: -36.273299958870886,
-            //     west: -56.615140226768425,
-            //     south: -36.97482290301441,
-            //     east: -56.870649405346185
-            // }
-            // {
-            //     north: -34.969962,
-            //     west: -56.36917670614324,
-            //     south: -37.31999594951397,
-            //     east: -56.298109887936505
-            // }
-            // ,
-            // strictBounds:true
-        }}
-    />;
+    return <div>
+        <div>
+            <div class="arena-text place formattedAddress label">
+                {t("place.formattedAddress.label")}
+            </div>
+        </div>    
+        <Autocomplete
+            apiKey={'AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U'}
+            onPlaceSelected={updatePlace}
+            placeholder='Ingrese una dirección'
+            defaultValue={value}
+            language='es_AR'
+            options={{
+                types: ["address"],
+                componentRestrictions: { country: "ar" },
+                bounds:defaultBounds
+                // {
+                //     north: -36.273299958870886,
+                //     west: -56.615140226768425,
+                //     south: -36.97482290301441,
+                //     east: -56.870649405346185
+                // }
+                // {
+                //     north: -34.969962,
+                //     west: -56.36917670614324,
+                //     south: -37.31999594951397,
+                //     east: -56.298109887936505
+                // }
+                // ,
+                // strictBounds:true
+            }}
+        />
+    </div>
+    ;
 }
 
 const DateDisplay = ({ value, className }) => {

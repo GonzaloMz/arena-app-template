@@ -1,7 +1,7 @@
 export const textMap = {
 
-    es:{
-	clear: "Nueva búsqueda",
+    es: {
+        clear: "Nueva búsqueda",
         list: {
             appointment: {
                 label: "Tasaciones",
@@ -30,15 +30,15 @@ export const textMap = {
                 finish: "Guardar",
                 label: "Nueva Tasación"
             },
-            operation:{
-                placeholder:"Operación",
-                label:"Tipo de operación"
+            operation: {
+                placeholder: "Operación",
+                label: "Tipo de operación"
             },
-            estateType:{
-                label:"Tipo de inmueble"
+            estateType: {
+                label: "Tipo de inmueble"
             },
-            placeId:{
-          
+            placeId: {
+
                 label: "Lugar de la tasación"
             },
             userId: {
@@ -50,40 +50,40 @@ export const textMap = {
         },
         user: {
             create: {
-                start: "Crear un nuevo usuario"
+                start: "Crear Nuevo Usuario"
             },
             search: {
-                inline:{
+                inline: {
                     placeholder: "Realice una búsqueda por email o teléfono"
                 }
             },
-            lastName:{
+            lastName: {
                 label: "Apellido",
                 placeholder: "Ingrese el apellido de la persona"
             },
-            name:{
+            name: {
                 label: "Nombre",
                 placeholder: "Ingrese el nombre y apellido de la persona"
             },
-            phone:{
+            phone: {
                 label: "Teléfono",
                 placeholder: "Ingrese el teléfono de la persona"
             },
-            email:{
+            email: {
                 label: "Email",
                 placeholder: "Ingrese el email de la persona"
             }
         },
-        place:{
-            unit:{
+        place: {
+            unit: {
                 label: "Departamento",
                 placeholder: "Ingrese número de unidad "
             },
-            floor:{
+            floor: {
                 label: "Piso",
                 placeholder: "Ingrese el piso"
             },
-            formattedAddress:{
+            formattedAddress: {
                 label: "Dirección",
                 placeholder: "Ingrese la dirección"
             }
@@ -93,277 +93,278 @@ export const textMap = {
                 start: "Iniciar Tasación",
                 finish: "Cerrar Tasación"
             },
-            operation:{
-                placeholder:"Tipo de operación",
-                label:"Tipo de operación"
+            operation: {
+                placeholder: "Tipo de operación",
+                label: "Tipo de operación"
             },
-            placeId:{
+            placeId: {
                 label: "Lugar de la tasación"
             },
             userId: {
                 label: "Interesado"
             },
-            estateType:{
-                label:"Tipo de inmueble"
+            estateType: {
+                label: "Tipo de inmueble"
             },
-            sugestedValue:{
+            sugestedValue: {
                 label: "Valor sugerido",
                 placeholder: "Ingrese el valor sugerido en U$D para este inmueble"
             },
-            placeDescription:{
+            placeDescription: {
                 label: "Descripción de la propiedad"
             }
         },
-        placeDescription:{
-            environments:{
+        placeDescription: {
+            environments: {
                 label: "Ambientes"
             },
-            squareMeterCovered:{
+            squareMeterCovered: {
                 label: "m2 cubiertos",
                 placeholder: "Rango de metros cuadrados cuebiertos"
             },
-            squareMeterTotal:{
+            squareMeterTotal: {
                 label: "m2 totales",
                 placeholder: "Rango de metros cuadrados totales"
             },
-            toilets:{
+            toilets: {
                 label: "Baños"
             },
-            toilete:{
+            toilete: {
                 label: "Baño"
             },
-            carPlaces:{
+            carPlaces: {
                 label: "Entrada de vehículos"
             },
-            coveredGarage:{
-                view:{
+            coveredGarage: {
+                view: {
                     label: "Cochera cubierta"
                 },
                 placeholder: "Cochera cubierta"
             },
-            laundry:{
-                view:{
+            laundry: {
+                view: {
                     label: "Lavadero"
                 },
                 placeholder: "Lavadero"
             },
-            electricity:{
-                view:{
+            electricity: {
+                view: {
                     label: "Luz"
                 },
-                    placeholder: "Luz"
+                placeholder: "Luz"
             },
-            gas:{
-                view:{
+            gas: {
+                view: {
                     label: "Gas"
                 },
-                    placeholder: "Gas"
+                placeholder: "Gas"
             },
-            waterNetworkConnection:{
-                view:{
+            waterNetworkConnection: {
+                view: {
                     label: "Agua"
                 },
-                    placeholder: "Agua"
+                placeholder: "Agua"
             },
-            sewerConnection:{
-                view:{
+            sewerConnection: {
+                view: {
                     label: "Cloacas"
                 },
-                    placeholder: "Cloacas"
+                placeholder: "Cloacas"
             },
-            extraNotes:{
-                    placeholder: "Notas"
-            }, 
+            extraNotes: {
+                placeholder: "Notas"
+            },
         },
-        estate:{
-            create:{
-                finish:"Finalizar alta de propiedad"
+        estate: {
+            create: {
+                finish: "Finalizar alta de propiedad"
             },
-            owner:{
+            owner: {
                 label: "Cliente"
             },
-            placeId:{
+            placeId: {
                 label: "Propiedad"
             },
-            photos:{
+            photos: {
                 label: "Fotos"
             },
-            status:{
+            status: {
                 placeholder: "Estado de la publicación",
                 label: "Publicación"
             },
-            price:{
-                label:"Precio",
+            price: {
+                label: "Precio",
                 placeholder: "Ingrese el valor en dólares de la propiedad"
             },
-            operation:{
+            operation: {
                 view: {
                     sublabel: "en"
                 }
             }
         },
-        estateSearch:{
-            search:{
-                label:"Propiedades",
-                sublabel:"Disponibles"
+        estateSearch: {
+            search: {
+                label: "Propiedades",
+                sublabel: "Disponibles"
             },
-            environments:{
-                label: "Ambientes"
+            environments: {
+                label: "Ambientes",
+                placeholder: "Ingresa la cantidad de ambientes"
             },
-            estateType:{
-                placeholder:"Selecciona el tipo de inmueble que estás buscando",
-                label:"Tipo de inmueble"
+            estateType: {
+                placeholder: "Selecciona el tipo de inmueble que estás buscando",
+                label: "Tipo de inmueble"
             },
-            squareMeterCovered:{
+            squareMeterCovered: {
                 label: "m2 cubiertos",
                 placeholder: "Rango de metros cuadrados cuebiertos"
             },
-            squareMeterTotal:{
+            squareMeterTotal: {
                 label: "m2 totales",
                 placeholder: "Rango de metros cuadrados totales"
             },
-            toilets:{
+            toilets: {
                 label: "Baños"
             },
-            toilete:{
+            toilete: {
                 label: "Baño"
             },
-            carPlaces:{
+            carPlaces: {
                 label: "Entrada de vehículos"
             },
-            coveredGarage:{
-                view:{
+            coveredGarage: {
+                view: {
                     label: "Cochera cubierta"
                 },
                 placeholder: "Cochera cubierta"
             },
-            laundry:{
-                view:{
+            laundry: {
+                view: {
                     label: "Lavadero"
                 },
                 placeholder: "Lavadero"
             },
-            electricity:{
-                view:{
+            electricity: {
+                view: {
                     label: "Luz"
                 },
-                    placeholder: "Luz"
+                placeholder: "Luz"
             },
-            gas:{
-                view:{
+            gas: {
+                view: {
                     label: "Gas"
                 },
-                    placeholder: "Gas"
+                placeholder: "Gas"
             },
-            waterNetworkConnection:{
-                view:{
+            waterNetworkConnection: {
+                view: {
                     label: "Agua"
                 },
-                    placeholder: "Agua"
+                placeholder: "Agua"
             },
-            sewerConnection:{
-                view:{
+            sewerConnection: {
+                view: {
                     label: "Cloacas"
                 },
-                    placeholder: "Cloacas"
+                placeholder: "Cloacas"
             },
-            extraNotes:{
-                    placeholder: "Notas"
-            }, 
-            create:{
-                finish:"Finalizar alta de propiedad"
+            extraNotes: {
+                placeholder: "Notas"
             },
-            owner:{
+            create: {
+                finish: "Finalizar alta de propiedad"
+            },
+            owner: {
                 label: "Cliente"
             },
-            placeId:{
+            placeId: {
                 label: "Propiedad"
             },
-            photos:{
+            photos: {
                 label: "Fotos"
             },
-            status:{
+            status: {
                 placeholder: "Estado de la publicación",
                 label: "Publicación"
             },
-            operation:{
+            operation: {
                 view: {
                     sublabel: "en"
                 }
             },
-            price:{
-                label:"Precio",
+            price: {
+                label: "Precio",
                 placeholder: "Ingrese el valor en dólares de la propiedad"
             }
         },
-        owner:{
-            address:{
+        owner: {
+            address: {
                 sublabel: "Dirección del cliente"
             },
-            cuit:{
+            cuit: {
                 placeholder: "Ingrese el CUIT o CUIL del cliente",
                 label: "CUIT/CUIL"
             },
-            dni:{
+            dni: {
                 placeholder: "Ingrese el DNI del cliente",
                 label: "DNI"
             }
         },
-        administrator:{
-            password:{
+        administrator: {
+            password: {
                 label: "Contraseña"
             },
-            username:{
+            username: {
                 label: "Nombre de usuario"
             }
         },
-        logIn:{
-            create:{
-                label:"Acceso",
+        logIn: {
+            create: {
+                label: "Acceso",
                 finish: "Ingresar"
             }
         },
-        java:{
-            lang:{
-                Boolean:{
+        java: {
+            lang: {
+                Boolean: {
                     null: "No",
                     true: "Si",
                     false: "No"
                 },
-                Integer:{
+                Integer: {
                     null: "--"
                 }
             }
         },
-        app:{
-            backend:{
-                model:{
-                    enums:{
-                        EstateType:{
-                            CASA:'Casa',
-                            DEPARTAMENTO:'Departamento', 
-                            LOTE: 'Lote', 
-                            LOCAL: 'Local', 
-                            DUPLEX: 'Duplex', 
-                            TRIPLEX: 'Triplex', 
-                            COCHERA: 'Cochera', 
+        app: {
+            backend: {
+                model: {
+                    enums: {
+                        EstateType: {
+                            CASA: 'Casa',
+                            DEPARTAMENTO: 'Departamento',
+                            LOTE: 'Lote',
+                            LOCAL: 'Local',
+                            DUPLEX: 'Duplex',
+                            TRIPLEX: 'Triplex',
+                            COCHERA: 'Cochera',
                             GALPON: 'Galpón',
                             null: 'No definido'
                         },
-                        EstateOperations:{
+                        EstateOperations: {
                             SALE: 'Venta',
                             RENT: 'Alquiler',
                             null: 'No definido'
                         },
-                        SquareMeterRange:{
-                            UP_TO_20:"Hasta 20",
-                            UP_TO_40:"20 a 40",
-                            UP_TO_80:"40 a 80",
-                            UP_TO_150:"80 a 150",
-                            MORE_THAN_150:"Mas de 150",
+                        SquareMeterRange: {
+                            UP_TO_20: "Hasta 20",
+                            UP_TO_40: "20 a 40",
+                            UP_TO_80: "40 a 80",
+                            UP_TO_150: "80 a 150",
+                            MORE_THAN_150: "Mas de 150",
                             null: "--"
-                        }  ,
-                        EstateStatus:{
+                        },
+                        EstateStatus: {
                             null: "No definido",
                             AVAILABLE: "Disponible",
                             RESERVED: "Reservada",

@@ -41,37 +41,37 @@ const componentMapper = new ArenaMapper(
 console.log(componentMapper);
 ReactDOM.render(
 	<Provider store={store}>
-
-		<Router>
-			<Menu options={[
-				{
-					label: "Nueva Tasación",
-					href: "/create-appointment"
-				},{
-					label: "Tasaciones Pendientes",
-					href: "/pending-appointments"
-				},{
-				// 	label: "Tasaciones en Progreso",
-				// 	href: "/build/listContainer/view/appointment"
-				// },{
-					label: "Tasaciones Realizadas",
-					href: "/assessments"
-				},{
-					label: "Propiedades Disponibles",
-					href: "/estates"
-				}
-			]}></Menu>
-			<Switch>
-				<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
-				<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
-				<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
-				<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
-				<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
-				<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
-				<Redirect from="/" exact={true} push={true} to="build/container/search/estateSearch" />
-				<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
-			</Switch>
-		</Router>
+			<Router>
+				<Menu options={[
+					{
+						label: "Nueva Tasación",
+						href: "/create-appointment"
+					},{
+						label: "Tasaciones Pendientes",
+						href: "/pending-appointments"
+					},{
+					// 	label: "Tasaciones en Progreso",
+					// 	href: "/build/listContainer/view/appointment"
+					// },{
+						label: "Tasaciones Realizadas",
+						href: "/assessments"
+					},{
+						label: "Propiedades Disponibles",
+						href: "/estates"
+					}
+				]}></Menu>
+				<Switch>
+					<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
+					<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
+					<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
+					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
+					<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
+					<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
+					<Redirect from="/" exact={true} push={true} to="build/container/search/estateSearch" />
+					<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
+				</Switch>
+			</Router>
+		
 		
 	</Provider>,
   document.getElementById('root')
