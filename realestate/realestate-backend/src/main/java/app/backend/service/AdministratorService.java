@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.Administrator;
 import app.backend.repository.AdministratorRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -35,5 +36,10 @@ public class AdministratorService extends ArenaService<Administrator,Administrat
 		return null;
 	}
 
-	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Administrator.class);
+	}
+
 }

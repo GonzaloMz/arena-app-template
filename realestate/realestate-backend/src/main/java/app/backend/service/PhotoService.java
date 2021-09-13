@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.Photo;
 import app.backend.repository.PhotoRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -51,6 +52,11 @@ public class PhotoService extends ArenaService<Photo,Photo>{
 		return super.create(optional);
 	}
 	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Photo.class);
+	}
 	
 
 }

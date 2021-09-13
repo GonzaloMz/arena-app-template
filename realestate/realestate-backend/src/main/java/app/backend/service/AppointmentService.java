@@ -12,6 +12,7 @@ import app.backend.model.dto.AppointmentDTO;
 import app.backend.model.dto.AppointmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
 import app.backend.repository.AppointmentRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -76,5 +77,10 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 		return this.getRepository().save(updated);
 	}
 	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Appointment.class);
+	}
 	
 }

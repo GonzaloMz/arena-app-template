@@ -5,11 +5,6 @@
  */
 package app.backend.service;
 
-import app.backend.model.EstateSearch;
-import app.backend.repository.EstateSearchRepository;
-import arena.backend.model.extension.Shape;
-import arena.backend.service.ArenaService;
-
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +12,12 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+
+import app.backend.model.EstateSearch;
+import app.backend.repository.EstateSearchRepository;
+import arena.backend.model.extension.Shape;
+import arena.backend.model.extension.ShapeFactory;
+import arena.backend.service.ArenaService;
 
 /**
  *
@@ -44,5 +45,10 @@ public class EstateSearchService extends ArenaService<EstateSearch,EstateSearch>
 		return super.searchBySpecification(parameters, shape);
 	}
 
-	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(EstateSearch.class);
+	}
+		
 }

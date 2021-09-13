@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.User;
 import app.backend.repository.UserRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -45,6 +46,12 @@ public class UserService extends ArenaService<User,User>{
 		if (query.contains("@"))
 			return userRepository.findTop5ByEmailContainingOrderByNameAsc(query);
 		return userRepository.findTop5ByPhoneContainingOrEmailContainingOrderByNameAsc(query, query);
+	}
+	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(User.class);
 	}
 	
 }

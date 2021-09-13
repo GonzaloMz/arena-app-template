@@ -9,6 +9,7 @@ import app.backend.model.Owner;
 import app.backend.model.Place;
 import app.backend.model.dto.OwnerDTO;
 import app.backend.repository.OwnerRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -59,5 +60,10 @@ public class OwnerService extends ArenaService<Owner,OwnerDTO>{
 		return this.ownerRepository.save(o);
 	}
 
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Owner.class);
+	}
 	
 }

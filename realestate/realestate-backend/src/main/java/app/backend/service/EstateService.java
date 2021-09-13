@@ -5,14 +5,6 @@
  */
 package app.backend.service;
 
-import app.backend.model.Assessment;
-import app.backend.model.Estate;
-import app.backend.model.Owner;
-import app.backend.model.dto.EstateDTO;
-import app.backend.model.dto.OwnerDTO;
-import app.backend.repository.EstateRepository;
-import arena.backend.service.ArenaService;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +13,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+
+import app.backend.model.Assessment;
+import app.backend.model.Estate;
+import app.backend.model.Owner;
+import app.backend.model.dto.EstateDTO;
+import app.backend.model.dto.OwnerDTO;
+import app.backend.repository.EstateRepository;
+import arena.backend.model.extension.ShapeFactory;
+import arena.backend.service.ArenaService;
 
 /**
  *
@@ -73,6 +74,11 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 		return estate;
 	}
 	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Estate.class);
+	}
 	
 	
 }

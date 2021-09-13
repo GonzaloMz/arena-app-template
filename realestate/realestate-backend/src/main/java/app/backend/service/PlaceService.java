@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.Place;
 import app.backend.repository.PlaceRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -42,6 +43,12 @@ public class PlaceService extends ArenaService<Place,Place>{
 	public List<Place> searchInLine(String query) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Place.class);
 	}
 	
 }

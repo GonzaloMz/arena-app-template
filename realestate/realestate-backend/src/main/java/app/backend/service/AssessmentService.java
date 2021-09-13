@@ -21,6 +21,7 @@ import app.backend.model.dto.AssessmentDTO;
 import app.backend.model.dto.AssessmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
 import app.backend.repository.AssessmentRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 /**
@@ -88,6 +89,12 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		}catch (Exception e) {
 			return super.buildTemplate(parameters);
 		}
+	}
+	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(Assessment.class);
 	}
 	
 }

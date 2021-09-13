@@ -9,6 +9,7 @@ import app.backend.model.Administrator;
 import app.backend.model.LogIn;
 import app.backend.model.dto.LogInDTO;
 import app.backend.repository.LogInRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -58,6 +59,11 @@ public class LogInService extends ArenaService<LogIn,LogInDTO>{
 		return login;
 	}
 	
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(LogIn.class);
+	}
 	
 
 }

@@ -5,15 +5,15 @@
  */
 package app.backend.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.backend.model.Assessment;
 import app.backend.model.dto.AssessmentDTO;
 import app.backend.service.AssessmentService;
 import arena.backend.controller.ArenaController;
-import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
@@ -31,10 +31,5 @@ public class AssessmentController extends ArenaController<Assessment,AssessmentD
 		return this.assessmentService;
 	}
 
-	@Override
-	public
-	ShapeFactory getShapeFactory() {
-		return new ShapeFactory(Assessment.class);
-	}
-	
+
 }

@@ -5,15 +5,15 @@
  */
 package app.backend.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.backend.model.Owner;
 import app.backend.model.dto.OwnerDTO;
 import app.backend.service.OwnerService;
 import arena.backend.controller.ArenaController;
-import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
@@ -31,10 +31,4 @@ public class OwnerController extends ArenaController<Owner,OwnerDTO>{
 		return this.ownerService;
 	}
 
-	@Override
-	public
-	ShapeFactory getShapeFactory() {
-		return new ShapeFactory(Owner.class);
-	}
-	
 }

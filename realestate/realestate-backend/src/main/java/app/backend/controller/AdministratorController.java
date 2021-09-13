@@ -5,18 +5,17 @@
  */
 package app.backend.controller;
 
-import app.backend.model.Administrator;
-import app.backend.service.AdministratorService;
-import arena.backend.controller.ArenaController;
-import arena.backend.model.extension.ShapeFactory;
-import arena.backend.service.ArenaService;
-
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import app.backend.model.Administrator;
+import app.backend.service.AdministratorService;
+import arena.backend.controller.ArenaController;
+import arena.backend.service.ArenaService;
 
 /**
  *
@@ -32,12 +31,6 @@ public class AdministratorController extends ArenaController<Administrator,Admin
 	@Override
 	public ArenaService<Administrator,Administrator> getService() {
 		return this.administratorService;
-	}
-
-	@Override
-	public
-	ShapeFactory getShapeFactory() {
-		return new ShapeFactory(Administrator.class);
 	}
 
 	@Override

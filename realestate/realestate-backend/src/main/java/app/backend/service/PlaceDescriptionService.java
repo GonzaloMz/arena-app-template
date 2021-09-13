@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.PlaceDescription;
 import app.backend.repository.PlaceDescriptionRepository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -35,6 +36,11 @@ public class PlaceDescriptionService extends ArenaService<PlaceDescription, Plac
 		return null;
 	}
 
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory(PlaceDescription.class);
+	}
 	
 	
 }

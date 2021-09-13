@@ -5,14 +5,14 @@
  */
 package app.backend.controller;
 
-import app.backend.model.User;
-import app.backend.service.UserService;
-import arena.backend.controller.ArenaController;
-import arena.backend.model.extension.ShapeFactory;
-import arena.backend.service.ArenaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import app.backend.model.User;
+import app.backend.service.UserService;
+import arena.backend.controller.ArenaController;
+import arena.backend.service.ArenaService;
 
 /**
  *
@@ -30,10 +30,5 @@ public class UserController extends ArenaController<User,User>{
 		return this.userService;
 	}
 
-	@Override
-	public
-	ShapeFactory getShapeFactory() {
-		return new ShapeFactory(User.class);
-	}
-	
+
 }
