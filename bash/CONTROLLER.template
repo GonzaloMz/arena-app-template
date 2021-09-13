@@ -8,7 +8,6 @@ package app.backend.controller;
 import app.backend.model.{ENTITY};
 import app.backend.service.{ENTITY}Service;
 import arena.backend.controller.ArenaController;
-import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,10 +29,4 @@ public class {ENTITY}Controller extends ArenaController<{ENTITY},{ENTITY}>{
 		return this.{ENTITY_LOWER}Service;
 	}
 
-	@Override
-	public
-	ShapeFactory getShapeFactory() {
-		return new ShapeFactory({ENTITY}.class);
-	}
-	
 }

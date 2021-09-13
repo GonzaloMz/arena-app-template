@@ -7,6 +7,7 @@ package app.backend.service;
 
 import app.backend.model.{ENTITY};
 import app.backend.repository.{ENTITY}Repository;
+import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
 import java.util.List;
@@ -35,4 +36,10 @@ public class {ENTITY}Service extends ArenaService<{ENTITY},{ENTITY}>{
 		return null;
 	}
 
+	@Override
+	public
+	ShapeFactory getShapeFactory() {
+		return new ShapeFactory({ENTITY}.class);
+	}
+	
 }
