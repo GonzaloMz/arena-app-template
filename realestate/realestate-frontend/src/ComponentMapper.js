@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
+import { DateDisplay } from './utils';
 export const componentsTypeMap = {
 
 }
@@ -66,6 +67,7 @@ export const componentsMap = {
         default:{
             render:{
                 afterRender:({entity,t, mode, history})=>{
+                    console.log(entity.sugestedValue)
                     const url=encodeURI(`${window.location.protocol}//${window.location.hostname}/build/container/view/estate/${entity.id}`);
                     return (<div >
                         { mode === 'VIEW' && 
@@ -74,10 +76,25 @@ export const componentsMap = {
                                 <a className='share-button p-2' href={`https://api.whatsapp.com/send?text=${url}`}><FontAwesomeIcon icon={faWhatsapp} /> {t('share', 'Compartir')}</a>
                             </div>
                         }
+
+                        { mode === 'EDIT' || mode === 'CREATE' && 
+                            <div className="estate-after-render d-inline">
+                                <DateDisplay value={entity.assessmentTimestamp} className="d-inline"></DateDisplay>
+                                <span> {t('assessment.sugestedValue.label')} </span>
+                                <span> - USD {entity.sugestedValue}</span>
+                            </div>
+                        }
                         
                     </div>)
 
                 }
+            }
+        }
+    },
+    estateSearch:{
+        default:{
+            render:{
+                afterRender:({t})=><button className='arena-full-button'>{t('buttons.search', 'Search')}</button>
             }
         }
     }

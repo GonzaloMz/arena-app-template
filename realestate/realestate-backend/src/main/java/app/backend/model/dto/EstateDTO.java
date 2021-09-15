@@ -1,5 +1,6 @@
 package app.backend.model.dto;
 
+import java.util.Date;
 import java.util.HashMap;
 
 public class EstateDTO extends EstateFieldsDTO{
@@ -9,6 +10,10 @@ public class EstateDTO extends EstateFieldsDTO{
 	private Long placeDescription;
 	
 	private Long placeId;
+	
+	//campos de soporte
+	private Double sugestedValue;
+	private Date assessmentTimestamp;
 
 	public OwnerDTO getOwner() {
 		return owner;
@@ -43,5 +48,21 @@ public class EstateDTO extends EstateFieldsDTO{
 		return filter;
 	}
 
-	
+	public Double getSugestedValue() {
+		return sugestedValue;
+	}
+
+	public void setSugestedValue(Double sugestedValue) {
+		this.sugestedValue = sugestedValue;
+	}
+
+	public Date getAssessmentTimestamp() {
+		return assessmentTimestamp;
+	}
+
+	public void setAssessmentTimestamp(Date assessmentTimestamp) {
+		this.assessmentTimestamp = assessmentTimestamp;
+	}
+
+
 }

@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import ReactDatePicker, { registerLocale, setHours, setMinutes } from 'react-datepicker';
 import { useHistory } from "react-router-dom";
-import Swal from 'sweetalert2';
 import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
+import {OperationSelector} from './utils'
 
 import Camera, { FACING_MODES, IMAGE_TYPES } from '@rinse/react-html5-camera-photo';
 import '@rinse/react-html5-camera-photo/build/css/index.css';
 
 import Carousel from 'react-elastic-carousel';
+import {faCalendarAlt} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DateDisplay } from './utils';
 
 registerLocale('es', es)
 
@@ -21,26 +24,20 @@ export const shapeConfigurationMap = {
         },
         // level:3,
         onCreateFinish: (e, history) => {
-            Swal.fire("Creación finalizada").then(() => { history.push('/build/listContainer/view/appointment') });
+            // Swal.fire("Creación finalizada").then(() => { history.push('/build/listContainer/view/appointment') });
+            window.scrollTo(0, 0);
+            
+            history.push("/confirmation/appointment");
             return null
         },
         visibility: {
-            visible: ['userId', 'placeId', 'estateType', 'operation', 'appointmentDate'],
+            visible: ['userId', 'estateType', 'placeId', 'operation', 'appointmentDate'],
             hidden: []
 
         },
         fields: {
             operation: {
-                render: ({ update, value, t, mode }) => {
-                    if (mode === 'VIEW') return false;
-                    return (
-                        <div style={{ textAlign: 'center' }}>
-                            <div className='radio' >
-                                <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
-                                <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                            </div>
-                        </div>)
-                }
+                render: OperationSelector
             },
             appointmentDate: {
                 render: (({ update, value, t, mode }) => {
@@ -49,22 +46,31 @@ export const shapeConfigurationMap = {
                     const filterPassedTime = (time) => {
                         const currentDate = new Date();
                         const selectedDate = new Date(time);
+                        if(selectedDate.getHours()<7 || selectedDate.getHours()>21)
+                            return false;
 
                         return currentDate.getTime() < selectedDate.getTime();
                     };
 
                     return (
                         <div>
-                            <div class="date-input-label">Cita</div>
+                            <div class="date-input-label subtitle">{t('appointment.appointmentDate.label')}</div>
+                            <div className='d-inline'>
+                                <FontAwesomeIcon icon={faCalendarAlt} className='pt-2 gray-icon' size='2x'></FontAwesomeIcon>
+                            </div>
                             <ReactDatePicker
+                                className="arena-edit-field"
                                 selected={value ? new Date(value) : undefined}
-                                onChange={(date) => update(date)}
+                                onChange={(date) => {
+                                    const hours= new Date(date).getHours();
+                                    if(hours>=7 && hours<=21)
+                                        update(date)
+                                }}
                                 showTimeSelect
                                 timeCaption='Hora'
                                 filterTime={filterPassedTime}
                                 locale="es"
                                 onChangeRaw={(e) => { e.preventDefault() }}
-                                onCalendarOpen={(props) => console.log(props)}
                                 dateFormat="MMMM d, yyyy HH:mm"
                                 onFocus={(e) => e.target.readOnly = true}
                             />
@@ -74,7 +80,7 @@ export const shapeConfigurationMap = {
             },
             placeId: {
                 visibility: {
-                    visible: ['formattedAddress']
+                    visible: ['formattedAddress', 'floor']
                 },
                 fields: {
                     formattedAddress: {
@@ -103,8 +109,7 @@ export const shapeConfigurationMap = {
                 },
                 placeId: {
                     visibility: {
-                        visible: ['formattedAddress'],
-                        hidden: []
+                        hidden: ['floor', 'unit']
                     }
                 }
             },
@@ -136,12 +141,13 @@ export const shapeConfigurationMap = {
             allowInLineCreate: true
         },
         onCreateFinish: (e, history) => {
-            Swal.fire("Creación finalizada").then(() => { history.push('/build/listContainer/view/assessment?status=ACTIVE,:,WITHOUT_DATE') });
+            history.push('/confirmation/assessment');
             return null
         },
     },
     user: {
         entityRenderConfiguration: {
+            allowInLineEdit: true,
             shapeConfiguration: {
 
             }
@@ -211,8 +217,6 @@ export const shapeConfigurationMap = {
         }
     },
     place: {
-
-
     },
     estateCreation: {
         entityRenderConfiguration: {
@@ -220,7 +224,7 @@ export const shapeConfigurationMap = {
             shapeConfiguration: {
 
                 visibility: {
-                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status"]
+                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status", "operation", "price"]
                 },
                 fields: {
                     operation: {
@@ -238,7 +242,7 @@ export const shapeConfigurationMap = {
                     placeId: {
 
                         visibility: {
-                            visible: ["formattedAddress"]
+                            visible: ["formattedAddress", 'floor']
                         }
                     },
                     placeDescription: {
@@ -251,7 +255,7 @@ export const shapeConfigurationMap = {
             }
         },
         onCreateFinish: (e, history) => {
-            Swal.fire("Creación finalizada").then(() => { history.push('/build/container/search/estateSearch') });
+            history.push('/confirmation/estate');
             return null
         }
     },
@@ -440,7 +444,7 @@ export const shapeConfigurationMap = {
 
             address: {
                 visibility: {
-                    visible: ['formattedAddress']
+                    visible: ['formattedAddress', 'floor']
                 },
                 fields: {
                     formattedAddress: {
@@ -512,7 +516,7 @@ const Place = ({ update, value, t }) => {
         <Autocomplete
             apiKey={'AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U'}
             onPlaceSelected={updatePlace}
-            placeholder='Ingrese una dirección'
+            placeholder='Ingrese calle y altura'
             defaultValue={value}
             language='es_AR'
             options={{
@@ -539,14 +543,15 @@ const Place = ({ update, value, t }) => {
     ;
 }
 
-const DateDisplay = ({ value, className }) => {
-    if (!value) return <div className={className}>--/--</div>
-    const dateToDisplay = new Date(value);
-    const dd = String(dateToDisplay.getDate()).padStart(2, '0');
-    const mm = String(dateToDisplay.getMonth() + 1).padStart(2, '0'); //January is 0!
-    // var yyyy = dateToDisplay.getFullYear();
+// export const DateDisplay = ({ value, className }) => {
+//     if (!value) return <div className={className}>--/--</div>
+//     const dateToDisplay = new Date(value);
+//     const dd = String(dateToDisplay.getDate()).padStart(2, '0');
+//     const mm = String(dateToDisplay.getMonth() + 1).padStart(2, '0'); //January is 0!
+//     // var yyyy = dateToDisplay.getFullYear();
 
-    const formatted = dd + '/' + mm;
+//     const formatted = dd + '/' + mm;
 
-    return <div className={className}>{formatted}</div>
-}
+//     return <div className={className}>{formatted}</div>
+// }
+

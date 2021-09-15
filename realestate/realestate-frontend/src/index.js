@@ -16,6 +16,7 @@ import './custom.scss';
 
 import { BrowserRouter as Router, Redirect, Switch, Route} from 'react-router-dom'
 import Menu from './Menu';
+import { ConfirmationScreen } from './screens/ConfirmationScreen';
 		
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -37,10 +38,9 @@ const componentMapper = new ArenaMapper(
 );
 
 
-
-console.log(componentMapper);
 ReactDOM.render(
 	<Provider store={store}>
+			
 			<Router>
 				<Menu options={[
 					{
@@ -67,12 +67,33 @@ ReactDOM.render(
 					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
 					<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
 					<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
-					<Redirect from="/" exact={true} push={true} to="build/container/search/estateSearch" />
-					<Route component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
+					<Redirect from="/" exact={true} to="build/container/search/estateSearch" />
+					<Redirect from="/appointment-creation-finish" push={true} to="/confirmation/appointment" />
+					<Route path="/confirmation/appointment" strict={true} render={
+						()=>(<ConfirmationScreen 
+							name='appointment'
+							nextUrl='/build/listContainer/view/appointment'
+							backUrl='/create-appointment'
+							componentMapper={componentMapper}>
+						</ConfirmationScreen>)}/>
+					<Route path="/confirmation/assessment" strict={true} render={
+						()=>(<ConfirmationScreen 
+							name='assessment'
+							nextUrl='/assessments'
+							backUrl='/pending-appointments'
+							componentMapper={componentMapper}>
+						</ConfirmationScreen>)}/>
+					<Route path="/confirmation/estate" strict={true} render={
+						()=>(<ConfirmationScreen 
+							name='estate'
+							nextUrl='/estates'
+							backUrl='/assessments'
+							componentMapper={componentMapper}>
+						</ConfirmationScreen>)}/>
+					<Route path="/build/:description" component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>
 				</Switch>
 			</Router>
-		
-		
+	
 	</Provider>,
   document.getElementById('root')
 );

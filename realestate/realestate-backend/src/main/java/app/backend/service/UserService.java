@@ -10,6 +10,7 @@ import app.backend.repository.UserRepository;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +42,11 @@ public class UserService extends ArenaService<User,User>{
 	@Override
 	public List<User> searchInLine(String query) {
 		if (StringUtils.isEmpty(query)) {
-			return userRepository.findTop5ByOrderByNameAsc();
+			return new ArrayList<>();
 		}
 		if (query.contains("@"))
 			return userRepository.findTop5ByEmailContainingOrderByNameAsc(query);
-		return userRepository.findTop5ByPhoneContainingOrEmailContainingOrderByNameAsc(query, query);
+		return userRepository.findTop5ByPhoneContainingOrEmailContainingOrNameContainingIgnoreCaseOrderByNameAsc(query, query, query);
 	}
 	
 	@Override

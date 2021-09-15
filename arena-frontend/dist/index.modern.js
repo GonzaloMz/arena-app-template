@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import { useDispatch, useStore, useSelector, shallowEqual } from 'react-redux';
 import tingle from 'tingle.js';
 import Autosuggest from 'react-autosuggest';
-import { useHistory, BrowserRouter, Switch, Route } from 'react-router-dom';
+import { useHistory, Switch, Route } from 'react-router-dom';
 import _, { isObject } from 'lodash';
 import 'tingle.js/dist/tingle.css';
 
@@ -272,13 +272,17 @@ function applyVisibility(fields, visibilityConfiguration) {
 
   if (hidden) {
     if (visible) {
+      var filteredVisible = visible.filter(function (f) {
+        return !hidden.includes(f);
+      });
+
       if (hidden.length) {
-        return [].concat(visible, fields.filter(function (f) {
+        return [].concat(filteredVisible, fields.filter(function (f) {
           return !hidden.includes(f);
         }).filter(function (f) {
-          return !visible.includes(f);
+          return !filteredVisible.includes(f);
         }));
-      } else return [].concat(visible);
+      } else return [].concat(filteredVisible);
     } else if (hidden.length) return fields.filter(function (f) {
       return !hidden.includes(f);
     });else return [];
@@ -433,10 +437,13 @@ var ArenaField = function ArenaField(_ref) {
         onBlur: update,
         validation: {
           regEx: field.regEx,
-          type: field.jsType
+          type: field.jsType,
+          required: field.required
         },
         type: inputType,
-        options: options
+        options: options,
+        t: componentMapper.t,
+        parentController: parentController
       }));
 
     default:
@@ -464,7 +471,10 @@ var ArenaInputField = function ArenaInputField(_ref3) {
       name = _ref3.name,
       options = _ref3.options,
       placeholder = _ref3.placeholder,
-      validation = _ref3.validation;
+      _ref3$validation = _ref3.validation,
+      validation = _ref3$validation === void 0 ? {} : _ref3$validation,
+      t = _ref3.t,
+      parentController = _ref3.parentController;
 
   var _useState = useState(value),
       currentValue = _useState[0],
@@ -481,7 +491,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
   var _onBlur = function _onBlur(event) {
     var newValue = event.target.value;
     var newValueIsValid = validation && validation.regEx ? validate(validation.regEx, validation.type, newValue) : true;
-    if (newValueIsValid) onBlur(newValue);
+    onBlur(newValue);
     if (newValueIsValid !== currentValueIsValid) setIsValid(newValueIsValid);
   };
 
@@ -517,7 +527,8 @@ var ArenaInputField = function ArenaInputField(_ref3) {
       case 'number':
         return /*#__PURE__*/React.createElement("input", _extends({
           className: "arena-edit-field",
-          type: "number",
+          type: "text",
+          inputmode: "numeric",
           placeholder: placeholderString
         }, commonProps));
 
@@ -530,7 +541,29 @@ var ArenaInputField = function ArenaInputField(_ref3) {
     }
   };
 
-  return /*#__PURE__*/React.createElement(React.Fragment, null, !placeholderIsString && placeholder, content());
+  var required = function required() {
+    if (validation.required && !currentValue) {
+      return /*#__PURE__*/React.createElement("div", {
+        className: "arena-error-message"
+      }, /*#__PURE__*/React.createElement(ArenaTextList, {
+        keys: ["errors.required", "errors." + parentController + "." + name + ".required"],
+        t: t
+      }));
+    } else {
+      return null;
+    }
+  };
+
+  var error = function error() {
+    if (!currentValueIsValid) return /*#__PURE__*/React.createElement("div", {
+      className: "arena-error-message"
+    }, /*#__PURE__*/React.createElement(ArenaText, {
+      k: "errors." + parentController + "." + name + ".invalid",
+      t: t
+    }));else return null;
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, !placeholderIsString && placeholder, required(), content(), error());
 };
 
 var buildSelect = function buildSelect(commonProps, options, placeholder) {
@@ -719,7 +752,9 @@ var createEntity = function createEntity(api, controller, entity) {
       'Content-Type': 'application/json'
     }
   }).then(function (res) {
-    return res.json();
+    if (!res.ok) res.json().then(function (body) {
+      throw new Error(body.errors);
+    });else res.json();
   });
 };
 var createEntityTemplate = function createEntityTemplate(api, controller, example) {
@@ -28240,6 +28275,7 @@ var ArenaInLineSearch = function ArenaInLineSearch(_ref9) {
   var inputProps = {
     placeholder: componentMapper.t(controller + ".search.inline.placeholder", controller + ".search.inline.placeholder"),
     value: value,
+    autocomplete: "nope",
     onChange: function onChange(e) {
       if (e.target.value) setValue(e.target.value);else setValue('');
     },
@@ -28653,7 +28689,7 @@ var App = function App(props) {
   sessionStorage.clear();
   return /*#__PURE__*/React.createElement("div", {
     className: "container"
-  }, /*#__PURE__*/React.createElement(BrowserRouter, null, /*#__PURE__*/React.createElement(ArenaApp, props)));
+  }, /*#__PURE__*/React.createElement(ArenaApp, props));
 };
 
 var backendMiddleware = function backendMiddleware(store) {
@@ -28716,7 +28752,7 @@ var updateEntityMiddleware = function updateEntityMiddleware(store) {
             'Content-Type': 'application/json'
           }
         }).then(function (res) {
-          return res.json();
+          if (res.ok) res.json();
         }).then(function (response) {
           if (action.callback) action.callback(response);
           store.dispatch(createEntityLoad(controller, response));

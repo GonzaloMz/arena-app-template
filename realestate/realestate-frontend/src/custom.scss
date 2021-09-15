@@ -16,7 +16,7 @@ $gray-500:#A3A0A0;
 $gray-600:#858384;
 $gray-700:#6B6868;
 $gray-800:#5E5B5B;
-$gray-900:#403F3F;
+$gray-900:#433F3F;
 
 $input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
 $input-focus-border-color:   rgb(180, 180, 180);
@@ -60,13 +60,29 @@ html {
 		}
 	  }
 }
+.mt-4-5{
+	margin-top: 2.5rem !important;
+}
+.subtitle{
+	font-family: 'Roboto Cn';
+	// font-size: large;
+	border-bottom:  $gray-400 1px solid;
+	color: $gray-900;
+	// @extend .card-header
+	@extend .mt-4-5, .mb-3;
+}
 
-button[class^="arena-"][ class$="-button"]{
+button[class^="arena-"][ class$="-button"], a.arena-button{
 	@extend .btn;
 	@extend .btn-raised;
 	text-transform: none;
 	font-family: Raleway;
 	font-weight: 450;
+}
+
+button.arena-full-button {
+	@extend .w-100;
+	@extend .mt-2;
 }
 
 [class$="arena-search-*-screen"]>.arena-container>div>.arena-text{
@@ -94,6 +110,18 @@ button[class^="arena-"][ class$="-button"]{
 .arena-open-search-modal-button	{
 	@extend .btn-secondary, .btn-sm, .float-right;
 }
+
+.errors.required{
+	@extend .text-warning;
+	font-size: x-small;
+}
+
+.errors.invalid{
+	@extend .text-danger;
+	border-top: $danger 1px solid;
+	font-size: small;
+}
+
 .radius{
 
 	border-radius: 3px;
@@ -119,6 +147,7 @@ button[class^="arena-"][ class$="-button"]{
 	border-bottom: unset;
 	@extend .mb-2;
 	border-radius: 2px;
+	background-color: $white;
 
 }
 
@@ -153,9 +182,15 @@ button[class^="arena-"][ class$="-button"]{
 	display: flex;
 }
 
-div[class*="arena-field-mode"] .arena-text, .formattedAddress.arena-text, .date-input-label{
+.data-label{
 	font-family: 'Roboto Cn';	
 	color: $gray-700;
+}
+
+div[class*="arena-field-mode"] .arena-text, .formattedAddress.arena-text{
+	// font-family: 'Roboto Cn';	
+	// color: $gray-700;
+	@extend .data-label;
 }
 .arena-container-default-render{
 	
@@ -332,16 +367,16 @@ input::placeholder{
 		width: 100%;
 	}
 }
-
-
 // :not(.arena-list-item-wrapper) > .arena-container{
 	.arena-default-render-wrapper{
 		.arena-container > div > .arena-text.label {
-			font-family: 'Roboto Cn';
-			// font-size: large;
-			border-bottom:  map-get($theme-colors, "dark") 1px solid;
-			// @extend .card-header
-			@extend .mt-5, .mb-4;
+			@extend .subtitle;
+			// font-family: 'Roboto Cn';
+			// // font-size: large;
+			// border-bottom:  $gray-400 1px solid;
+			// color: $gray-900;
+			// // @extend .card-header
+			// @extend .mt-5, .mb-4;
 		}
 	}
 .arena-create-appointment-screen, .arena-create-assessment-screen, .arena-create-estate-screen{
@@ -508,6 +543,29 @@ input::placeholder{
 .arena-list-container .arena-controller-appointment .arena-text.label{
 	display: none;
 }
+
+.confirmation-title{
+	font-family: Raleway;
+	color: $gray-700;
+	--animate-duration: 2s;
+	@extend .h2;
+	@extend .mx-3;
+	@extend .animate__animated, .animate__fadeIn;
+}
+.confirmation-image {
+	img{
+		@extend .animate__animated, .animate__tada;
+		max-width: 300px;
+	}
+}
+
+.confirmation-buttons{
+	background: rgb(255,255,255);
+	background: linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 84%, rgba(255,255,255,0) 100%); 
+	@extend .mb-4;
+}
+
+
 .list, .create, .search{
 	font-family: Raleway !important;
 	@extend .h1;
@@ -625,6 +683,9 @@ input[type="file"]{
 	}
 	.react-datepicker__input-container>input{
 		@extend  .arena-edit-field ;
+	}
+	.react-datepicker__time-list-item--disabled{
+		display: none;
 	}
 }
 
@@ -754,4 +815,37 @@ a.logout{
 		@extend .mx-auto;
 		max-width: 700px;
 	}
+}
+
+
+.arena-field-name-estateType {
+	@extend .d-block;
+	.estateType.label{
+		@extend .subtitle;
+	}
+}
+
+
+.arena-field-mode-CREATE,.arena-field-mode-EDIT{
+	&.arena-field-name-floor{
+		@extend .pr-2
+	}
+	&.arena-field-name-unit {
+		@extend .pl-2
+	}
+	&.arena-field-name-floor, &.arena-field-name-unit {
+		width: 50%;
+		float: left;
+		@extend .mb-4
+	}
+
+}
+
+.gray-icon{
+	color: $gray-600;
+}
+
+.estate-after-render{
+	color: $gray-600;
+	font-family: 'Roboto Cn';
 }

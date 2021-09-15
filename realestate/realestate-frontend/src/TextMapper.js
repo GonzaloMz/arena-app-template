@@ -2,6 +2,35 @@ export const textMap = {
 
     es: {
         clear: "Nueva búsqueda",
+        buttons:{
+            search: "Buscar"
+        },
+        errors:{
+            required: "Requerido",
+            user: {
+                email: {
+                    invalid: "El email ingresado es inválido"
+                }
+            }
+        },
+        confirmation:{
+            home: 'Ir al Inicio',
+            appointment:{
+                title:"La Cita fue agendada con éxito!",
+                subtitle:"Podrás verla en las Tasaciones Pendientes.",
+                next: "Ir a Tasaciones Pendientes"
+            },
+            assessment:{
+                title:"La Tasación fue agregada con éxito!",
+                subtitle:"Podrás verla en las Tasaciones Realizadas.",
+                next: "Ir a Tasaciones Realizadas"
+            },
+            estate:{
+                title:"La Propiedad fue agregada con éxito!",
+                subtitle:"Podrás verla en las Propiedades Disponibles.",
+                next: "Ir a Propiedades Disponibles"
+            }
+        },
         list: {
             appointment: {
                 label: "Tasaciones",
@@ -35,17 +64,17 @@ export const textMap = {
                 label: "Tipo de operación"
             },
             estateType: {
-                label: "Tipo de inmueble"
+                label: "Tipo de propiedad"
             },
             placeId: {
 
-                label: "Lugar de la tasación"
+                label: "Ubicación de la propiedad"
             },
             userId: {
                 label: "Interesado"
             },
             appointmentDate: {
-                label: "Cita"
+                label: "Agendar cita"
             }
         },
         user: {
@@ -54,7 +83,7 @@ export const textMap = {
             },
             search: {
                 inline: {
-                    placeholder: "Realice una búsqueda por email o teléfono"
+                    placeholder: "Búsqueda por nombre, email o teléfono"
                 }
             },
             lastName: {
@@ -77,7 +106,7 @@ export const textMap = {
         place: {
             unit: {
                 label: "Departamento",
-                placeholder: "Ingrese número de unidad "
+                placeholder: "Ingrese la unidad "
             },
             floor: {
                 label: "Piso",
@@ -98,13 +127,13 @@ export const textMap = {
                 label: "Tipo de operación"
             },
             placeId: {
-                label: "Lugar de la tasación"
+                label: "Ubicación de la propiedad"
             },
             userId: {
                 label: "Interesado"
             },
             estateType: {
-                label: "Tipo de inmueble"
+                label: "Tipo de propiedad"
             },
             sugestedValue: {
                 label: "Valor sugerido",
@@ -213,7 +242,7 @@ export const textMap = {
             },
             estateType: {
                 placeholder: "Selecciona el tipo de inmueble que estás buscando",
-                label: "Tipo de inmueble"
+                label: "Tipo de propiedad"
             },
             squareMeterCovered: {
                 label: "m2 cubiertos",

@@ -71,6 +71,8 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 			owner.setUser(assessmentEntity.getUserId());
 			estate.setOwner(owner);
 		}
+		estate.setAssessmentTimestamp(assessmentEntity.getTimestamp());
+		estate.setSugestedValue(assessmentEntity.getSugestedValue());
 		return estate;
 	}
 	

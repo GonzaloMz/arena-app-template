@@ -5,6 +5,7 @@
  */
 package app.backend.service;
 
+import app.backend.exception.RealestateException;
 import app.backend.model.Appointment;
 import app.backend.model.Place;
 import app.backend.model.User;
@@ -12,11 +13,15 @@ import app.backend.model.dto.AppointmentDTO;
 import app.backend.model.dto.AppointmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
 import app.backend.repository.AppointmentRepository;
+import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,16 +50,25 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 	}
 
 	@Override
+	@Transactional
 	public Appointment create(Optional<AppointmentDTO> appointment) {
 		Appointment app = new Appointment();
+		BeanUtils.copyProperties((AppointmentFieldsDTO) appointment.get(), app);
+		ErrorBuffer errors = new ErrorBuffer();
+		errors.append(this.validate(app));
+		errors.append("place",placeService.validate(appointment.get().getPlaceId()));
+		errors.append("user",userService.validate(appointment.get().getUserId()));
+		if(errors.getErrors().length>0) {
+			throw new RealestateException(errors.getErrors());
+		}
 		Place p = placeService.create(Optional.ofNullable(appointment.get().getPlaceId()));
 		User u = userService.create(Optional.ofNullable(appointment.get().getUserId()));
 		app.setPlaceId(p.getId());
 		app.setUserId(u.getId());
-		BeanUtils.copyProperties((AppointmentFieldsDTO) appointment.get(), app);
 		app.setStatus(app.getAppointmentDate()==null ?
 							AppointmentStatus.WITHOUT_DATE:
 								AppointmentStatus.ACTIVE);
+		
 		return this.appointmentRepository.save(app);
 	}
 
