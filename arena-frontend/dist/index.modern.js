@@ -25,6 +25,96 @@ function _extends() {
   return _extends.apply(this, arguments);
 }
 
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+  subClass.__proto__ = superClass;
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (_isNativeReflectConstruct()) {
+    _construct = Reflect.construct;
+  } else {
+    _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) _setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !_isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return _setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
 var createEntityRequestById = function createEntityRequestById(endpoint, controller, id) {
   return {
     type: types.ENTITY_REQUEST,
@@ -247,6 +337,14 @@ var Mapper = function Mapper(controllerFieldsComponentsMap, templatesMap, compon
     return templates ? templates : {};
   };
 
+  this.setInputBuilder = function (inputBuilder) {
+    _this.inputBuilder = inputBuilder;
+  };
+
+  this.getInputBuilder = function () {
+    return _this.inputBuilder;
+  };
+
   this.t = function (key, def) {
     return toDeep(_this.textMap, def, key.split('.'));
   };
@@ -320,7 +418,9 @@ var ArenaText = function ArenaText(_ref) {
 var ArenaTextList = function ArenaTextList(_ref2) {
   var keys = _ref2.keys,
       t = _ref2.t;
-  return /*#__PURE__*/React.createElement("div", null, keys.map(function (key) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "arena-text-list"
+  }, keys.map(function (key) {
     return /*#__PURE__*/React.createElement(ArenaText, {
       key: key,
       k: key,
@@ -443,7 +543,8 @@ var ArenaField = function ArenaField(_ref) {
         type: inputType,
         options: options,
         t: componentMapper.t,
-        parentController: parentController
+        parentController: parentController,
+        inputBuilder: componentMapper.getInputBuilder()
       }));
 
     default:
@@ -474,7 +575,9 @@ var ArenaInputField = function ArenaInputField(_ref3) {
       _ref3$validation = _ref3.validation,
       validation = _ref3$validation === void 0 ? {} : _ref3$validation,
       t = _ref3.t,
-      parentController = _ref3.parentController;
+      parentController = _ref3.parentController,
+      _ref3$inputBuilder = _ref3.inputBuilder,
+      inputBuilder = _ref3$inputBuilder === void 0 ? {} : _ref3$inputBuilder;
 
   var _useState = useState(value),
       currentValue = _useState[0],
@@ -519,7 +622,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
   var content = function content() {
     switch (type) {
       case 'enum':
-        return buildSelect(commonProps, options, placeholderString);
+        return inputBuilder.buildSelect ? inputBuilder.buildSelect(commonProps, options, placeholderString) : buildSelect(commonProps, options, placeholderString);
 
       case 'boolean':
         return buildCheckbox(commonProps, placeholderString);
@@ -529,6 +632,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
           className: "arena-edit-field",
           type: "text",
           inputmode: "numeric",
+          autocomplete: "nope",
           placeholder: placeholderString
         }, commonProps));
 
@@ -536,6 +640,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
         return /*#__PURE__*/React.createElement("input", _extends({
           className: "arena-edit-field",
           type: "text",
+          autocomplete: "nope",
           placeholder: placeholderString
         }, commonProps));
     }
@@ -712,6 +817,20 @@ var createListItemSelectionFunction = function createListItemSelectionFunction(m
   }
 };
 
+var ValidationError = /*#__PURE__*/function (_Error) {
+  _inheritsLoose(ValidationError, _Error);
+
+  function ValidationError(errorResponse) {
+    var _this;
+
+    _this = _Error.call(this, "") || this;
+    _this.res = errorResponse;
+    return _this;
+  }
+
+  return ValidationError;
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+
 var findEntities = function findEntities(api, controller, example) {
   var url = new URL(api + "/" + controller + "/search");
   var params = {};
@@ -752,9 +871,7 @@ var createEntity = function createEntity(api, controller, entity) {
       'Content-Type': 'application/json'
     }
   }).then(function (res) {
-    if (!res.ok) res.json().then(function (body) {
-      throw new Error(body.errors);
-    });else res.json();
+    if (!res.ok) throw new ValidationError(res);else return res.json();
   });
 };
 var createEntityTemplate = function createEntityTemplate(api, controller, example) {
@@ -27602,11 +27719,16 @@ var ArenaContainer = function ArenaContainer(_ref) {
 
   var entityToUse = getEntityToUse(mode, entityInState, entityFromCentralMemory);
   var calculatedConfiguration = useMemo(function () {
+    var componentConfiguration = componentMapper.getShapeConfiguration(controller);
+
+    var _visibility = entityRenderConfiguration && entityRenderConfiguration.shapeConfiguration && entityRenderConfiguration.shapeConfiguration.visibility ? entityRenderConfiguration.shapeConfiguration.visibility : componentConfiguration ? componentConfiguration.visibility : undefined;
+
     var _entityRenderConfiguration = _.merge(_extends({}, entityRenderConfiguration), {
-      shapeConfiguration: componentMapper.getShapeConfiguration(controller)
+      shapeConfiguration: _extends({}, componentConfiguration, {
+        visibility: _visibility
+      })
     });
 
-    console.log(_entityRenderConfiguration);
     return _extends({}, _entityRenderConfiguration, {
       wrapperConfiguration: componentMapper.getComponent(name, controller, type, parentController, level)
     });
@@ -27832,6 +27954,7 @@ function getEntityToUse(mode, entity, entityFromCentralMemory) {
 
 function getUseUpdateMode(mode) {
   switch (mode) {
+    case ArenaContainerMode.VIEW:
     case ArenaContainerMode.EDIT:
       return useUpdateMode.PERSIST;
 
@@ -27839,7 +27962,6 @@ function getUseUpdateMode(mode) {
       return useUpdateMode.EXTERNAL_STATE_UPDATE;
 
     case ArenaContainerMode.SEARCH:
-    case ArenaContainerMode.VIEW:
     default:
       return useUpdateMode.IN_LOCAL_STATE;
   }
@@ -28606,13 +28728,25 @@ var RouteContainer = function RouteContainer(props) {
       templateEntity = _useState[0],
       setTemplateEntity = _useState[1];
 
+  var _useState2 = useState(undefined),
+      errors = _useState2[0],
+      setErrors = _useState2[1];
+
+  var t = componentMapper.t;
   var history = useHistory();
 
   var _onCreateFinish = function _onCreateFinish(entity) {
     createEntity(componentMapper.api, controller, entity).then(function (createdEntity) {
+      console.log(createdEntity);
+      if (!createdEntity || !createdEntity.id) return;
+
       if (shapeConfiguration.onCreateFinish) {
         shapeConfiguration.onCreateFinish(createdEntity, history);
       }
+    })["catch"](function (error) {
+      error.res.json().then(function (jsonResponse) {
+        return setErrors(jsonResponse.errors);
+      });
     });
   };
 
@@ -28637,7 +28771,16 @@ var RouteContainer = function RouteContainer(props) {
     entity: creationMode ? templateEntity : searchMode ? values : undefined,
     onCreateFinish: creationMode ? _onCreateFinish : undefined,
     entityRenderConfiguration: shapeConfiguration.entityRenderConfiguration
-  }));
+  }), errors && /*#__PURE__*/React.createElement("div", {
+    className: "arena-errors"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "arena-errors-title"
+  }, t('errors.title')), errors.map(function (e) {
+    return /*#__PURE__*/React.createElement(ArenaText, {
+      k: 'errors.' + e,
+      t: t
+    });
+  })));
 };
 
 var RoutListContainer = function RoutListContainer(props) {
