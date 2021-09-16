@@ -16,6 +16,13 @@ public class ErrorBuffer {
 	public void append(String prefix, String[] errors) {
 		if(errors==null)
 			return;
+		if(StringUtils.isNotBlank(prefix))
+			prefix+=".";
+		else
+			prefix="";
+		for (int i = 0; i < errors.length; i++) {
+			errors[i]=prefix+errors[i];
+		}
 		this.errors.addAll(Arrays.asList(errors));
 		this.errors.removeIf(s->StringUtils.isBlank(s));
 	}
@@ -26,6 +33,11 @@ public class ErrorBuffer {
 
 	public void append(String[] validate) {
 		this.append(null,validate);
+	}
+
+	public void append(String string) {
+		this.append(null,string.split(";"));
+		
 	}
 
 }

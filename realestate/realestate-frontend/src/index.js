@@ -17,6 +17,7 @@ import './custom.scss';
 import { BrowserRouter as Router, Redirect, Switch, Route} from 'react-router-dom'
 import Menu from './Menu';
 import { ConfirmationScreen } from './screens/ConfirmationScreen';
+import InputBuilder from './InputBuilder';
 		
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -36,6 +37,8 @@ const componentMapper = new ArenaMapper(
 	"http://192.168.0.14:1312/"
 	// "https://api.costoya.com.ar/"
 );
+
+componentMapper.setInputBuilder(InputBuilder);
 
 
 ReactDOM.render(

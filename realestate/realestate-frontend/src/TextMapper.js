@@ -7,9 +7,21 @@ export const textMap = {
         },
         errors:{
             required: "Requerido",
+            title: "⚠ Revisa estos errores antes de poder continuar",
             user: {
                 email: {
-                    invalid: "El email ingresado es inválido"
+                    invalid: "El email ingresado es inválido",
+                    required: "El email del usuario es requerido"
+                },
+                name:{
+                    required: "El nombre de usuario es requerido"
+                }
+            },
+            appointment: {
+                place: {
+                    unit:{
+                        required: "El número de departamento es requerido para el tipo de propiedad Departamento"
+                    }
                 }
             }
         },
@@ -75,6 +87,10 @@ export const textMap = {
             },
             appointmentDate: {
                 label: "Agendar cita"
+            },
+            view:{
+                label: "Tasación",
+                sublabel: "Pendiente"
             }
         },
         user: {
@@ -362,6 +378,9 @@ export const textMap = {
                 },
                 Integer: {
                     null: "--"
+                },
+                String: {
+                    "": "--"
                 }
             }
         },

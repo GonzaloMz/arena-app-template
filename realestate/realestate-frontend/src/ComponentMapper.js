@@ -24,7 +24,7 @@ export const componentsMap = {
                     // if(!entity.appointmentDate){
                         return (<div >
                             { mode !== 'CREATE' && 
-                               <button className='arena-button' onClick={()=>{history.push('/build/container/create/assessment?shapeName=assessmentCreation&appointment='+entity.id)}}>{t('createAssessment', 'Tasar ahora')}</button>
+                               <button className='arena-full-button' onClick={()=>{history.push('/build/container/create/assessment?shapeName=assessmentCreation&appointment='+entity.id)}}>{t('createAssessment', 'Tasar ahora')}</button>
                             }
                             
                         </div>)
@@ -47,7 +47,7 @@ export const componentsMap = {
                     // if(!entity.appointmentDate){
                         return (<div >
                             { mode !== 'CREATE' && 
-                               <button className='arena-button' onClick={()=>{history.push('/build/container/create/estate?shapeName=estateCreation&assessment='+entity.id)}}>{t('createEstate', 'Alta de propiedad')}</button>
+                               <button className='arena-full-button' onClick={()=>{history.push('/build/container/create/estate?shapeName=estateCreation&assessment='+entity.id)}}>{t('createEstate', 'Alta de propiedad')}</button>
                             }
                             
                         </div>)

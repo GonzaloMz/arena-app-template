@@ -41,41 +41,12 @@ export const shapeConfigurationMap = {
             },
             appointmentDate: {
                 render: (({ update, value, t, mode }) => {
-                    if (mode === 'VIEW') return <DateDisplay value={value} className='appointment-date'></DateDisplay>;
-
-                    const filterPassedTime = (time) => {
-                        const currentDate = new Date();
-                        const selectedDate = new Date(time);
-                        if(selectedDate.getHours()<7 || selectedDate.getHours()>21)
-                            return false;
-
-                        return currentDate.getTime() < selectedDate.getTime();
-                    };
-
-                    return (
-                        <div>
-                            <div class="date-input-label subtitle">{t('appointment.appointmentDate.label')}</div>
-                            <div className='d-inline'>
-                                <FontAwesomeIcon icon={faCalendarAlt} className='pt-2 gray-icon' size='2x'></FontAwesomeIcon>
-                            </div>
-                            <ReactDatePicker
-                                className="arena-edit-field"
-                                selected={value ? new Date(value) : undefined}
-                                onChange={(date) => {
-                                    const hours= new Date(date).getHours();
-                                    if(hours>=7 && hours<=21)
-                                        update(date)
-                                }}
-                                showTimeSelect
-                                timeCaption='Hora'
-                                filterTime={filterPassedTime}
-                                locale="es"
-                                onChangeRaw={(e) => { e.preventDefault() }}
-                                dateFormat="MMMM d, yyyy HH:mm"
-                                onFocus={(e) => e.target.readOnly = true}
-                            />
-                        </div>
-                    );
+                    // if (mode === 'VIEW') return <DateDisplay value={value} className='appointment-date'></DateDisplay>;
+                    return <DatePickerCustom 
+                        update={update}
+                        value={value}
+                        t={t}
+                        mode={mode}></DatePickerCustom>
                 })
             },
             placeId: {
@@ -114,7 +85,7 @@ export const shapeConfigurationMap = {
                 }
             },
             visibility: {
-                visible: ['userId', 'placeId', 'estateType', 'operation'],
+                visible: ['userId', 'placeId', 'estateType', 'operation', 'appointmentDate'],
                 hidden: []
             }
         }
@@ -507,7 +478,7 @@ const Place = ({ update, value, t }) => {
         west: center.lng - 0.25
     };
 
-    return <div>
+    return <div className="autocomplete-field">
         <div>
             <div class="arena-text place formattedAddress label">
                 {t("place.formattedAddress.label")}
@@ -555,3 +526,44 @@ const Place = ({ update, value, t }) => {
 //     return <div className={className}>{formatted}</div>
 // }
 
+const DatePickerCustom = ({ update, value, t, mode }) => {
+    const [selected, setSelected] =  useState(value ? new Date(value) : undefined);
+    //if (mode === 'VIEW') return <DateDisplay value={value} className='appointment-date'></DateDisplay>;
+    const filterPassedTime = (time) => {
+        const currentDate = new Date();
+        const selectedDate = new Date(time);
+        if(selectedDate.getHours()<7 || selectedDate.getHours()>21)
+            return false;
+
+        return currentDate.getTime() < selectedDate.getTime();
+    };
+
+    return (
+        <div>
+            <div class="date-input-label subtitle">{t('appointment.appointmentDate.label')}</div>
+            <DateDisplay value={value} className='appointment-date'></DateDisplay>
+            <div className='date-picker'>
+                <div className='d-inline'>
+                    <FontAwesomeIcon icon={faCalendarAlt} className='pt-2 gray-icon' size='2x'></FontAwesomeIcon>
+                </div>
+                <ReactDatePicker
+                    className="arena-edit-field"
+                    selected={selected}
+                    onChange={(date) => {
+                        const hours= new Date(date).getHours();
+                        if(hours>=7 && hours<=21)
+                        update(date)
+                        setSelected(date)
+                    }}
+                    showTimeSelect
+                    timeCaption='Hora'
+                    filterTime={filterPassedTime}
+                    locale="es"
+                    onChangeRaw={(e) => { e.preventDefault() }}
+                    dateFormat="MMMM d, yyyy HH:mm"
+                    onFocus={(e) => e.target.readOnly = true}
+                    />
+            </div>
+        </div>
+    );
+}

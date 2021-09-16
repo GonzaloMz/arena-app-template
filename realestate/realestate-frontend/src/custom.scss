@@ -1,9 +1,8 @@
 $theme-colors: () !default;
 
 $theme-colors: (
-    "primary": #dd6401,
-    "danger": #ff4136,
-    "warning": #f9cd00,
+    "primary": #eb833b,
+    //"warning": #7e6700,
 	"success": #61b83c,
 	"ligth-background": #F0F0F0,
 	"dark":#211E1E
@@ -17,6 +16,8 @@ $gray-600:#858384;
 $gray-700:#6B6868;
 $gray-800:#5E5B5B;
 $gray-900:#433F3F;
+$danger:#b9605c;
+$warning: #b4a356;
 
 $input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
 $input-focus-border-color:   rgb(180, 180, 180);
@@ -110,16 +111,23 @@ button.arena-full-button {
 .arena-open-search-modal-button	{
 	@extend .btn-secondary, .btn-sm, .float-right;
 }
+.arena-container{
 
-.errors.required{
-	@extend .text-warning;
-	font-size: x-small;
-}
+	.errors.required{
+		display: none;
+	}
 
-.errors.invalid{
-	@extend .text-danger;
-	border-top: $danger 1px solid;
-	font-size: small;
+	.errors.required:first-child{
+		display: block;
+		@extend .text-warning;
+		font-size: x-small;
+	}
+	
+	.errors.invalid{
+		@extend .text-danger;
+		border-top: $danger 1px solid;
+		font-size: small;
+	}
 }
 
 .radius{
@@ -135,7 +143,7 @@ button.arena-full-button {
 	@extend .mx-auto;
 }
 
-.arena-fieldset-mode-edit, .arena-fieldset-mode-view{
+.arena-fieldset-mode-edit, .arena-fieldset-mode-view, .arena__control{
 	@extend .form-group;
 }
 
@@ -149,6 +157,13 @@ button.arena-full-button {
 	border-radius: 2px;
 	background-color: $white;
 
+}
+
+.arena__indicator-separator{
+	display: none;
+}
+.arena__control--is-focused{
+	box-shadow: $input-focus-box-shadow !important;
 }
 
 .arena-checkbox{
@@ -214,16 +229,21 @@ input::placeholder{
 	color: $gray-100;
 }
 
+.appointment-date{
+	display: none;
+}
 
 .arena-list-item-wrapper{
 	cursor: pointer;
-
+	.subtitle, .date-picker{
+		display: none;
+	}
 	.arena-field-mode-VIEW .label{
 		padding: 0 !important;
 	}
 	
 	font-family: 'Roboto';
-	.arena-text.label {
+	.arena-text.label, .arena-text.sublabel {
 		display: none;
 	}
 	.arena-field-value, .place-level-1{
@@ -255,8 +275,9 @@ input::placeholder{
 		}
 	}
 	.assessment-container {
-		.arena-field-name-estateType{
+		.arena-field-name-estateType, .arena-field-name-operation{
 			@extend .w-50;
+			@extend .d-flex;
 		}
 		.assessment-user-container {
 			.arena-field-name-name{
@@ -319,14 +340,16 @@ input::placeholder{
 		}
 	} 
 	.appointment-date{
-		@extend .animation_in;
-		@extend .position-absolute;
-		@extend .p-2;
-		@extend .mr-2;
-		@extend .badge, .rounded-pill;
-		@extend .background-secondary-color-ligth;
-			top:4.5rem;
-		right: 0;
+		display: inline;
+		// @extend .animation_in;
+		// @extend .position-absolute;
+		// @extend .p-2;
+		// @extend .mr-2;
+		// @extend .badge, .rounded-pill;
+		// @extend .background-secondary-color-ligth;
+		// top:2rem;
+		// right: 1rem;
+
 
 	}
 	button{
@@ -566,7 +589,7 @@ input::placeholder{
 }
 
 
-.list, .create, .search{
+.title {
 	font-family: Raleway !important;
 	@extend .h1;
 	@extend .mx-auto;
@@ -585,6 +608,12 @@ input::placeholder{
 		@extend .pr-1;
 	}
 }
+.list, .create, .search, div[class^="arena-"][ class$="-screen"]>.arena-container>.arena-text-list>.arena-text {
+	@extend .title
+}
+
+
+
 .create.label{
 	@extend .h1;
 	@extend.text-center;
@@ -596,7 +625,7 @@ input::placeholder{
 	 @extend .pl-2;
 }
 
-.react-autosuggest__input, .pac-target-input {
+.react-autosuggest__input, .autocomplete-field input {
 	@extend .arena-edit-field;
 }
 .react-autosuggest__suggestions-list{
@@ -818,14 +847,19 @@ a.logout{
 }
 
 
-.arena-field-name-estateType {
+.arena-field-name-estateType, .arena-field-name-operation {
 	@extend .d-block;
-	.estateType.label{
-		@extend .subtitle;
+	.estateType, .operation{
+		&.label{
+			@extend .subtitle;
+		}
 	}
 }
 
-
+.float-left-width-50 {
+	width: 50%;
+	float: left;
+}
 .arena-field-mode-CREATE,.arena-field-mode-EDIT{
 	&.arena-field-name-floor{
 		@extend .pr-2
@@ -834,9 +868,16 @@ a.logout{
 		@extend .pl-2
 	}
 	&.arena-field-name-floor, &.arena-field-name-unit {
-		width: 50%;
-		float: left;
+		@extend .float-left-width-50;
 		@extend .mb-4
+	}
+
+}
+
+.arena-field-mode-VIEW{
+	&.arena-field-name-floor{
+		@extend .float-left-width-50;
+		@extend .pr-2
 	}
 
 }

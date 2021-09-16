@@ -12,6 +12,7 @@ import app.backend.model.User;
 import app.backend.model.dto.AppointmentDTO;
 import app.backend.model.dto.AppointmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
+import app.backend.model.enums.EstateType;
 import app.backend.repository.AppointmentRepository;
 import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -56,8 +58,11 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 		BeanUtils.copyProperties((AppointmentFieldsDTO) appointment.get(), app);
 		ErrorBuffer errors = new ErrorBuffer();
 		errors.append(this.validate(app));
-		errors.append("place",placeService.validate(appointment.get().getPlaceId()));
+		Place placeId = appointment.get().getPlaceId();
+		errors.append("place",placeService.validate(placeId));
 		errors.append("user",userService.validate(appointment.get().getUserId()));
+		if(EstateType.DEPARTAMENTO.equals(app.getEstateType()) && StringUtils.isBlank(placeId.getUnit()))
+			errors.append("appointment.place.unit.required");
 		if(errors.getErrors().length>0) {
 			throw new RealestateException(errors.getErrors());
 		}
