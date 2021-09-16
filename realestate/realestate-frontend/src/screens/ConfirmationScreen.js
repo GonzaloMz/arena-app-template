@@ -9,7 +9,7 @@ export const ConfirmationScreen = ({name, componentMapper, backUrl, homeUrl="/",
         <Link className='float-right m-2' to={backUrl}>
             <FontAwesomeIcon size='2x' icon={faTimesCircle} /> 
         </Link><br/>
-        <div className='confirmation-image'> 
+        <div className='confirmation-image postion-absolute'> 
             <img className='mx-5 mt-3' src={`/confirmation/${name}.svg`}></img>
         </div>
         <div className='confirmation-buttons fixed-bottom'>
