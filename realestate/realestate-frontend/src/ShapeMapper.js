@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
-import {OperationSelector} from './utils'
+import {OperationSelector, PhotoEditor} from './utils'
 
 import Camera, { FACING_MODES, IMAGE_TYPES } from '@rinse/react-html5-camera-photo';
 import '@rinse/react-html5-camera-photo/build/css/index.css';
@@ -13,6 +13,7 @@ import Carousel from 'react-elastic-carousel';
 import {faCalendarAlt} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateDisplay } from './utils';
+import AvatarEditor from 'react-avatar-editor';
 
 registerLocale('es', es)
 
@@ -51,15 +52,16 @@ export const shapeConfigurationMap = {
             },
             placeId: {
                 visibility: {
-                    visible: ['formattedAddress', 'floor']
+                    visible: ['formattedAddress', 'locality','floor', 'unit'],
+                    hidden: []
                 },
                 fields: {
                     formattedAddress: {
-                        render: ({ update, mode, value, t }) => {
-                            if (mode === 'VIEW' || mode === 'EDIT') return false;
+                        // render: ({ update, mode, value, t, updateBuilder }) => {
+                        //     if (mode === 'VIEW' || mode === 'EDIT') return false;
 
-                            return <Place update={update} value={value} t={t}/>;
-                        }
+                        //     return <Place update={update} value={value} t={t} updateBuilder={updateBuilder}/>;
+                        // }
                     }
                 }
             }
@@ -107,6 +109,14 @@ export const shapeConfigurationMap = {
                 visibility: {
                     visible: ['userId', 'placeId', 'estateType', 'operation', 'placeDescription'],
 
+                },
+                fields:{
+                    estateType:{
+                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    },
+                    operation:{
+                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    }
                 }
             },
             allowInLineCreate: true
@@ -172,7 +182,7 @@ export const shapeConfigurationMap = {
                 },
                 placeId: {
                     visibility: {
-                        visible: ['formattedAddress'],
+                        visible: ['formattedAddress', 'locality'],
                         hidden: []
                     }
                 },
@@ -188,6 +198,14 @@ export const shapeConfigurationMap = {
         }
     },
     place: {
+        fields:{
+            formattedAddress:{
+                calculateMode :()=>'VIEW'          
+            },
+            locality: {
+                calculateMode :()=>'VIEW'          
+            }
+        }
     },
     estateCreation: {
         entityRenderConfiguration: {
@@ -269,7 +287,7 @@ export const shapeConfigurationMap = {
                         list:{
                             listRender: (items) => {
                                 if (!items || items.length === 0) return null;
-                                return <Carousel showArrows={true} itemsToShow={1} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                return <Carousel showTimeSelect={true} showArrows={true} itemsToShow={1} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
                             }
                         }
                     }
@@ -299,18 +317,19 @@ export const shapeConfigurationMap = {
                                 hidden: []
                             }
                         },
-                        photos: {
-                            list: {
-                                listRender: (items) => {
-                                    if (!items || items.length === 0) return null;
-                                    return <Carousel showArrows={true} itemsToShow={3} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
-                                },
-                                onItemClick: () => alert("foto maximizada")
-                            }
-                        },
+                        // photos: {
+                        //     list: {
+                        //         listRender: (items) => {
+                        //             if (!items || items.length === 0) return null;
+                        //             return <Carousel showArrows={true} itemsToShow={3} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                        //         },
+                        //         onItemClick: () => alert("foto maximizada")
+                        //     }
+                        // },
                         placeDescription: {
                             visibility: {
-                                visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+                                //comentado para que funcione la búsqueda pública
+                                // visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
                                 hidden: []
                             }
                         }
@@ -339,71 +358,83 @@ export const shapeConfigurationMap = {
     photo: {
         fields: {
             view: {
-                render: ({ value, update, t }) => {
-                    return (<div>
-                        {
-                            !value &&
-                            <div>
-                                <label class="custom-file-upload">
+                render: (props) => <PhotoEditor {...props}></PhotoEditor>
+                // {
+                //     return (<div>
+                //         {/* {
+                //             !value &&
+                //             <div>
+                //                 <label class="custom-file-upload">
 
-                                    <input type="file" id="image" name="image" accept="image/*" capture={false} onChange={(e) => {
-                                        const imageFile = e.target.files[0];
-                                        console.log(imageFile);
-                                        let imageArguments, imageType, image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl, newWidth;
+                //                     <input type="file" id="image" name="image" accept="image/*" capture={false} onChange={(e) => {
+                //                         const imageFile = e.target.files[0];
+                //                         console.log(imageFile);
+                //                         let imageArguments, imageType, image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl, newWidth;
 
-                                        // Provide default values
-                                        imageType = imageType || "image/png";
-                                        imageArguments = imageArguments || 0.7;
+                //                         // Provide default values
+                //                         imageType = imageType || "image/png";
+                //                         imageArguments = imageArguments || 0.7;
 
-                                        // Create a temporary image so that we can compute the height of the downscaled image.
-                                        image = new Image();
+                //                         // Create a temporary image so that we can compute the height of the downscaled image.
+                //                         image = new Image();
 
-                                        // Create a temporary canvas to draw the downscaled image on.
-                                        canvas = document.createElement("canvas");
+                //                         // Create a temporary canvas to draw the downscaled image on.
+                //                         canvas = document.createElement("canvas");
 
-                                        // Draw the downscaled image on the canvas and return the new data URL.
-                                        ctx = canvas.getContext("2d");
+                //                         // Draw the downscaled image on the canvas and return the new data URL.
+                //                         ctx = canvas.getContext("2d");
 
-                                        var reader = new FileReader();
-                                        reader.onloadend = function () {
-                                            console.log(reader.result)
-                                            image.onload = function () {
-                                                oldWidth = image.width;
-                                                oldHeight = image.height;
-                                                newWidth = Math.min(350, image.width);
-                                                newHeight = Math.floor(oldHeight / oldWidth * newWidth)
-                                                canvas.width = newWidth;
-                                                canvas.height = newHeight
-                                                ctx.drawImage(image, 0, 0, newWidth, newHeight);
-                                                newDataUrl = canvas.toDataURL(imageType, imageArguments);
-                                                update(newDataUrl)
-                                            };
-                                            image.src = reader.result;
-                                        }
-                                        reader.readAsDataURL(imageFile);
+                //                         var reader = new FileReader();
+                //                         reader.onloadend = function () {
+                //                             console.log(reader.result)
+                //                             image.onload = function () {
+                //                                 oldWidth = image.width;
+                //                                 oldHeight = image.height;
+                //                                 newWidth = Math.min(350, image.width);
+                //                                 newHeight = Math.floor(oldHeight / oldWidth * newWidth)
+                //                                 canvas.width = newWidth;
+                //                                 canvas.height = newHeight
+                //                                 ctx.drawImage(image, 0, 0, newWidth, newHeight);
+                //                                 newDataUrl = canvas.toDataURL(imageType, imageArguments);
+                //                                 update(newDataUrl)
+                //                             };
+                //                             image.src = reader.result;
+                //                         }
+                //                         reader.readAsDataURL(imageFile);
 
-                                    }} />
-                                    <div className="btn btn-primary btn-block" data-trigger="fileinput">
-                                        {t("selectImageFromGallery", "Seleccionar de la galeria")}
-                                    </div>
-                                </label>
-                                <Camera
-                                    imageType={IMAGE_TYPES.JPG}
-                                    imageCompression={.5}
-                                    idealFacingMode={FACING_MODES.ENVIRONMENT}
-                                    onTakePhoto={(dataUri) => { update(dataUri); }}>
-                                </Camera>
-                            </div>
-                        }
+                //                     }} />
+                //                     <div className="btn btn-primary btn-block" data-trigger="fileinput">
+                //                         {t("selectImageFromGallery", "Seleccionar de la galeria")}
+                //                     </div>
+                //                 </label>
+                //                 <Camera
+                //                     imageType={IMAGE_TYPES.JPG}
+                //                     imageCompression={.5}
+                //                     idealFacingMode={FACING_MODES.ENVIRONMENT}
+                //                     onTakePhoto={(dataUri) => { update(dataUri); }}>
+                //                 </Camera>
+                //             </div>
+                //         } */}
+                //         { 
+                //             !value && 
+                //             <AvatarEditor
+                //                 image="http://example.com/initialimage.jpg"
+                //                 width={250}
+                //                 height={250}
+                //                 border={50}
+                //                 color={[255, 255, 255, 0.6]} // RGBA
+                //                 scale={1.2}
+                //                 rotate={0}
+                //             />
+                //         }
+                //         {
+                //             value &&
+                //             <img className='place-photo' src={value}></img>
+                //         }
+                //     </div>
 
-                        {
-                            value &&
-                            <img className='place-photo' src={value}></img>
-                        }
-                    </div>
-
-                    )
-                }
+                //     )
+                // }
             }
         }
     },
@@ -454,17 +485,119 @@ export const shapeConfigurationMap = {
             // });
             return null
         }
-    }
+    },
+    publicSearch: {
+        entityRenderConfiguration: {
+            allowInLineCreate: true,
+            shapeConfiguration: {
+        visibility:{
+            visible:['estateType', 'environments', 'operation']
+        },
+        list: {
+            visibility: {
+                visible: ['estate'],
+                hidden: []
+            },
+            fields: {
+                estate: {
+                    props: {
+                        level: 2,
+                    },
+                    shapeConfiguration:{
 
+                        visibility: {
+                            visible: ['price', 'photos', 'operation', 'estateType' , 'placeId', 'placeDescription'],
+                            hidden: []
+                        },
+                    },
+                    fields: {
+                        price:{
+                            render: ({ mode, value }) => {
+                                if (mode !== 'VIEW') return false;
+                                return (
+                                    <div class="arena-field-name-price"><span class="arena-field-value">{new Number(value).toLocaleString()}</span></div>
+                                );
+                            }
+                        },
+                        placeId: {
+                            shapeConfiguration:{
+
+                                visibility: {
+                                    visible: ['locality'],
+                                    hidden: []
+                                }
+                            }
+                        },
+                        photos: {
+                            list: {
+                                listRender: (items) => {
+                                    if (!items || items.length === 0) return null;
+                                    return <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                },
+                                onItemClick: () => alert("foto maximizada")
+                            }
+                        },
+                        placeDescription: {
+                            props:{
+                                level:10
+                            },
+                            shapeConfiguration:{
+                                visibility: {
+                                    // visible: ['environments', 'toilets', 'carPlaces', 'squareMeterTotal'],
+                                    hidden: []
+                                }
+                            }
+                        },
+                        operation:{
+                            render: ({ value="", update, t }) => {
+                                return <div className='operation-with-background'>
+                                    <img className='operation-background position-absolute' style={{zIndex:-1}}src={`/frames/${value.toLowerCase()}.svg`}/>
+                                    <div className="operation-value">    
+                                        {t(`app.backend.model.enums.EstateOperations.${value}`)}
+                                    </div>
+                                
+                                </div>
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        fields: {
+            operation: {
+                render: ({ update, value, t, mode }) => {
+                    if (mode === 'VIEW') return false;
+                    return (
+                        <div style={{ textAlign: 'center' }}>
+                            <div className='radio' >
+                                <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
+                                <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
+                            </div>
+                        </div>)
+                }
+            }
+        },
+        onItemClick: (item, history) => {
+            history.push('/build/container/view/estate/' + item);
+        }
+    }}
+    },
 }
 
-const Place = ({ update, value, t }) => {
+const Place = ({ update, value, t, updateBuilder }) => {
     const [formattedAddress, setFormattedAddress] = useState(value);
+    const [selectedPlace, setSelectedPlace] = useState();
     useEffect(() => {
         update(formattedAddress);
+        const locality=selectedPlace ? selectedPlace.address_components.find(c=>c.types.includes('locality')) : {long_name:''};
+        // if(locality)
+        updateBuilder('locality')(locality.long_name)
     }, [formattedAddress])
     const updatePlace = place => {
+        console.log(place)
         setFormattedAddress(place.formatted_address)
+        setSelectedPlace(place);
+        
     }
     useEffect(() => {
         update(formattedAddress);

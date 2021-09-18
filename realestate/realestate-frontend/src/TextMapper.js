@@ -6,8 +6,8 @@ export const textMap = {
             search: "Buscar"
         },
         errors:{
-            required: "Requerido",
-            title: "⚠ Revisa estos errores antes de poder continuar",
+            // required: "Requerido",
+            title: "⚠ Revisá estos errores para poder continuar",
             user: {
                 email: {
                     invalid: "El email ingresado es inválido",
@@ -22,6 +22,23 @@ export const textMap = {
                     unit:{
                         required: "El número de departamento es requerido para el tipo de propiedad Departamento"
                     }
+                },
+                user:{
+                    required: 'Debes ingresar un "usuario"'
+                },
+                place:{
+                    required: 'Debes ingresar una "dirección"'
+                },
+                estateType: {
+                    required: 'Debes ingresar un "tipo de propiedad"'
+                },
+                operation:{
+                    required: 'Debes ingresar un "tipo de operación"'
+                }
+            },
+            place: {
+                formattedAddress: {
+                    required: 'Debes ingresar una "dirección"'
                 }
             }
         },
@@ -51,6 +68,13 @@ export const textMap = {
             assessment: {
                 label: "Tasaciones",
                 sublabel: "Realizadas"
+            }
+        },
+        publicSearch:{
+            placeDescription:{
+                environments:"Ambientes", 
+                toilets:"Baños", 
+                carPlaces:"Vehículos"//, 'squareMeterTotal': 'm2'
             }
         },
         estate: {
@@ -130,7 +154,11 @@ export const textMap = {
             },
             formattedAddress: {
                 label: "Dirección",
-                placeholder: "Ingrese la dirección"
+                placeholder: "Ingrese la altura y calle"
+            },
+            locality:{
+                label: "Localidad",
+                placeholder: "Localidad seleccionada"
             }
         },
         assessment: {
@@ -380,7 +408,8 @@ export const textMap = {
                     null: "--"
                 },
                 String: {
-                    "": "--"
+                    "": "--",
+                    null: "--"
                 }
             }
         },

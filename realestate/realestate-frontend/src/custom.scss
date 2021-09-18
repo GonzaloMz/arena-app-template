@@ -18,6 +18,9 @@ $gray-800:#5E5B5B;
 $gray-900:#433F3F;
 $danger:#b9605c;
 $warning: #b4a356;
+$beige-2: #ccb9aa;
+$beige-3: #87786c;
+$beige-5: #594940;
 
 $input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
 $input-focus-border-color:   rgb(180, 180, 180);
@@ -43,7 +46,7 @@ html {
 .ellipsis{
 	white-space: nowrap;
 	overflow: hidden;
-	text-overflow: ellipsis;
+	text-overflow: ellipsis !important;
 }
 .navbar{
 	@media screen and (min-width: 320px) {
@@ -61,6 +64,24 @@ html {
 		}
 	  }
 }
+
+.screen-container{
+	@extend .mx-auto;
+	max-width: 700px;
+}
+
+.image-cropper{
+	canvas{
+		width: 100% !important;
+		height: 100% !important;
+	}
+}
+
+.text-default{
+	font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+	color: $gray-900
+}
+
 .mt-4-5{
 	margin-top: 2.5rem !important;
 }
@@ -97,6 +118,10 @@ button.arena-full-button {
 			@extend .my-1;
 		}
 	}
+}
+
+.form-control:invalid{
+	background-image: linear-gradient(to top,$danger 2px, rgba(213, 0, 0, 0) 2px), linear-gradient(to top, rgba(0, 0, 0, 0.26) 1px, rgba(0, 0, 0, 0) 1px);
 }
 
 .arena-container-default-render, .animation_in{
@@ -298,7 +323,13 @@ input::placeholder{
 			}
 		}
 		.assessment-place-container {
-			.arena-field-name-formattedAddress > .arena-field-value{
+			.arena-container-default-render{
+				display: flex;
+			}
+			.arena-field-level-0{
+				width: 50%;
+			}
+			.arena-field-value{
 				width: 100%;
 				text-align: center;
 				text-transform: uppercase;
@@ -313,7 +344,7 @@ input::placeholder{
 		// }
 		.arena-field-name-sugestedValue{
 			.arena-field-value::before{
-				content: "U$D";
+				content: "USD";
 				@extend .pr-1
 			}
 			@extend .py-1;
@@ -367,18 +398,18 @@ input::placeholder{
 	// }
 }
 
-.arena-photo-list-container{
-	.place-photo{
-		max-width: 100px;
-		max-height: 100px;
-		@extend .img-thumbnail;
-	}
-	display: flex;
-	.arena-list-item-wrapper{
-		max-width: 100px;
-		@extend .m-0;
-	}
-}
+// .arena-photo-list-container{
+// 	.place-photo{
+// 		max-width: 100px;
+// 		max-height: 100px;
+// 		@extend .img-thumbnail;
+// 	}
+// 	display: flex;
+// 	.arena-list-item-wrapper{
+// 		max-width: 100px;
+// 		@extend .m-0;
+// 	}
+// }
 .react-html5-camera-photo {
 	video{
 		max-width: 100%;
@@ -462,7 +493,7 @@ input::placeholder{
 	}
 }
 
-.arena-list-view-estate-screen, .arena-search-estate-screen, .arena-estateSearch-list-container{
+.arena-list-view-estate-screen, .arena-search-estate-screen, .estateSearch-shape .arena-estateSearch-list-container{
 	.arena-field-name-operation, .arena-field-name-estateType{
 				text-align: center;
 				text-transform: uppercase;
@@ -754,28 +785,6 @@ input[type="file"]{
 	text-align: center;
 	width: 100%;
 }
-
-
-
-  .loader {
-	width: 60px;
-	margin: auto;
-}
-
-.loader-wheel {
-	animation: spin 1s infinite linear;
-	border: 2px solid map-get($theme-colors, "primary");
-	border-left: 4px solid $gray-100;
-	border-radius: 50%;
-	height: 20px;
-	margin-bottom: 10px;
-	width: 20px;
-}
-
-.loader-text {
-	color: #fff;
-	font-family: arial, sans-serif;
-  }
   
   
   @keyframes spin {
@@ -802,9 +811,9 @@ input[type="file"]{
 	@extend .px-2;
 }
 
-div.rec-pagination{
-	display: none
-}
+// div.rec-pagination{
+// 	display: none
+// }
 
 a.share-button {
 	color: forestgreen !important;
@@ -839,7 +848,9 @@ a.logout{
 	}
 }
 
-.estateSearch-container{
+
+
+.estateSearch-shape .estateSearch-container{
 	.arena-container-default-render{
 		@extend .mx-auto;
 		max-width: 700px;
@@ -890,3 +901,171 @@ a.logout{
 	color: $gray-600;
 	font-family: 'Roboto Cn';
 }
+
+.publicSearch-shape {
+	@extend .screen-container;
+	.arena-photo-list-container .place-photo{
+		max-width: unset !important;
+		max-height: unset !important;
+		width: 100%;
+		height: 35%;
+		overflow: hidden;
+	}
+
+	div{
+		@extend .p-0;
+		@extend .m-0;
+	}
+
+
+	div.rec-pagination {
+		button{
+			// @extend .btn-secondary;
+			background-color: $beige-3;
+			box-shadow: unset !important;
+			height: 13px;
+			width: 13px;
+			display: inline !important;
+		}
+				.rec-dot_active{
+					background-color: $beige-5;
+				}
+	}
+
+	.loader {
+		width: 60px;
+		@extend .mx-auto;
+		height: 100px;
+	}
+
+
+
+	
+	
+	.rec-carousel-wrapper{
+		background-color: $beige-2;
+	}
+
+	.arena-list-item-wrapper{
+		overflow: hidden;
+		@extend .mt-5, .mx-auto;
+		span, div{
+	
+			color: white !important;
+		}
+
+		.operation-with-background{
+			.operation-value{
+				text-transform: uppercase;
+				font-family: 'Ever After';
+				font-size: xxx-large;
+				letter-spacing: 1.2rem;
+				@extend .pl-2;
+				@extend .pt-2;
+			}
+		}
+
+		.estate-placeDescription-container {
+			// display: flex;
+			@extend .mx-2, .mt-2;
+			.arena-field-mode-VIEW{
+				float: left;
+				width: 25%;
+				
+			}
+		}
+
+		.estate-place-container{
+			@extend .mx-2;
+			border-bottom: solid 1px $white;
+		}
+
+		.arena-field-name-estateType, .arena-field-name-locality {
+			font-family: 'Conforta';
+			font-size: 0.95rem;
+			text-transform: lowercase;
+			.arena-field-value{
+				@extend .ellipsis;
+				@extend .p-0;
+			}
+		}
+
+		.arena-field-name-estateType {
+			.arena-field-value{
+				@extend .pl-1;
+			}
+		}
+
+		// .arena-text.label
+
+		.arena-field-name-estateType{
+			&::after{
+				content: "//";
+			}
+			width: unset !important;
+			@extend .d-inline, .ml-1;
+		}
+
+		.custom-place-description{
+			display: flex;
+			.place-description-item{
+				width: 33%;
+				@extend .text-center;
+			}
+		}
+	}
+	.arena-field-name-price {
+		span{
+			position: absolute;
+			z-index: 1;
+			font-size: xx-large;
+			font-family: arial;
+			font-weight: bold;
+			text-shadow: 1px 1px 2px black;
+			padding: 1.2rem !important;
+		}
+	}
+
+	.operation-indicator{
+		@extend .d-block;
+		height: 13px;
+		background-color: $beige-2;
+		&>div{
+			height: 13px;
+		}
+	}
+}
+
+.arena-errors {
+	// border-top: $danger 1px solid;
+	> .arena-text {
+		font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+		color: $gray-900
+	}
+}
+
+.autocomplete-field~.arena-container-default-render {
+	.arena-field-name-formattedAddress, .arena-field-name-locality {
+		display: none;
+	}
+}
+
+.loader {
+	width: 60px;
+	@extend .mx-auto;
+}
+
+.loader-wheel {
+	animation: spin 1s infinite linear;
+	border: 2px solid map-get($theme-colors, "primary");
+	border-left: 4px solid $gray-100;
+	border-radius: 50%;
+	height: 20px;
+	margin-bottom: 10px;
+	width: 20px;
+}
+
+.loader-text {
+	color: #fff;
+	font-family: arial, sans-serif;
+  }

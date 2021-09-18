@@ -2,18 +2,39 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
-import { DateDisplay } from './utils';
+import { DateDisplay, PlaceSelector } from './utils';
+import {ArenaContainerMode} from 'frontend';
 export const componentsTypeMap = {
 
 }
 export const parentComponentsMap = {
-    appointment: {
-        userId: {
-            1: {
-                mode : ()=> 'HIDE'
+    estate: {
+        placeDescription: {
+            10: {
+                render:{
+                    beforeRender: ({ entity={}, update, t }) => {
+                        return <div className="custom-place-description">
+                            <span className='place-description-item'>{t('publicSearch.placeDescription.environments')} {entity.environments || "--"}</span>
+                            <span className='place-description-item'>{t('publicSearch.placeDescription.toilets')} {entity.toilets || "--"}</span>
+                            <span className='place-description-item'>{t('publicSearch.placeDescription.carPlaces')} {entity.carPlaces || "--"}</span>
+                            {/* <span className='place-description-item'>{t('publicSearch.placeDescription.squareMeterTotal')} {t(`app.backend.model.enums.SquareMeterRange.${entity.squareMeterTotal}`)}</span> */}
+                        </div>
+                    }
+                }
             }
         },
 
+    },
+    estateSearch:{
+        estate: {
+            2:{
+                render:{
+                    beforeRender: ({entity})=> (<div className="operation-indicator d-none">
+                        <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
+                    </div>)
+                }
+            }
+        }
     }
 }
 export const componentsMap = {
@@ -91,10 +112,36 @@ export const componentsMap = {
             }
         }
     },
-    estateSearch:{
+    place:{
         default:{
             render:{
-                afterRender:({t})=><button className='arena-full-button'>{t('buttons.search', 'Search')}</button>
+                beforeRender:({entity, mode, updateEntity, error, t, history})=>{
+                    if(mode===ArenaContainerMode.VIEW)
+                        return null;
+                    
+                    const update=(selectedGooglePlace)=>{
+                        if(!selectedGooglePlace)
+                            return;
+                        const locality=selectedGooglePlace.address_components.find(c=>c.types.includes('locality'));
+                        const route=selectedGooglePlace.address_components.find(c=>c.types.includes('route'));
+                        const streetNumber=selectedGooglePlace.address_components.find(c=>c.types.includes('street_number'));
+                        if(!locality || !route || !streetNumber){
+                            updateEntity({...entity})
+                            return;
+                        }
+                        const formattedAddress = `${route.long_name} ${streetNumber.long_name}`
+                        updateEntity({
+                            ...entity,
+                            formattedAddress,
+                            locality: locality.long_name
+                        })
+                    }
+                    return <PlaceSelector
+                        t={t}
+                        update={update}
+                    ></PlaceSelector>
+                        
+                }
             }
         }
     }

@@ -70,7 +70,7 @@ ReactDOM.render(
 					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
 					<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
 					<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
-					<Redirect from="/" exact={true} to="build/container/search/estateSearch" />
+					<Redirect from="/" exact={true} to="build/container/search/estateSearch?shapeName=publicSearch" />
 					<Redirect from="/appointment-creation-finish" push={true} to="/confirmation/appointment" />
 					<Route path="/confirmation/appointment" strict={true} render={
 						()=>(<ConfirmationScreen 
