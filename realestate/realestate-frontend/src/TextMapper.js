@@ -21,13 +21,11 @@ export const textMap = {
                 place: {
                     unit:{
                         required: "El número de departamento es requerido para el tipo de propiedad Departamento"
-                    }
+                    },
+                    required: 'Debes ingresar una "dirección"'
                 },
                 user:{
                     required: 'Debes ingresar un "usuario"'
-                },
-                place:{
-                    required: 'Debes ingresar una "dirección"'
                 },
                 estateType: {
                     required: 'Debes ingresar un "tipo de propiedad"'
@@ -40,6 +38,28 @@ export const textMap = {
                 formattedAddress: {
                     required: 'Debes ingresar una "dirección"'
                 }
+            },
+            assessment:{
+                sugestedValue:{
+                    required: 'Debes ingresar un "precio sugerido".'
+                }
+            },
+            estate:{
+                price:{
+                    required: 'Debes ingresar un "precio".'
+                },
+                status:{
+                    required: 'Debes ingresar el "estado de la publicación"'
+                }
+            },
+            owner:{
+                dni:{
+                    required: 'Debes ingresar el dni del cliente propietario.'
+                },
+                cuit:{
+                    required: 'Debes ingresar el cuit del cliente propietario.'
+                },
+
             }
         },
         confirmation:{
@@ -154,7 +174,7 @@ export const textMap = {
             },
             formattedAddress: {
                 label: "Dirección",
-                placeholder: "Ingrese la altura y calle"
+                placeholder: "Ingrese la numeración seguida de la calle"
             },
             locality:{
                 label: "Localidad",
@@ -165,6 +185,10 @@ export const textMap = {
             create: {
                 start: "Iniciar Tasación",
                 finish: "Cerrar Tasación"
+            },
+            view:{
+                label: "Tasación",
+                sublabel:"Realizada"
             },
             operation: {
                 placeholder: "Tipo de operación",

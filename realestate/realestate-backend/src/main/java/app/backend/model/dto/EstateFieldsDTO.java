@@ -8,6 +8,7 @@ import app.backend.model.enums.EstateStatus;
 import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
+import arena.backend.model.extension.Required;
 
 @MappedSuperclass
 public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTransferObject{
@@ -27,6 +28,8 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	public EstateStatus getStatus() {
 		return status;
 	}
+	
+	@Required
 	public void setStatus(EstateStatus status) {
 		this.status = status;
 	}
@@ -39,6 +42,8 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	public Long getPrice() {
 		return price;
 	}
+	
+	@Required
 	public void setPrice(Long price) {
 		this.price = price;
 	}

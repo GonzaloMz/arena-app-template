@@ -4,8 +4,10 @@ import java.util.HashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 import app.backend.model.dto.EstateFieldsDTO;
+import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Key;
 import arena.backend.model.extension.TemplateField;
 
@@ -57,4 +59,9 @@ public class Estate extends EstateFieldsDTO{
 		return filter;
 	}
 	
+	@Hidden
+	@Transient
+	public String getCurrencySymbol() {
+		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
+	}
 }

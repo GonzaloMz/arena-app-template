@@ -11,6 +11,7 @@ import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
 import arena.backend.model.extension.Hidden;
+import arena.backend.model.extension.Required;
 
 @MappedSuperclass
 public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataTransferObject{
@@ -24,6 +25,8 @@ public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataT
 	public Double getSugestedValue() {
 		return sugestedValue;
 	}
+	
+	@Required
 	public void setSugestedValue(Double sugestedValue) {
 		this.sugestedValue = sugestedValue;
 	}

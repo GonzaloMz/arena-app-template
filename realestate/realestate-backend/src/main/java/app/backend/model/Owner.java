@@ -4,9 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import app.backend.model.dto.OwnerFieldsDTO;
-import arena.backend.model.AbstractEntity;
-import arena.backend.model.extension.AbstractDataTransferObject;
 import arena.backend.model.extension.Key;
+import arena.backend.model.extension.Required;
 
 @Entity
 public class Owner extends OwnerFieldsDTO {
@@ -42,6 +41,7 @@ public class Owner extends OwnerFieldsDTO {
 		return dni;
 	}
 
+	@Required
 	public void setDni(Long dni) {
 		this.dni = dni;
 	}
@@ -50,6 +50,7 @@ public class Owner extends OwnerFieldsDTO {
 		return cuit;
 	}
 
+	@Required
 	public void setCuit(Long cuit) {
 		this.cuit = cuit;
 	}

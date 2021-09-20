@@ -9,17 +9,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
+import app.backend.exception.RealestateException;
 import app.backend.model.Assessment;
 import app.backend.model.Estate;
 import app.backend.model.Owner;
 import app.backend.model.dto.EstateDTO;
 import app.backend.model.dto.OwnerDTO;
 import app.backend.repository.EstateRepository;
+import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
@@ -37,6 +41,9 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 	AssessmentService assessmentService;
 	
 	@Autowired
+	PhotoService photoService;
+	
+	@Autowired
 	OwnerService ownerService;
 
 	@Override
@@ -45,11 +52,21 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 	}
 
 	@Override
+	@Transactional
 	public Estate create(Optional<EstateDTO> ent) {
 		
 		Estate est = new Estate();
 		BeanUtils.copyProperties(ent.get(), est,"id", "owner");
+		ErrorBuffer errors = new ErrorBuffer();
+		errors.append("estate", this.validate(est));
 		Owner owner = ownerService.create(Optional.of(ent.get().getOwner()));
+		errors.append("owner", ownerService.validate(owner));
+//		long photos = photoService.countBySpecification(ent.get().getPhotos());
+//		if(photos==0)
+//			errors.append("estate.photo.required");
+		if(errors.getErrors().length>0) {
+			throw new RealestateException(errors.getErrors());
+		}
 		est.setOwner(owner.getId());
 		return this.estateRepository.save(est);
 	}

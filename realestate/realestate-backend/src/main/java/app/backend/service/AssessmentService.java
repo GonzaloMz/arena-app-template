@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
+import app.backend.exception.RealestateException;
 import app.backend.model.Appointment;
 import app.backend.model.Assessment;
 import app.backend.model.PlaceDescription;
@@ -21,6 +22,7 @@ import app.backend.model.dto.AssessmentDTO;
 import app.backend.model.dto.AssessmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
 import app.backend.repository.AssessmentRepository;
+import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
@@ -51,8 +53,15 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		Assessment assessment =  new Assessment();
 		BeanUtils.copyProperties(ent.get(), assessment);
 		BeanUtils.copyProperties((AssessmentFieldsDTO) ent.get(), assessment);
+		ErrorBuffer errors = new ErrorBuffer();
+		errors.append("assessment", this.validate(assessment));
+		PlaceDescription placeDescription = ent.get().getPlaceDescription();
+		errors.append("placeDescription", placeDescriptionService.validate(placeDescription));
+		if(errors.getErrors().length>0) {
+			throw new RealestateException(errors.getErrors());
+		}
 		PlaceDescription description = placeDescriptionService.create(
-				Optional.of(ent.get().getPlaceDescription()));
+				Optional.of(placeDescription));
 		updateAppointment(assessment.getPlaceId());
 		assessment.setPlaceDescription(description.getId());
 		assessment = this.getRepository().save(assessment);

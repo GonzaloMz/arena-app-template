@@ -238,8 +238,13 @@ export const shapeConfigurationMap = {
                         visibility: {
                             visible: ['environments', 'toilets', 'squareMeterCovered', 'squareMeterTotal', 'carPlaces', 'coveredGarage', 'laundry', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection', 'extraNotes']
                         }
+                    },
+                    estateType:{
+                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    },
+                    operation:{
+                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
                     }
-
                 }
             }
         },
@@ -512,10 +517,10 @@ export const shapeConfigurationMap = {
                     },
                     fields: {
                         price:{
-                            render: ({ mode, value }) => {
+                            render: ({ mode, value, entity }) => {
                                 if (mode !== 'VIEW') return false;
                                 return (
-                                    <div class="arena-field-name-price"><span class="arena-field-value">{new Number(value).toLocaleString()}</span></div>
+                                    <div class="arena-field-name-price"><span class="arena-field-value">{entity.currencySymbol + " " +new Number(value).toLocaleString()}</span></div>
                                 );
                             }
                         },
@@ -531,8 +536,9 @@ export const shapeConfigurationMap = {
                         photos: {
                             list: {
                                 listRender: (items) => {
-                                    if (!items || items.length === 0) return null;
-                                    return <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                    // if (!items || items.length === 0) return null;
+                                    const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+                                    return <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
                                 },
                                 onItemClick: () => alert("foto maximizada")
                             }

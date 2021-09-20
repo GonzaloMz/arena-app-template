@@ -1,8 +1,10 @@
 package app.backend.model;
 
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 import app.backend.model.dto.AssessmentFieldsDTO;
+import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Key;
 
 @Entity
@@ -40,6 +42,10 @@ public class Assessment extends AssessmentFieldsDTO{
 		this.placeDescription = placeDescription;
 	}
 	
-	
+	@Hidden
+	@Transient
+	public String getCurrencySymbol() {
+		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
+	}
 }
 

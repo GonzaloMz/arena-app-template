@@ -9,6 +9,7 @@ import app.backend.model.enums.EstateOperations;
 import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.Hidden;
+import arena.backend.model.extension.Required;
 
 @MappedSuperclass
 public class AppointmentFieldsDTO extends AbstractEntity{
@@ -33,6 +34,7 @@ public class AppointmentFieldsDTO extends AbstractEntity{
 		return operation;
 	}
 
+	@Required
 	public void setOperation(EstateOperations operation) {
 		this.operation = operation;
 	}
@@ -50,6 +52,7 @@ public class AppointmentFieldsDTO extends AbstractEntity{
 		return estateType;
 	}
 
+	@Required
 	public void setEstateType(EstateType estateType) {
 		this.estateType = estateType;
 	}

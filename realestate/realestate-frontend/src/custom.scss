@@ -639,7 +639,7 @@ input::placeholder{
 		@extend .pr-1;
 	}
 }
-.list, .create, .search, div[class^="arena-"][ class$="-screen"]>.arena-container>.arena-text-list>.arena-text {
+.list, .create, .search, div[class^="arena-"][ class$="-shape"]>.arena-container>.arena-text-list>.arena-text {
 	@extend .title
 }
 

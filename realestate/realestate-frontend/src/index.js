@@ -67,7 +67,7 @@ ReactDOM.render(
 					<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
 					<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
 					<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
-					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?sugestedValue=0,;,10000000&appointment=2" />
+					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment" />
 					<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
 					<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
 					<Redirect from="/" exact={true} to="build/container/search/estateSearch?shapeName=publicSearch" />

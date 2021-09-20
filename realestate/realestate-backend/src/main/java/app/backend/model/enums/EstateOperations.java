@@ -2,6 +2,17 @@ package app.backend.model.enums;
 
 public enum EstateOperations {
 	
-	SALE, RENT
+	SALE("USD"), RENT("ARS");
 
+	private String currency;
+
+	EstateOperations(String string) {
+		this.currency=string;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	
 }

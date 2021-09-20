@@ -10,11 +10,14 @@ import app.backend.repository.PhotoRepository;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
+import java.text.ParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +59,19 @@ public class PhotoService extends ArenaService<Photo,Photo>{
 	public
 	ShapeFactory getShapeFactory() {
 		return new ShapeFactory(Photo.class);
+	}
+
+	public long countBySpecification(HashMap<String, String> photos) {
+		Specification<Photo> specifications = null;
+		try {
+			specifications = this.specBuilder.buildCriterio(photos, this.getShape());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		long result = getExecutorRepository().count(specifications);
+		return result;
 	}
 	
 

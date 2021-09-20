@@ -592,7 +592,7 @@ var ArenaInputField = function ArenaInputField(_ref3) {
       setIsValid = _useState2[1];
 
   React.useEffect(function () {
-    if (currentValue && value !== currentValue) setValue(value);
+    setValue(value);
   }, [value]);
 
   var _onBlur = function _onBlur(event) {
@@ -798,6 +798,11 @@ var useUpdate = function useUpdate(updateMode, controller, providedEntity, id, e
     } else {
       return function (value, callback) {
         setEntity(value);
+
+        if (updateMode === useUpdateMode.EXTERNAL_STATE_UPDATE && updateParentState) {
+          updateParentState(value);
+        }
+
         if (persistRequired) dispatch(createFullEntityUpdate(endpoint, controller, value, callback));
       };
     }
@@ -27725,7 +27730,9 @@ var ArenaContainer = function ArenaContainer(_ref) {
   var calculatedConfiguration = React.useMemo(function () {
     var componentConfiguration = componentMapper.getShapeConfiguration(controller);
 
-    var _visibility = entityRenderConfiguration && entityRenderConfiguration.shapeConfiguration && entityRenderConfiguration.shapeConfiguration.visibility ? entityRenderConfiguration.shapeConfiguration.visibility : componentConfiguration ? componentConfiguration.visibility : undefined;
+    var providedVisibility = ___default.property('shapeConfiguration.visibility')(entityRenderConfiguration);
+
+    var _visibility = providedVisibility ? providedVisibility : componentConfiguration ? componentConfiguration.visibility : undefined;
 
     var _entityRenderConfiguration = ___default.merge(_extends({}, entityRenderConfiguration), {
       shapeConfiguration: _extends({}, componentConfiguration, {
@@ -27862,6 +27869,7 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
   return orderedFields.map(function (fieldName) {
     var field = shape.fields[fieldName];
     var update = updateBuilder(fieldName);
+    var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
     var currentFieldCommonProps = {
       name: fieldName,
       key: fieldName,
@@ -27874,22 +27882,29 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
     };
 
     if (!field.hidden) {
-      var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
-
       if (currentFieldShapeConfiguration) {
+        if (currentFieldShapeConfiguration.calculateMode) {
+          currentFieldCommonProps.mode = currentFieldShapeConfiguration.calculateMode(mode);
+        }
+
         if (currentFieldShapeConfiguration.render) {
           var renderResult = currentFieldShapeConfiguration.render({
-            mode: mode,
+            mode: currentFieldCommonProps.mode,
             t: componentMapper.t,
             value: entity[fieldName],
             update: update,
-            updateBuilder: updateBuilder
+            updateBuilder: updateBuilder,
+            entity: entity
           });
           if (renderResult !== false) return renderResult;
         }
 
         if (currentFieldShapeConfiguration.props) {
           ___default.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
+        }
+
+        if (currentFieldShapeConfiguration.shapeConfiguration) {
+          ___default.merge(currentFieldShapeConfiguration, currentFieldShapeConfiguration.shapeConfiguration);
         }
       }
 
@@ -28765,7 +28780,7 @@ var RouteContainer = function RouteContainer(props) {
   }
 
   return /*#__PURE__*/React__default.createElement("div", {
-    className: "arena-" + mode + "-" + controller + "-screen"
+    className: "arena-" + mode + "-" + controller + "-screen " + shapeName + "-shape"
   }, /*#__PURE__*/React__default.createElement(ArenaContainer, {
     controller: controller,
     id: Number(id) ? Number(id) : undefined,
@@ -28936,9 +28951,11 @@ var arenaReducer = rootReducer;
 var ArenaContainer$1 = ArenaContainer;
 var ArenaListContainer$1 = ArenaListContainer;
 var arenaMiddlewares = [backendMiddleware, updateEntityMiddleware];
+var ArenaContainerMode$1 = ArenaContainerMode;
 
 exports.ArenaApp = ArenaApp$1;
 exports.ArenaContainer = ArenaContainer$1;
+exports.ArenaContainerMode = ArenaContainerMode$1;
 exports.ArenaListContainer = ArenaListContainer$1;
 exports.ArenaMapper = ArenaMapper;
 exports.arenaMiddlewares = arenaMiddlewares;

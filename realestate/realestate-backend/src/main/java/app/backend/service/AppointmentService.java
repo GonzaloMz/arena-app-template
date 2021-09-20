@@ -5,6 +5,17 @@
  */
 package app.backend.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
+
 import app.backend.exception.RealestateException;
 import app.backend.model.Appointment;
 import app.backend.model.Place;
@@ -17,18 +28,6 @@ import app.backend.repository.AppointmentRepository;
 import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -56,16 +55,7 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 	public Appointment create(Optional<AppointmentDTO> appointment) {
 		Appointment app = new Appointment();
 		BeanUtils.copyProperties((AppointmentFieldsDTO) appointment.get(), app);
-		ErrorBuffer errors = new ErrorBuffer();
-		errors.append(this.validate(app));
-		Place placeId = appointment.get().getPlaceId();
-		errors.append("place",placeService.validate(placeId));
-		errors.append("user",userService.validate(appointment.get().getUserId()));
-		if(EstateType.DEPARTAMENTO.equals(app.getEstateType()) && StringUtils.isBlank(placeId.getUnit()))
-			errors.append("appointment.place.unit.required");
-		if(errors.getErrors().length>0) {
-			throw new RealestateException(errors.getErrors());
-		}
+		validate(appointment, app);
 		Place p = placeService.create(Optional.ofNullable(appointment.get().getPlaceId()));
 		User u = userService.create(Optional.ofNullable(appointment.get().getUserId()));
 		app.setPlaceId(p.getId());
@@ -77,9 +67,31 @@ public class AppointmentService extends ArenaService<Appointment, AppointmentDTO
 		return this.appointmentRepository.save(app);
 	}
 
+	private void validate(Optional<AppointmentDTO> appointment, Appointment app) {
+		ErrorBuffer errors = new ErrorBuffer();
+		errors.append("appointment", this.validate(app));
+		Place placeId = appointment.get().getPlaceId();
+		User userId = appointment.get().getUserId();
+		if(placeId==null) {
+			errors.append("appointment.place.required");
+		} else {
+			errors.append("place",placeService.validate(placeId));			
+		}
+		if(userId==null) {
+			errors.append("appointment.user.required");
+		} else {
+			errors.append("user",userService.validate(userId));
+			
+		}
+		if(EstateType.DEPARTAMENTO.equals(app.getEstateType()) && StringUtils.isBlank(placeId.getUnit()))
+			errors.append("appointment.place.unit.required");
+		if(errors.getErrors().length>0) {
+			throw new RealestateException(errors.getErrors());
+		}
+	}
+
 	@Override
 	public List<Appointment> searchInLine(String query) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
