@@ -3,6 +3,8 @@ package app.backend.model.dto;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
+import org.hibernate.validator.constraints.Length;
+
 import app.backend.model.enums.EstateOperations;
 import app.backend.model.enums.EstateStatus;
 import app.backend.model.enums.EstateType;
@@ -18,6 +20,8 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	private EstateOperations operation;
 	private EstateStatus status;
 	private Long price;
+	@Length(max = 1000)
+	private String speech;
 	
 	public EstateType getEstateType() {
 		return estateType;
@@ -46,6 +50,12 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	@Required
 	public void setPrice(Long price) {
 		this.price = price;
+	}
+	public String getSpeech() {
+		return speech;
+	}
+	public void setSpeech(String speech) {
+		this.speech = speech;
 	}
 	
 	

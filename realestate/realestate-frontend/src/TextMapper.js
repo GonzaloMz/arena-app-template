@@ -1,3 +1,15 @@
+const EstateTypeTranslations = {
+    CASA: 'Casa',
+    DEPARTAMENTO: 'Departamento',
+    LOTE: 'Lote',
+    LOCAL: 'Local',
+    DUPLEX: 'Duplex',
+    TRIPLEX: 'Triplex',
+    COCHERA: 'Cochera',
+    GALPON: 'Galpón',
+    null: 'No definido'
+}
+
 export const textMap = {
 
     es: {
@@ -297,6 +309,12 @@ export const textMap = {
                 view: {
                     sublabel: "en"
                 }
+            },
+            speech:{
+                create: {
+                    label: "Detalle de la publicación"
+                },
+                label:"Detalle de la propiedad"
             }
         },
         estateSearch: {
@@ -442,15 +460,11 @@ export const textMap = {
                 model: {
                     enums: {
                         EstateType: {
-                            CASA: 'Casa',
-                            DEPARTAMENTO: 'Departamento',
-                            LOTE: 'Lote',
-                            LOCAL: 'Local',
-                            DUPLEX: 'Duplex',
-                            TRIPLEX: 'Triplex',
-                            COCHERA: 'Cochera',
-                            GALPON: 'Galpón',
-                            null: 'No definido'
+                            ...EstateTypeTranslations,
+                            shortNames:{
+                                ...EstateTypeTranslations,
+                                DEPARTAMENTO: "Depto"
+                            }
                         },
                         EstateOperations: {
                             SALE: 'Venta',
@@ -474,6 +488,12 @@ export const textMap = {
                     }
                 }
             }
+        },
+        lexicalConnectors:{
+            on: "en"
+        },
+        publicDetail:{
+            value: "VALOR"
         }
     }
 }

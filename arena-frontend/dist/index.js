@@ -27857,6 +27857,7 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
     shapeConfiguration = {};
   }
 
+  if (!entity) return null;
   var orderedFields = React.useMemo(function () {
     var fields = [];
     Object.keys(shape.fields).forEach(function (f) {
@@ -27866,55 +27867,61 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
     return applyVisibility(fields, shapeConfiguration.visibility);
   });
   var shapeConfigurationForFields = shapeConfiguration.fields || {};
-  return orderedFields.map(function (fieldName) {
-    var field = shape.fields[fieldName];
-    var update = updateBuilder(fieldName);
-    var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
-    var currentFieldCommonProps = {
-      name: fieldName,
-      key: fieldName,
-      level: level,
-      update: update,
-      mode: mode,
-      componentMapper: componentMapper,
-      parentController: parentController,
-      type: field.type
-    };
 
-    if (!field.hidden) {
-      if (currentFieldShapeConfiguration) {
-        if (currentFieldShapeConfiguration.calculateMode) {
-          currentFieldCommonProps.mode = currentFieldShapeConfiguration.calculateMode(mode);
+  try {
+    return orderedFields.map(function (fieldName) {
+      var field = shape.fields[fieldName];
+      var update = updateBuilder(fieldName);
+      var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
+      var currentFieldCommonProps = {
+        name: fieldName,
+        key: fieldName,
+        level: level,
+        update: update,
+        mode: mode,
+        componentMapper: componentMapper,
+        parentController: parentController,
+        type: field.type
+      };
+
+      if (!field.hidden) {
+        if (currentFieldShapeConfiguration) {
+          if (currentFieldShapeConfiguration.calculateMode) {
+            currentFieldCommonProps.mode = currentFieldShapeConfiguration.calculateMode(mode);
+          }
+
+          if (currentFieldShapeConfiguration.render) {
+            var renderResult = currentFieldShapeConfiguration.render({
+              mode: currentFieldCommonProps.mode,
+              t: componentMapper.t,
+              value: entity[fieldName],
+              update: update,
+              updateBuilder: updateBuilder,
+              entity: entity
+            });
+            if (renderResult !== false) return renderResult;
+          }
+
+          if (currentFieldShapeConfiguration.props) {
+            ___default.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
+          }
+
+          if (currentFieldShapeConfiguration.shapeConfiguration) {
+            ___default.merge(currentFieldShapeConfiguration, currentFieldShapeConfiguration.shapeConfiguration);
+          }
         }
 
-        if (currentFieldShapeConfiguration.render) {
-          var renderResult = currentFieldShapeConfiguration.render({
-            mode: currentFieldCommonProps.mode,
-            t: componentMapper.t,
-            value: entity[fieldName],
-            update: update,
-            updateBuilder: updateBuilder,
-            entity: entity
-          });
-          if (renderResult !== false) return renderResult;
-        }
-
-        if (currentFieldShapeConfiguration.props) {
-          ___default.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
-        }
-
-        if (currentFieldShapeConfiguration.shapeConfiguration) {
-          ___default.merge(currentFieldShapeConfiguration, currentFieldShapeConfiguration.shapeConfiguration);
+        if (field.key) {
+          return drawKeyField(currentFieldCommonProps, field, entity[fieldName], currentFieldShapeConfiguration);
+        } else {
+          return drawSimpleField(currentFieldCommonProps, field, entity[fieldName]);
         }
       }
-
-      if (field.key) {
-        return drawKeyField(currentFieldCommonProps, field, entity[fieldName], currentFieldShapeConfiguration);
-      } else {
-        return drawSimpleField(currentFieldCommonProps, field, entity[fieldName]);
-      }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Error drawing ", orderedFields, "for entity", entity, "parent", parentController, "mode", mode);
+    throw error;
+  }
 };
 
 var drawSimpleField = function drawSimpleField(props, field, value) {
@@ -28121,13 +28128,13 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
     "class": "loader-wheel"
   }), /*#__PURE__*/React__default.createElement("div", {
     "class": "loader-text"
-  })), shapeConfiguration && shapeConfiguration.listRender && shapeConfiguration.listRender(fullItems, componentMapper), (!shapeConfiguration || !shapeConfiguration.listRender) && items.map(function (i) {
+  })), shapeConfiguration && shapeConfiguration.listRender && shapeConfiguration.listRender(fullItems, componentMapper), (!shapeConfiguration || !shapeConfiguration.listRender) && fullItems.map(function (i) {
     return /*#__PURE__*/React__default.createElement("div", {
       className: "arena-list-item-wrapper",
       key: i.id,
       onClick: function onClick() {
         mode === ArenaListContainerMode.SELECT && selectionFunction(items, i.id);
-        mode === ArenaListContainerMode.VIEW && shapeConfiguration.onItemClick(i.id, history);
+        shapeConfiguration && shapeConfiguration.onItemClick && shapeConfiguration.onItemClick(i.id, history, i);
       }
     }, /*#__PURE__*/React__default.createElement(ArenaContainer, {
       controller: controller,
@@ -28270,7 +28277,7 @@ var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
     showInLineSearch: false,
     showInLineCreate: false,
     showClearSelection: false,
-    renderMode: mode
+    renderMode: mode == ArenaContainerMode.SEARCH ? ArenaContainerMode.VIEW : mode
   };
 
   var _useState8 = React.useState(initialActions),

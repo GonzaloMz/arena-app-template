@@ -21,6 +21,7 @@ import app.backend.model.PlaceDescription;
 import app.backend.model.dto.AssessmentDTO;
 import app.backend.model.dto.AssessmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
+import app.backend.model.enums.EstateOperations;
 import app.backend.repository.AssessmentRepository;
 import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
@@ -62,15 +63,17 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		}
 		PlaceDescription description = placeDescriptionService.create(
 				Optional.of(placeDescription));
-		updateAppointment(assessment.getPlaceId());
+		updateAppointment(assessment.getPlaceId(), assessment.getOperation());
 		assessment.setPlaceDescription(description.getId());
+		assessment.setEstateCreated(false);
 		assessment = this.getRepository().save(assessment);
 		return assessment;
 	}
 
-	private void updateAppointment(Long placeId) {
+	private void updateAppointment(Long placeId, EstateOperations operation) {
 		Appointment a = new Appointment();
 		a.setPlaceId(placeId);
+		a.setOperation(operation);
 		List<Appointment> apps = appointmentService.get(a);
 		if(!apps.isEmpty()) {
 			Appointment first = apps.get(0);
@@ -84,6 +87,8 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
 
 	@Override
 	public AssessmentDTO buildTemplate(Map<String, String> parameters) {

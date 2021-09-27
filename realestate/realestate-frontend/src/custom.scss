@@ -9,7 +9,7 @@ $theme-colors: (
 );
 $gray-100:#F5F5F5;
 $gray-200:#EBEBEB;
-$gray-300:#D6D6D6;
+$gray-300:#D6D0D0;
 $gray-400:#C9C7C7;
 $gray-500:#A3A0A0;
 $gray-600:#858384;
@@ -182,6 +182,10 @@ button.arena-full-button {
 	border-radius: 2px;
 	background-color: $white;
 
+}
+
+textarea{
+	@extend .arena-edit-field;
 }
 
 .arena__indicator-separator{
@@ -816,7 +820,7 @@ input[type="file"]{
 // }
 
 a.share-button {
-	color: forestgreen !important;
+	color: $gray-700 !important;
 }
 
 a.logout{
@@ -1006,13 +1010,7 @@ a.logout{
 			@extend .d-inline, .ml-1;
 		}
 
-		.custom-place-description{
-			display: flex;
-			.place-description-item{
-				width: 33%;
-				@extend .text-center;
-			}
-		}
+		
 	}
 	.arena-field-name-price {
 		span{
@@ -1032,6 +1030,138 @@ a.logout{
 		background-color: $beige-2;
 		&>div{
 			height: 13px;
+		}
+	}
+}
+
+.custom-place-description{
+	display: flex;
+	.place-description-item{
+		width: 33%;
+		@extend .text-center;
+	}
+}
+
+.place-location-map{
+	.address{
+		font-family: 'Conforta';
+		@extend .mt-2, .mb-1, .subtitle;
+		text-transform: uppercase;
+	}
+	img{
+		width: 100%;
+	}
+}
+
+.publicDetail-shape{
+
+	.title{
+		@extend .mt-4, .mb-3;
+	}
+	a.share-button{
+		color: $beige-3 !important;
+	}
+	.arena-container-default-render {
+
+		.arena-photo-list-container .place-photo{
+			max-width: unset !important;
+			max-height: unset !important;
+			width: 100%;
+			height: 35%;
+			overflow: hidden;
+		}
+	
+		div{
+			@extend .p-0;
+			@extend .m-0;
+		}
+	
+		.custom-place-description, .arena-field-name-price{
+			color: $gray-700;
+		}
+	
+		.custom-place-description{
+			font-size: medium;
+			@extend .py-2, .mt-1;
+			border-top: 1px solid $gray-300;
+			border-bottom: 1px solid $gray-300;
+		}
+	
+		.arena-field-name-price{
+			@extend .py-3,.text-right;
+			span{
+				@extend .py-3;
+				border-bottom: 1px solid $gray-300;
+				&.arena-field-value{
+					font-weight: bold;
+				}
+			}
+		}
+	
+		.rec-carousel-wrapper{
+			background-color: $beige-2;
+		}
+	
+		div.rec-pagination {
+			button{
+				// @extend .btn-secondary;
+				background-color: $beige-3;
+				box-shadow: unset !important;
+				height: 13px;
+				width: 13px;
+				display: inline !important;
+			}
+					.rec-dot_active{
+						background-color: $beige-5;
+					}
+		}
+	
+		.loader {
+			width: 60px;
+			@extend .mx-auto;
+			height: 100px;
+		}
+	
+	
+		.arena-text{
+			display: none;
+		}
+	
+		.arena-field-name-operation{
+			&::after{
+				content: "//";
+			}
+			width: unset !important;
+			@extend .d-inline, .ml-1, .float-left;
+		}
+	
+		// .arena-field-mode-VIEW, .estate-placeDescription-container{
+		// 	@extend .ml-3;
+		// }
+		.arena-field-name-operation, .arena-field-name-locality {
+			font-family: 'Conforta';
+			font-size: 0.95rem;
+			text-transform: lowercase;
+			.arena-field-value{
+				@extend .ellipsis;
+				@extend .p-0;
+			}
+		}
+
+		.arena-field-name-speech{
+			@extend .d-block;
+			text-align: justify;
+			.arena-field-value{
+				color: $gray-700;
+				font-family: 'Roboto Italic';
+				font-size: medium;
+			}
+			.arena-text.estate.speech.label{
+				font-family: 'Conforta';
+				@extend .d-block;
+				@extend .subtitle;
+				text-transform: uppercase;
+			}
 		}
 	}
 }

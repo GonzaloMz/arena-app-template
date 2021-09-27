@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
-import {OperationSelector, PhotoEditor} from './utils'
+import {OperationSelector, PhotoEditor, ViewPriceRender} from './utils'
 
 import Camera, { FACING_MODES, IMAGE_TYPES } from '@rinse/react-html5-camera-photo';
 import '@rinse/react-html5-camera-photo/build/css/index.css';
@@ -213,7 +213,7 @@ export const shapeConfigurationMap = {
             shapeConfiguration: {
 
                 visibility: {
-                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status", "operation", "price"]
+                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status", "operation", "speech", "price"]
                 },
                 fields: {
                     operation: {
@@ -244,6 +244,18 @@ export const shapeConfigurationMap = {
                     },
                     operation:{
                         calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    },
+                    speech:{
+                        render:({update, value, t, mode})=>{
+                            if(mode!=='CREATE') return false;
+
+                            return <div className='arena-field-mode-CREATE'>
+                                    <div className='arena-test-list'>
+                                        <div className='arena-text estate label'>{t('estate.speech.create.label')}</div>
+                                    </div>
+                                    <textarea onChange={(e)=>update(e.target.value)}></textarea>
+                                </div>
+                        }
                     }
                 }
             }
@@ -322,15 +334,6 @@ export const shapeConfigurationMap = {
                                 hidden: []
                             }
                         },
-                        // photos: {
-                        //     list: {
-                        //         listRender: (items) => {
-                        //             if (!items || items.length === 0) return null;
-                        //             return <Carousel showArrows={true} itemsToShow={3} showEmptySlots={false}>{items.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
-                        //         },
-                        //         onItemClick: () => alert("foto maximizada")
-                        //     }
-                        // },
                         placeDescription: {
                             visibility: {
                                 //comentado para que funcione la búsqueda pública
@@ -338,8 +341,13 @@ export const shapeConfigurationMap = {
                                 hidden: []
                             }
                         }
+                        
                     }
                 }
+            },
+            onItemClick: (itemId, history, item) => {
+                console.log(item)
+                history.push('/build/container/view/estate/' + item.estate +'?shapeName=publicDetail');
             }
         },
         fields: {
@@ -355,9 +363,6 @@ export const shapeConfigurationMap = {
                         </div>)
                 }
             }
-        },
-        onItemClick: (item, history) => {
-            history.push('/build/container/view/estate/' + item);
         }
     },
     photo: {
@@ -503,6 +508,7 @@ export const shapeConfigurationMap = {
                 visible: ['estate'],
                 hidden: []
             },
+
             fields: {
                 estate: {
                     props: {
@@ -517,12 +523,7 @@ export const shapeConfigurationMap = {
                     },
                     fields: {
                         price:{
-                            render: ({ mode, value, entity }) => {
-                                if (mode !== 'VIEW') return false;
-                                return (
-                                    <div class="arena-field-name-price"><span class="arena-field-value">{entity.currencySymbol + " " +new Number(value).toLocaleString()}</span></div>
-                                );
-                            }
+                            render: ViewPriceRender
                         },
                         placeId: {
                             shapeConfiguration:{
@@ -582,12 +583,53 @@ export const shapeConfigurationMap = {
                         </div>)
                 }
             }
-        },
-        onItemClick: (item, history) => {
-            history.push('/build/container/view/estate/' + item);
         }
     }}
     },
+    publicDetail:{
+        level: 10,
+        entityRenderConfiguration: {
+            shapeConfiguration: {
+                visibility: {
+                    visible: ['operation', 'placeId', 'photos', 'placeDescription', 'price', 'speech'],
+                    hidden: []
+                },
+                fields:{
+                    placeDescription: {
+                        props:{
+                            level:10
+                        },
+                        visibility: {
+                            hidden: []
+                        }
+                    },
+                    placeId: {
+                        visibility:{
+                            visible:['locality'],
+                            hidden: []
+                        }
+                    },
+                    photos: {
+                        list: {
+                            listRender: (items) => {
+                                // if (!items || items.length === 0) return null;
+                                const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+                                return <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                            },
+                            onItemClick: () => alert("foto maximizada")
+                        }
+                    },
+                    price:{
+                        render: (props)=>{
+                            return <div>
+                                <ViewPriceRender label={props.t('publicDetail.value')} {...props}></ViewPriceRender>
+                            </div>
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 const Place = ({ update, value, t, updateBuilder }) => {

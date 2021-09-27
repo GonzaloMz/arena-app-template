@@ -21,6 +21,7 @@ public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataT
 	private EstateType estateType;
 	@CreationTimestamp
 	private Date timestamp;
+	private Boolean estateCreated;
 	
 	public Double getSugestedValue() {
 		return sugestedValue;
@@ -51,6 +52,16 @@ public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataT
 	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
 	}
+
+	public Boolean getEstateCreated() {
+		return estateCreated;
+	}
+
+	@Hidden
+	public void setEstateCreated(Boolean estateCreated) {
+		this.estateCreated = estateCreated;
+	}
+	
 	
 	
 }

@@ -34,8 +34,8 @@ const componentMapper = new ArenaMapper(
 	componentsTypeMap,
 	textMap.es,
 	// "http://localhost:1312/"
-	// "http://192.168.0.14:1312/"
-	"https://api.costoya.com.ar/"
+	"http://192.168.0.14:1312/"
+	// "https://api.costoya.com.ar/"
 );
 
 componentMapper.setInputBuilder(InputBuilder);
@@ -67,7 +67,7 @@ ReactDOM.render(
 					<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
 					<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
 					<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
-					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment" />
+					<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?estateCreated=false" />
 					<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
 					<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
 					<Redirect from="/" exact={true} to="build/container/search/estateSearch?shapeName=publicSearch" />
@@ -75,7 +75,7 @@ ReactDOM.render(
 					<Route path="/confirmation/appointment" strict={true} render={
 						()=>(<ConfirmationScreen 
 							name='appointment'
-							nextUrl='/build/listContainer/view/appointment'
+							nextUrl='/pending-appointments'
 							backUrl='/create-appointment'
 							componentMapper={componentMapper}>
 						</ConfirmationScreen>)}/>

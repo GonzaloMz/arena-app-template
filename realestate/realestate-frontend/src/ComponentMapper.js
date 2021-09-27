@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
-import { DateDisplay, PlaceSelector } from './utils';
+import { DateDisplay, LocationMapRender, PlaceSelector } from './utils';
 import {ArenaContainerMode} from 'frontend';
 export const componentsTypeMap = {
 
@@ -23,7 +23,13 @@ export const parentComponentsMap = {
                 }
             }
         },
-
+        photos:{
+            9:{
+                render:{
+                    beforeRender:()=>(<div>dsfafad</div>)
+                }
+            }
+        }
     },
     estateSearch:{
         estate: {
@@ -41,6 +47,21 @@ export const componentsMap = {
     appointment:{
         default : {
             render: {
+                // beforeRender: ({entity,t, mode, history})=>{
+                //     return (<div >
+                //         { mode === 'VIEW' && 
+                //             <button className='arena-full-button' 
+                //             onClick={ 
+                //                 ()=>{
+                //                     fetch()
+                //                 }
+                //             }>
+                //                     {t('createAssessment', 'Tasar ahora')}
+                //             </button>
+                //         }
+                        
+                //     </div>)
+                // },
                 afterRender: ({entity,t, mode, history})=>{
                     // if(!entity.appointmentDate){
                         return (<div >
@@ -110,6 +131,26 @@ export const componentsMap = {
 
                 }
             }
+        },
+        10:{
+            render:{
+                beforeRender:({entity, t})=>(
+                    <div className='title text-center'>{t(`app.backend.model.enums.EstateType.shortNames.${entity.estateType}`)} {t('lexicalConnectors.on')} {t(`app.backend.model.enums.EstateOperations.${entity.operation}`)}</div>
+                ),
+                afterRender: (props) =>{
+                    const url=encodeURI(`${window.location.protocol}//${window.location.hostname}/build/container/view/estate/${props.entity.id}`);
+                    
+                    return <div className="estate-level-10-after-render mt-2">
+                        <div className=' align-middle'>
+                            <a className='share-button' href={`https://api.whatsapp.com/send?text=${url}`}>
+                                {props.t('share', 'Compartir por ')}
+                                <FontAwesomeIcon size='1x' icon={faWhatsapp} /> 
+                            </a>
+                        </div>
+                        <LocationMapRender {...props}></LocationMapRender>
+                    </div>
+                }
+            }
         }
     },
     place:{
@@ -122,6 +163,7 @@ export const componentsMap = {
                     const update=(selectedGooglePlace)=>{
                         if(!selectedGooglePlace)
                             return;
+                        console.log(selectedGooglePlace);
                         const locality=selectedGooglePlace.address_components.find(c=>c.types.includes('locality'));
                         const route=selectedGooglePlace.address_components.find(c=>c.types.includes('route'));
                         const streetNumber=selectedGooglePlace.address_components.find(c=>c.types.includes('street_number'));
@@ -133,7 +175,9 @@ export const componentsMap = {
                         updateEntity({
                             ...entity,
                             formattedAddress,
-                            locality: locality.long_name
+                            locality: locality.long_name,
+                            latitude: selectedGooglePlace.geometry.location.lat(),
+                            longitude:  selectedGooglePlace.geometry.location.lng()
                         })
                     }
                     return <PlaceSelector

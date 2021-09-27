@@ -22,6 +22,8 @@ import app.backend.model.Estate;
 import app.backend.model.Owner;
 import app.backend.model.dto.EstateDTO;
 import app.backend.model.dto.OwnerDTO;
+import app.backend.model.enums.EstateOperations;
+import app.backend.model.enums.EstateStatus;
 import app.backend.repository.EstateRepository;
 import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
@@ -67,9 +69,33 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 		if(errors.getErrors().length>0) {
 			throw new RealestateException(errors.getErrors());
 		}
+		this.updateAssessment(est.getPlaceId(), est.getOperation(), est.getStatus());
 		est.setOwner(owner.getId());
 		return this.estateRepository.save(est);
 	}
+
+	private void updateAssessment(Long placeId, EstateOperations operation, EstateStatus estateStatus) {
+		Assessment a = new Assessment();
+		a.setPlaceId(placeId);
+		a.setOperation(operation);
+		List<Assessment> apps = assessmentService.get(a);
+		if(!apps.isEmpty()) {
+			Assessment first = apps.get(0);
+			first.setEstateCreated(true);
+			assessmentService.update(first);
+		}
+	}
+	
+	
+//
+//	@Override
+//	public Estate update(Estate entity) {
+//		boolean updateAssessment = entity.getStatus() != null;
+//		entity =  super.update(entity);
+//		if(updateAssessment)
+//			this.updateAssessment(entity.getPlaceId(), entity.getOperation(), entity.getStatus());
+//		return entity;
+//	}
 
 	@Override
 	public List<Estate> searchInLine(String query) {

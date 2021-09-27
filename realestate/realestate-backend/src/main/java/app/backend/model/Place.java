@@ -3,6 +3,7 @@ package app.backend.model;
 import javax.persistence.Entity;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
+import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Required;
 
 @Entity
@@ -15,6 +16,10 @@ public class Place extends AbstractEntity  implements AbstractDataTransferObject
 	private String unit;
 	
 	private String locality;
+	
+	private Double latitude;
+	
+	private Double longitude;
 	
 	@Required
 	public void setFormattedAddress(String formattedAddress){
@@ -48,6 +53,24 @@ public class Place extends AbstractEntity  implements AbstractDataTransferObject
 	@Required
 	public void setLocality(String locality) {
 		this.locality = locality;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	@Hidden
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	@Hidden
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
 	}
 	
 	
