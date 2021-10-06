@@ -1,4 +1,4 @@
-package app.backend.model.dto;
+package app.backend.dto;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -19,9 +19,10 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	private EstateType estateType;
 	private EstateOperations operation;
 	private EstateStatus status;
-	private Long price;
+	private Double price;
 	@Length(max = 1000)
 	private String speech;
+	private Double salePrice;
 	
 	public EstateType getEstateType() {
 		return estateType;
@@ -43,13 +44,12 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	public void setOperation(EstateOperations operation) {
 		this.operation = operation;
 	}
-	public Long getPrice() {
+	public Double getPrice() {
 		return price;
 	}
 	
-	@Required
-	public void setPrice(Long price) {
-		this.price = price;
+	public void setPrice(Double double1) {
+		this.price = double1;
 	}
 	public String getSpeech() {
 		return speech;
@@ -57,6 +57,11 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	public void setSpeech(String speech) {
 		this.speech = speech;
 	}
-	
+	public Double getSalePrice() {
+		return salePrice;
+	}
+	public void setSalePrice(Double salePrice) {
+		this.salePrice = salePrice;
+	}
 	
 }

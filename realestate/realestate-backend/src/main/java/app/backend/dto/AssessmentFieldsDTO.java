@@ -1,8 +1,9 @@
-package app.backend.model.dto;
+package app.backend.dto;
 
 import java.util.Date;
 
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,7 +12,6 @@ import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
 import arena.backend.model.extension.Hidden;
-import arena.backend.model.extension.Required;
 
 @MappedSuperclass
 public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataTransferObject{
@@ -22,12 +22,12 @@ public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataT
 	@CreationTimestamp
 	private Date timestamp;
 	private Boolean estateCreated;
+	private Double saleSuggestedValue;
 	
 	public Double getSugestedValue() {
 		return sugestedValue;
 	}
 	
-	@Required
 	public void setSugestedValue(Double sugestedValue) {
 		this.sugestedValue = sugestedValue;
 	}
@@ -61,7 +61,19 @@ public class AssessmentFieldsDTO extends AbstractEntity implements AbstractDataT
 	public void setEstateCreated(Boolean estateCreated) {
 		this.estateCreated = estateCreated;
 	}
+
+	public Double getSaleSuggestedValue() {
+		return saleSuggestedValue;
+	}
+
+	public void setSaleSuggestedValue(Double saleSuggestedValue) {
+		this.saleSuggestedValue = saleSuggestedValue;
+	}
 	
-	
+	@Hidden
+	@Transient
+	public String getCurrencySymbol() {
+		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
+	}
 	
 }

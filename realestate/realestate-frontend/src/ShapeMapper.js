@@ -17,6 +17,14 @@ import AvatarEditor from 'react-avatar-editor';
 
 registerLocale('es', es)
 
+const collapsableField = (className) =>({
+    wrapperClassName: `${className} collapse`,
+    titleWrapperProps:{
+        "data-toggle":"collapse",
+        "data-target":`.${className}.collapse`
+    }
+})
+
 export const shapeConfigurationMap = {
     appointment: {
         entityRenderConfiguration: {
@@ -107,15 +115,39 @@ export const shapeConfigurationMap = {
             shapeConfiguration: {
 
                 visibility: {
-                    visible: ['userId', 'placeId', 'estateType', 'operation', 'placeDescription'],
-
+                    visible: ['estateType', 'operation', 'placeDescription', 'placeInventory', 'saleSuggestedValue'],
+                    hidden: ['userId', 'placeId', 'estateType', 'operation', 'sugestedValue']
                 },
                 fields:{
-                    estateType:{
-                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    // estateType:{
+                    //     calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    // },
+                    // operation:{
+                    //     calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    // },
+                    // placeDescription: collapsableField("place-description"),
+                    // placeInventory:collapsableField("place-inventory"),
+                    temporaryRentAssessment:collapsableField("temporary-rent-assessment"),
+                    longRentAssessment:collapsableField("long-rent-assessment"),
+                    saleSuggestedValue: collapsableField("sugested-value"),
+                    placeInventory:{
+                        visibility:{
+                            visible: ['stove', 'oven', 'airExtractor', 'refrigerator', 'hotWaterTank', 'waterHeater', 'heaters', 'radiators', 'fans', 'airConditioners']
+                        }
                     },
-                    operation:{
-                        calculateMode: (mode)=>mode==='CREATE' ? 'VIEW' : mode
+                    temporaryRentAssessment: {
+                        ...collapsableField("temporary-rent-assessment"),
+                        visibility:{
+                            visible: ['temporaryRentFacilities', 'suggestedStayPrice', 'suggestedHalfStayPrice']
+                        },
+                        fields:{
+                            temporaryRentFacilities:{
+                                visibility:{
+                                    visible:['numberOfOcupants', 'petFriendly'],
+                                    // hidden:[]
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -147,16 +179,7 @@ export const shapeConfigurationMap = {
         },
         fields: {
             operation: {
-                render: ({ update, value, t, mode }) => {
-                    if (mode === 'VIEW') return false;
-                    return (
-                        <div style={{ textAlign: 'center' }}>
-                            <div className='radio' >
-                                <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
-                                <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                            </div>
-                        </div>)
-                }
+                render: OperationSelector
             },
             placeDescription: {
                 visibility: {
@@ -187,12 +210,7 @@ export const shapeConfigurationMap = {
                     }
                 },
                 sugestedValue: {
-                    render: ({ mode, value }) => {
-                        if (mode !== 'VIEW') return false;
-                        return (
-                            <div class="arena-field-name-sugestedValue"><span class="arena-field-value">{new Number(value).toLocaleString()}</span></div>
-                        );
-                    }
+                    render: ViewPriceRender
                 }
             }
         }
@@ -213,20 +231,12 @@ export const shapeConfigurationMap = {
             shapeConfiguration: {
 
                 visibility: {
-                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status", "operation", "speech", "price"]
+                    visible: ["owner", "placeId", "placeDescription", "estateType", "photos", "status", "operation", "speech", "temporaryRentFacilities", "temporaryRentPrice", "longRentPrice", "salePrice"],
+                    hidden: ["price",]
                 },
                 fields: {
                     operation: {
-                        render: ({ update, value, t, mode }) => {
-                            if (mode === 'VIEW') return false;
-                            return (
-                                <div style={{ textAlign: 'center' }}>
-                                    <div className='radio' >
-                                        <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
-                                        <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                                    </div>
-                                </div>)
-                        }
+                        render: OperationSelector
                     },
                     placeId: {
 
@@ -255,6 +265,37 @@ export const shapeConfigurationMap = {
                                     </div>
                                     <textarea onChange={(e)=>update(e.target.value)}></textarea>
                                 </div>
+                        }
+                    },
+                    placeInventory:{
+                        calculateMode: (mode)=>mode==='CREATE' ? 'EDIT' : mode
+                    },
+                    temporaryRentPrice:{
+                        visibility:{
+                            visible: ["stayPrice", "halfStayPrice", "dailyPrice"],
+                            hidden: [ "stayDailyPrice", "halfStayDailyPrice"]
+                        },
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'RENT') return false;
+                            return null;
+                        }
+                    },
+                    salePrice: {
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'SALE') return false;
+                            return null;
+                        }
+                    },
+                    temporaryRentFacilities: {
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'RENT') return false;
+                            return null;
+                        }
+                    },
+                    longRentPrice:{
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'LONG_RENT') return false;
+                            return null;
                         }
                     }
                 }
@@ -352,16 +393,7 @@ export const shapeConfigurationMap = {
         },
         fields: {
             operation: {
-                render: ({ update, value, t, mode }) => {
-                    if (mode === 'VIEW') return false;
-                    return (
-                        <div style={{ textAlign: 'center' }}>
-                            <div className='radio' >
-                                <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
-                                <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                            </div>
-                        </div>)
-                }
+                render: OperationSelector
             }
         }
     },
@@ -535,6 +567,11 @@ export const shapeConfigurationMap = {
                             }
                         },
                         photos: {
+                            beforeField: ({entity})=> (
+                                <div className="operation-indicator d-none">
+                                    <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
+                                </div>
+                            ),
                             list: {
                                 listRender: (items) => {
                                     // if (!items || items.length === 0) return null;
@@ -572,16 +609,7 @@ export const shapeConfigurationMap = {
         },
         fields: {
             operation: {
-                render: ({ update, value, t, mode }) => {
-                    if (mode === 'VIEW') return false;
-                    return (
-                        <div style={{ textAlign: 'center' }}>
-                            <div className='radio' >
-                                <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
-                                <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                            </div>
-                        </div>)
-                }
+                render: OperationSelector
             }
         }
     }}
@@ -610,6 +638,11 @@ export const shapeConfigurationMap = {
                         }
                     },
                     photos: {
+                        beforeField: ({entity})=> (
+                            <div className="operation-indicator d-none">
+                                <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
+                            </div>
+                        ),
                         list: {
                             listRender: (items) => {
                                 // if (!items || items.length === 0) return null;

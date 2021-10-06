@@ -2,7 +2,7 @@ package app.backend.model.enums;
 
 public enum EstateOperations {
 	
-	SALE("USD"), RENT("ARS");
+	SALE("USD"), RENT("ARS"), LONG_RENT("ARS");
 
 	private String currency;
 

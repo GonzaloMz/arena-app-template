@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import app.backend.dto.EstateDTO;
 import app.backend.model.Estate;
-import app.backend.model.dto.EstateDTO;
 import app.backend.service.EstateService;
 import arena.backend.controller.ArenaController;
 import arena.backend.service.ArenaService;

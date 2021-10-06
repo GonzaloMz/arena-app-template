@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import app.backend.dto.LogInDTO;
 import app.backend.model.LogIn;
-import app.backend.model.dto.LogInDTO;
 import app.backend.service.LogInService;
 import arena.backend.controller.ArenaController;
 import arena.backend.service.ArenaService;

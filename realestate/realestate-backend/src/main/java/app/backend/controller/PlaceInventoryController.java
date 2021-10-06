@@ -5,30 +5,28 @@
  */
 package app.backend.controller;
 
+import app.backend.model.PlaceInventory;
+import app.backend.service.PlaceInventoryService;
+import arena.backend.controller.ArenaController;
+import arena.backend.service.ArenaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import app.backend.dto.OwnerDTO;
-import app.backend.model.Owner;
-import app.backend.service.OwnerService;
-import arena.backend.controller.ArenaController;
-import arena.backend.service.ArenaService;
 
 /**
  *
  * @author 
  */
 @RestController
-@RequestMapping(value = "/owner")
-public class OwnerController extends ArenaController<Owner,OwnerDTO>{
+@RequestMapping(value = "/placeInventory")
+public class PlaceInventoryController extends ArenaController<PlaceInventory,PlaceInventory>{
 		
 	@Autowired
-	private OwnerService ownerService;
+	private PlaceInventoryService placeInventoryService;
 
 	@Override
-	public ArenaService<Owner,OwnerDTO> getService() {
-		return this.ownerService;
+	public ArenaService<PlaceInventory,PlaceInventory> getService() {
+		return this.placeInventoryService;
 	}
 
 }

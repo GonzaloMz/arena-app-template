@@ -1,7 +1,12 @@
-package app.backend.model.dto;
+package app.backend.dto;
 
 import java.util.Date;
 import java.util.HashMap;
+
+import app.backend.model.LongRentPrice;
+import app.backend.model.PlaceInventory;
+import app.backend.model.TemporaryRentFacilities;
+import app.backend.model.TemporaryRentPrice;
 
 public class EstateDTO extends EstateFieldsDTO{
 	
@@ -10,6 +15,14 @@ public class EstateDTO extends EstateFieldsDTO{
 	private Long placeDescription;
 	
 	private Long placeId;
+	
+	private PlaceInventory placeInventory;
+	
+	private TemporaryRentFacilities temporaryRentFacilities;
+	
+	private TemporaryRentPrice temporaryRentPrice;
+	
+	private LongRentPrice longRentPrice;
 	
 	//campos de soporte
 	private Double sugestedValue;
@@ -64,5 +77,38 @@ public class EstateDTO extends EstateFieldsDTO{
 		this.assessmentTimestamp = assessmentTimestamp;
 	}
 
+	public PlaceInventory getPlaceInventory() {
+		return placeInventory;
+	}
 
+	public void setPlaceInventory(PlaceInventory placeInventory) {
+		this.placeInventory = placeInventory;
+	}
+
+	public TemporaryRentFacilities getTemporaryRentFacilities() {
+		return temporaryRentFacilities;
+	}
+
+	public void setTemporaryRentFacilities(TemporaryRentFacilities temporaryRentFacilities) {
+		this.temporaryRentFacilities = temporaryRentFacilities;
+	}
+
+	public TemporaryRentPrice getTemporaryRentPrice() {
+		return temporaryRentPrice;
+	}
+
+	public void setTemporaryRentPrice(TemporaryRentPrice temporaryRentPrice) {
+		this.temporaryRentPrice = temporaryRentPrice;
+	}
+
+	public LongRentPrice getLongRentPrice() {
+		return longRentPrice;
+	}
+
+	public void setLongRentPrice(LongRentPrice longRentPrice) {
+		this.longRentPrice = longRentPrice;
+	}
+
+	
+	
 }

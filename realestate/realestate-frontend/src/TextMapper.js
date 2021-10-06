@@ -221,7 +221,21 @@ export const textMap = {
             },
             placeDescription: {
                 label: "Descripción de la propiedad"
+            },
+            placeInventory:{
+                label: "Inventario"
+            },
+            temporaryRentAssessment:{
+                label: "Alquiler"
+            },
+            longRentAssessment:{
+                label: "Alquiler 24M"
+            },
+            saleSuggestedValue:{
+                label: "Venta",
+                placeholder: "Ingrese el valor en USD de la propiedad"
             }
+
         },
         placeDescription: {
             environments: {
@@ -439,6 +453,126 @@ export const textMap = {
                 finish: "Ingresar"
             }
         },
+        placeInventory:{
+            stove: {
+                label: "Cocina",
+                placeholder: "Cocina"
+            }, 
+            oven:{
+                label: "Horno",
+                placeholder: "Horno"
+            },
+            airExtractor:{
+                label:"Extractor",
+                placeholder:"Extractor"
+            },
+            refrigerator:{
+                label:"Heladera",
+                placeholder:"Heladera"
+            },
+            hotWaterTank:{
+                label:"Termo",
+                placeholder:"Termo"
+            },
+            waterHeater:{
+                label:"Calefón",
+                placeholder:"Calefón"
+            },
+            heaters:{
+                label: "Calefactores",
+                placeholder:"NO"
+            },
+            radiators:{
+                label: "Radiadores",
+                placeholder:"NO"
+            },
+            fans:{
+                label: "Ventiladores",
+                placeholder:"NO"
+            },
+            airConditioners:{
+                label: "Aires acond.",
+                placeholder:"NO"
+            }
+        },
+        temporaryRentAssessment:{
+            suggestedStayPrice:{
+                label: "Precio de la estadía (14 días)",
+                placeholder: "Ingrese el valor en ARS de la estadía"
+            },
+            suggestedHalfStayPrice:{
+                label: "Precio de media estadía",
+                placeholder: "Ingrese el valor en ARS de la media estadía"
+            },
+            suggestedDailyPrice: {
+                label: "Precio por día",
+                placeholder: "Ingrese el valor en ARS por día"
+            }
+        },
+        temporaryRentPrice:{
+            stayPrice:{
+                label: "Precio de la estadía (14 días)",
+                placeholder: "Ingrese el valor en ARS de la estadía"
+            },
+            halfStayPrice:{
+                label: "Precio de media estadía",
+                placeholder: "Ingrese el valor en ARS de la media estadía"
+            },
+            dailyPrice: {
+                label: "Precio por día",
+                placeholder: "Ingrese el valor en ARS por día"
+            }
+        },
+        temporaryRentFacilities:{
+            tv:{
+                label: "Televisor",
+                placeholder: "Televisor"
+            },
+            wifi:{
+                label: "WiFi",
+                placeholder: "WiFi"
+            },
+            microwave:{
+                label: "Microondas",
+                placeholder: "Microondas"
+            },
+            electricKettle:{
+                label: "Pava eléctrica",
+                placeholder: "Pava eléctrica"
+            },
+            petFriendly:{
+                label: "Mascotas",
+                placeholder: "Mascotas"
+            },
+            soundSystem:{
+                label: "Sistema de sonido",
+                placeholder: "Sistema de sonido"
+            },
+            numberOfOcupants:{
+                label: "Ocupantes",
+                placeholder:"Cantidad máxima de ocupantes"
+            }
+        },
+        longRentAssessment:{
+            montlySuggestedPrice:{
+                label: "Precio mensual",
+                placeholder:"Ingrese el precio en ARS por mes"
+            },
+            suggestedPriceAdjustment:{
+                label: "Ajuste del segundo año",
+                placeholder:"Ingrese el precio en ARS por mes del segundo año"
+            }
+        },
+        longRentPrice:{
+            montlyPrice:{
+                label: "Precio mensual",
+                placeholder:"Ingrese el precio en ARS por mes"
+            },
+            priceAdjustment:{
+                label: "Ajuste del segundo año",
+                placeholder:"Ingrese el precio en ARS por mes del segundo año"
+            }
+        },
         java: {
             lang: {
                 Boolean: {
@@ -469,6 +603,7 @@ export const textMap = {
                         EstateOperations: {
                             SALE: 'Venta',
                             RENT: 'Alquiler',
+                            LONG_RENT: 'Alquiler 24M',
                             null: 'No definido'
                         },
                         SquareMeterRange: {
@@ -484,6 +619,19 @@ export const textMap = {
                             AVAILABLE: "Disponible",
                             RESERVED: "Reservada",
                             NOT_AVAILABLE: "No Disponible"
+                        },
+                        Numeration:{
+                            null: "No definido",
+                            ONE: "1", 
+                            TWO: "2", 
+                            THREE: "3", 
+                            FOUR: "4", 
+                            FIVE: "5", 
+                            SIX: "6", 
+                            SEVEN: "7", 
+                            EIGHT: "8", 
+                            NINE: "9", 
+                            TEN: "10"
                         }
                     }
                 }

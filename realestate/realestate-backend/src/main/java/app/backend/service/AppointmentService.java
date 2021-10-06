@@ -18,12 +18,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import app.backend.dto.AppointmentDTO;
+import app.backend.dto.AppointmentFieldsDTO;
 import app.backend.exception.RealestateException;
 import app.backend.model.Appointment;
 import app.backend.model.Place;
 import app.backend.model.User;
-import app.backend.model.dto.AppointmentDTO;
-import app.backend.model.dto.AppointmentFieldsDTO;
 import app.backend.model.enums.AppointmentStatus;
 import app.backend.model.enums.EstateType;
 import app.backend.repository.AppointmentRepository;

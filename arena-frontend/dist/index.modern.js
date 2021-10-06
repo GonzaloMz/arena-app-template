@@ -4,7 +4,7 @@ import { useDispatch, useStore, useSelector, shallowEqual } from 'react-redux';
 import tingle from 'tingle.js';
 import Autosuggest from 'react-autosuggest';
 import { useHistory, Switch, Route } from 'react-router-dom';
-import _, { isObject } from 'lodash';
+import _$1, { isObject } from 'lodash';
 import 'tingle.js/dist/tingle.css';
 
 function _extends() {
@@ -259,7 +259,7 @@ var rootReducer = combineReducers(reducersMap);
 
 var toDeep = function toDeep(obj, defaultReturn, path) {
   if (!obj) return defaultReturn;
-  if (!path || path.length === 0) if (typeof obj === 'string') return obj;else return defaultReturn;
+  if (!path || path.length === 0) if (typeof obj === 'string') return obj;else if (typeof obj === 'object' && obj.text && typeof obj.text === 'string') return obj;else return defaultReturn;
   return toDeep(obj[path[0]], defaultReturn, path.slice(1));
 };
 
@@ -700,7 +700,8 @@ var buildCheckbox = function buildCheckbox(commonProps, placeholder) {
   return /*#__PURE__*/React.createElement("span", {
     className: "arena-checkbox"
   }, /*#__PURE__*/React.createElement("input", _extends({
-    type: "checkbox"
+    type: "checkbox",
+    checked: commonProps.value
   }, commonProps, {
     onBlur: undefined,
     onChange: _onChange,
@@ -766,7 +767,6 @@ var useUpdate = function useUpdate(updateMode, controller, providedEntity, id, e
   var persistRequired = updateMode === useUpdateMode.PERSIST;
 
   if (persistRequired) {
-    if (!id) throw "Error creando funci\xF3n de update con id vac\xEDo: [ updateMode " + updateMode + ", controller " + controller + ", initialEntity " + providedEntity + ", endpoint " + endpoint + " ]";
     if (!endpoint) throw "Error creando funci\xF3n de update con endpoint vac\xEDo: [ updateMode " + updateMode + ", controller " + controller + ", initialEntity " + providedEntity + ", id " + id + " ]";
   }
 
@@ -789,13 +789,13 @@ var useUpdate = function useUpdate(updateMode, controller, providedEntity, id, e
         }
 
         setEntity(newState);
-        if (persistRequired) dispatch(createEntityUpdate(endpoint, controller, id, fieldName, value));
+        if (persistRequired && id !== undefined) dispatch(createEntityUpdate(endpoint, controller, id, fieldName, value));
       };
     } else {
       return function (value, callback) {
         setEntity(value);
 
-        if (updateMode === useUpdateMode.EXTERNAL_STATE_UPDATE && updateParentState) {
+        if (updateMode === useUpdateMode.EXTERNAL_STATE_UPDATE && updateParentState && !_.isEmpty(value)) {
           updateParentState(value);
         }
 
@@ -27726,11 +27726,11 @@ var ArenaContainer = function ArenaContainer(_ref) {
   var calculatedConfiguration = useMemo(function () {
     var componentConfiguration = componentMapper.getShapeConfiguration(controller);
 
-    var providedVisibility = _.property('shapeConfiguration.visibility')(entityRenderConfiguration);
+    var providedVisibility = _$1.property('shapeConfiguration.visibility')(entityRenderConfiguration);
 
     var _visibility = providedVisibility ? providedVisibility : componentConfiguration ? componentConfiguration.visibility : undefined;
 
-    var _entityRenderConfiguration = _.merge(_extends({}, entityRenderConfiguration), {
+    var _entityRenderConfiguration = _$1.merge(_extends({}, entityRenderConfiguration), {
       shapeConfiguration: _extends({}, componentConfiguration, {
         visibility: _visibility
       })
@@ -27749,10 +27749,10 @@ var ArenaContainer = function ArenaContainer(_ref) {
 
   return /*#__PURE__*/React.createElement("div", {
     className: "arena-container " + (parentController ? parentController + "-" : '') + controller + "-container"
-  }, keys && /*#__PURE__*/React.createElement(ArenaTextList, {
+  }, keys && /*#__PURE__*/React.createElement("div", calculatedConfiguration.shapeConfiguration.titleWrapperProps, /*#__PURE__*/React.createElement(ArenaTextList, {
     keys: keys,
     t: componentMapper.t
-  }), /*#__PURE__*/React.createElement(ArenaEntityRender, {
+  })), /*#__PURE__*/React.createElement(ArenaEntityRender, {
     controller: controller,
     level: level,
     entity: entityToUse,
@@ -27817,7 +27817,7 @@ var ArenaContainerDefaultRender = function ArenaContainerDefaultRender(_ref2) {
     t: componentMapper.t,
     mode: mode
   }, /*#__PURE__*/React.createElement("div", {
-    className: "arena-container-default-render"
+    className: "arena-container-default-render " + (shapeConfiguration.wrapperClassName || "draw-shape-wrapper")
   }, " ", drawShape(shape, entity, level, updateBuilder, mode, componentMapper, controller, shapeConfiguration), " "));
 };
 var ArenaContainerSearchRender = function ArenaContainerSearchRender(_ref3) {
@@ -27865,7 +27865,8 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
   var shapeConfigurationForFields = shapeConfiguration.fields || {};
 
   try {
-    return orderedFields.map(function (fieldName) {
+    var componentsToRender = [];
+    orderedFields.forEach(function (fieldName) {
       var field = shape.fields[fieldName];
       var update = updateBuilder(fieldName);
       var currentFieldShapeConfiguration = shapeConfigurationForFields[fieldName];
@@ -27886,6 +27887,13 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
             currentFieldCommonProps.mode = currentFieldShapeConfiguration.calculateMode(mode);
           }
 
+          if (currentFieldShapeConfiguration.beforeField) {
+            componentsToRender.push(currentFieldShapeConfiguration.beforeField({
+              t: componentMapper.t,
+              entity: entity
+            }));
+          }
+
           if (currentFieldShapeConfiguration.render) {
             var renderResult = currentFieldShapeConfiguration.render({
               mode: currentFieldCommonProps.mode,
@@ -27895,25 +27903,30 @@ var drawShape = function drawShape(shape, entity, level, updateBuilder, mode, co
               updateBuilder: updateBuilder,
               entity: entity
             });
-            if (renderResult !== false) return renderResult;
+
+            if (renderResult !== false) {
+              componentsToRender.push(renderResult);
+              return;
+            }
           }
 
           if (currentFieldShapeConfiguration.props) {
-            _.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
+            _$1.merge(currentFieldCommonProps, currentFieldShapeConfiguration.props);
           }
 
           if (currentFieldShapeConfiguration.shapeConfiguration) {
-            _.merge(currentFieldShapeConfiguration, currentFieldShapeConfiguration.shapeConfiguration);
+            _$1.merge(currentFieldShapeConfiguration, currentFieldShapeConfiguration.shapeConfiguration);
           }
         }
 
         if (field.key) {
-          return drawKeyField(currentFieldCommonProps, field, entity[fieldName], currentFieldShapeConfiguration);
+          componentsToRender.push(drawKeyField(currentFieldCommonProps, field, entity[fieldName], currentFieldShapeConfiguration));
         } else {
-          return drawSimpleField(currentFieldCommonProps, field, entity[fieldName]);
+          componentsToRender.push(drawSimpleField(currentFieldCommonProps, field, entity[fieldName]));
         }
       }
     });
+    return componentsToRender;
   } catch (error) {
     console.error("Error drawing ", orderedFields, "for entity", entity, "parent", parentController, "mode", mode);
     throw error;
@@ -28349,7 +28362,7 @@ var ArenaEntityRenderComponent = function ArenaEntityRenderComponent(_ref8) {
 
     default:
       return /*#__PURE__*/React.createElement("div", {
-        className: "arena-entity-render"
+        className: "arena-entity-render " + configuration.className
       }, actions.showClearSelection && /*#__PURE__*/React.createElement("button", {
         className: "arena-clear-field-button",
         onClick: resetEntity

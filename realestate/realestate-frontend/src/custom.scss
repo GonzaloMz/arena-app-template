@@ -126,8 +126,12 @@ button.arena-full-button {
 
 .arena-container-default-render, .animation_in{
 	@extend .animate__animated, .animate__fadeIn;
+	animation-fill-mode: backwards;
 }
 
+.publicSearch-shape .arena-container-default-render{
+	animation-fill-mode: both;
+}
 
 .arena-open-create-modal-button {
 	@extend .btn-primary, .btn-lg;	
@@ -346,11 +350,7 @@ input::placeholder{
 		// .arena-field-name-sugestedValue::before{
 		// 	content: "U$D";
 		// }
-		.arena-field-name-sugestedValue{
-			.arena-field-value::before{
-				content: "USD";
-				@extend .pr-1
-			}
+		.arena-field-name-price{
 			@extend .py-1;
 			font-family: 'Roboto';
 			//font-size: large;
@@ -427,7 +427,7 @@ input::placeholder{
 }
 // :not(.arena-list-item-wrapper) > .arena-container{
 	.arena-default-render-wrapper{
-		.arena-container > div > .arena-text.label {
+		.arena-container > div > div > .arena-text.label {
 			@extend .subtitle;
 			// font-family: 'Roboto Cn';
 			// // font-size: large;
@@ -451,6 +451,14 @@ input::placeholder{
 }
 [class$="-inline-search"]{
 	border: white 1px;
+}
+
+.arena-container>[data-toggle="collapse"]{
+
+	&::before{
+		content: "▼…";
+		float: right;
+	}
 }
 
 .inline-search-item{
@@ -761,7 +769,7 @@ input[type="file"]{
 	@extend .px-4;
 	width: auto;
 	height: 100%;
-	width: 35%;
+	width: 30%;
 	appearance: none;
 	outline: none;
 	cursor: pointer;
@@ -862,9 +870,9 @@ a.logout{
 }
 
 
-.arena-field-name-estateType, .arena-field-name-operation {
+.arena-field-name-estateType, .arena-field-name-operation, .arena-field-name-saleSuggestedValue {
 	@extend .d-block;
-	.estateType, .operation{
+	.estateType, .operation, .saleSuggestedValue{
 		&.label{
 			@extend .subtitle;
 		}
@@ -873,6 +881,11 @@ a.logout{
 
 .float-left-width-50 {
 	width: 50%;
+	float: left;
+}
+
+.float-left-width-33 {
+	width: 33%;
 	float: left;
 }
 .arena-field-mode-CREATE,.arena-field-mode-EDIT{
@@ -1024,16 +1037,16 @@ a.logout{
 		}
 	}
 
-	.operation-indicator{
-		@extend .d-block;
-		height: 13px;
-		background-color: $beige-2;
-		&>div{
-			height: 13px;
-		}
-	}
 }
 
+.operation-indicator{
+	@extend .d-block;
+	height: 13px;
+	background-color: $beige-2;
+	&>div{
+		height: 13px;
+	}
+}
 .custom-place-description{
 	display: flex;
 	.place-description-item{
@@ -1199,3 +1212,23 @@ a.logout{
 	color: #fff;
 	font-family: arial, sans-serif;
   }
+
+
+.arena__menu{
+	z-index: 10000;
+}
+
+div[class*="arena-field-type-java.lang.Boolean"][class*="arena-field-mode-CREATE"], div[class*="arena-field-type-java.lang.Boolean"][class*="arena-field-mode-EDIT"]{
+	.arena-text-list .label{
+		display: none;
+	}
+}
+.assessment-placeInventory-container{
+	div[class*="arena-field-type-java.lang.Boolean"]{
+		@extend .float-left-width-33;
+	}
+
+	div[class*="arena-field-type-app.backend.model.enums.Numeration"]{
+		@extend .d-inline-block, .w-50;
+	}
+}

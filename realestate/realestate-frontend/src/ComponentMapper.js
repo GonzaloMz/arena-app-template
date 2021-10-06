@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
-import { DateDisplay, LocationMapRender, PlaceSelector } from './utils';
+import { DateDisplay, LocationMapRender, PlaceSelector, ViewPriceRender } from './utils';
 import {ArenaContainerMode} from 'frontend';
 export const componentsTypeMap = {
 
@@ -22,26 +22,19 @@ export const parentComponentsMap = {
                     }
                 }
             }
-        },
-        photos:{
-            9:{
-                render:{
-                    beforeRender:()=>(<div>dsfafad</div>)
-                }
-            }
         }
     },
-    estateSearch:{
-        estate: {
-            2:{
-                render:{
-                    beforeRender: ({entity})=> (<div className="operation-indicator d-none">
-                        <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
-                    </div>)
-                }
-            }
-        }
-    }
+    // estateSearch:{
+    //     estate: {
+    //         2:{
+    //             render:{
+    //                 beforeRender: ({entity})=> (<div className="operation-indicator d-none">
+    //                     <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
+    //                 </div>)
+    //             }
+    //         }
+    //     }
+    // }
 }
 export const componentsMap = {
     appointment:{
@@ -109,7 +102,7 @@ export const componentsMap = {
         default:{
             render:{
                 afterRender:({entity,t, mode, history})=>{
-                    console.log(entity.sugestedValue)
+                    console.log(entity)
                     const url=encodeURI(`${window.location.protocol}//${window.location.hostname}/build/container/view/estate/${entity.id}`);
                     return (<div >
                         { mode === 'VIEW' && 
@@ -123,7 +116,7 @@ export const componentsMap = {
                             <div className="estate-after-render d-inline">
                                 <DateDisplay value={entity.assessmentTimestamp} className="d-inline"></DateDisplay>
                                 <span> {t('assessment.sugestedValue.label')} </span>
-                                <span> - USD {entity.sugestedValue}</span>
+                                <ViewPriceRender className='d-inline' entity={entity} value={entity.sugestedValue} t={t} mode={ArenaContainerMode.VIEW}></ViewPriceRender>
                             </div>
                         }
                         

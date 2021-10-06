@@ -1,4 +1,4 @@
-package app.backend.model.dto;
+package app.backend.dto;
 
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;

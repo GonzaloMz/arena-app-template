@@ -2,7 +2,7 @@ package app.backend.model;
 
 import javax.persistence.Entity;
 
-import app.backend.model.dto.AppointmentFieldsDTO;
+import app.backend.dto.AppointmentFieldsDTO;
 import arena.backend.model.extension.Key;
 
 @Entity

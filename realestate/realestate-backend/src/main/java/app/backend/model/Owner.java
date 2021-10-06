@@ -3,7 +3,7 @@ package app.backend.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
-import app.backend.model.dto.OwnerFieldsDTO;
+import app.backend.dto.OwnerFieldsDTO;
 import arena.backend.model.extension.Key;
 import arena.backend.model.extension.Required;
 

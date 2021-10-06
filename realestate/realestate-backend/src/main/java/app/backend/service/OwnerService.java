@@ -5,9 +5,9 @@
  */
 package app.backend.service;
 
+import app.backend.dto.OwnerDTO;
 import app.backend.model.Owner;
 import app.backend.model.Place;
-import app.backend.model.dto.OwnerDTO;
 import app.backend.repository.OwnerRepository;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;

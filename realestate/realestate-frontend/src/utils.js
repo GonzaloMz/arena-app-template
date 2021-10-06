@@ -39,6 +39,7 @@ export const OperationSelector = ({ update, value, t, mode }) => {
                 <div className='radio' >
                     <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
                     <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
+                    <input label='Alquiler 24M' type="radio" onClick={e => update(e.target.value)} id="LONG_RENT" value="LONG_RENT" checked={value === "LONG_RENT"}></input>
                 </div>
             </div>
         </div>)
@@ -150,9 +151,11 @@ export const PhotoEditor = ({ value, update, t }) => {
                     color={[255, 255, 255, 0.6]} // RGBA
                     scale={1.2}
                     rotate={0}
-                    
+                    onImageReady={()=>
+                        update(canvas.current.getImage().toDataURL())
+                    }
                     onImageChange={()=>
-                         update(canvas.current.getImage().toDataURL())
+                        update(canvas.current.getImage().toDataURL())
                     }
                 />
             </div>
@@ -162,12 +165,12 @@ export const PhotoEditor = ({ value, update, t }) => {
     )
 }
 
-export const ViewPriceRender = ({ mode, value, entity, label }) => {
+export const ViewPriceRender = ({ mode, value, entity, label, className }) => {
     if (mode !== 'VIEW') return false;
     return (
-        <div class="arena-field-name-price">
-            {label && <span>{label} </span>}
-            <span class="arena-field-value">{entity.currencySymbol + " " +new Number(value).toLocaleString()}</span>
+        <div class={`arena-field-name-price ${className || ''}`}>
+            
+            <span class="arena-field-value">{label && <span>{label} </span>}{entity.currencySymbol + " " +new Number(value).toLocaleString()}</span>
         </div>
     );
 }

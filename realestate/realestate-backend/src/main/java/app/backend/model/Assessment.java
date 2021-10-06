@@ -3,7 +3,7 @@ package app.backend.model;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
-import app.backend.model.dto.AssessmentFieldsDTO;
+import app.backend.dto.AssessmentFieldsDTO;
 import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Key;
 
@@ -13,6 +13,9 @@ public class Assessment extends AssessmentFieldsDTO{
 	private Long placeId;
 	private Long userId;
 	private Long placeDescription;
+	private Long temporaryRentAssessment;
+	private Long longRentAssessment;
+	private Long placeInventory;
 
 
 	@Key(type = Place.class)
@@ -42,10 +45,35 @@ public class Assessment extends AssessmentFieldsDTO{
 		this.placeDescription = placeDescription;
 	}
 	
-	@Hidden
-	@Transient
-	public String getCurrencySymbol() {
-		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
+	@Key(type=TemporaryRentAssessment.class, allowInLineCreate = true)
+	public Long getTemporaryRentAssessment() {
+		return temporaryRentAssessment;
 	}
+
+	public void setTemporaryRentAssessment(Long temporaryrentAssessment) {
+		this.temporaryRentAssessment = temporaryrentAssessment;
+	}
+
+	@Key(type=LongRentAssessment.class, allowInLineCreate = true)
+	public Long getLongRentAssessment() {
+		return longRentAssessment;
+	}
+
+	public void setLongRentAssessment(Long longRentAssessment) {
+		this.longRentAssessment = longRentAssessment;
+	}
+
+	@Key(type=PlaceInventory.class, allowInLineCreate = true)
+	public Long getPlaceInventory() {
+		return placeInventory;
+	}
+
+	public void setPlaceInventory(Long placeInventory) {
+		this.placeInventory = placeInventory;
+	}
+
+
+	
+	
 }
 
