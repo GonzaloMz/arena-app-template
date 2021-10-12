@@ -378,49 +378,95 @@ export const shapeConfigurationMap = {
                 }
             },
     },
-    estateSearch: {
-        list: {
-            visibility: {
-                visible: ['estate'],
-                hidden: []
-            },
-            fields: {
-                estate: {
-                    props: {
-                        level: 2
-                    },
+    // estateSearch: {
+    //     list: {
+    //         visibility: {
+    //             visible: ['estate'],
+    //             hidden: []
+    //         },
+    //         fields: {
+    //             estate: {
+    //                 props: {
+    //                     level: 2
+    //                 },
+    //                 visibility: {
+    //                     visible: ['placeId', 'estateType', 'operation', 'photos', 'placeDescription'],
+    //                     hidden: []
+    //                 },
+    //                 fields: {
+    //                     placeId: {
+    //                         visibility: {
+    //                             visible: ['formattedAddress'],
+    //                             hidden: []
+    //                         }
+    //                     },
+    //                     placeDescription: {
+    //                         visibility: {
+    //                             //comentado para que funcione la búsqueda pública
+    //                             // visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+    //                             hidden: []
+    //                         }
+    //                     }
+                        
+    //                 }
+    //             }
+    //         }
+    //     },
+    //     fields: {
+    //         operation: {
+    //             render: OperationSelector
+    //         }
+    //     }
+    // },
+    adminEstateSearch:{
+        entityRenderConfiguration: {
+            allowInLineCreate: true,
+            shapeConfiguration: {
+                list: {
                     visibility: {
-                        visible: ['placeId', 'estateType', 'operation', 'photos', 'placeDescription'],
+                        visible: ['estate'],
                         hidden: []
                     },
                     fields: {
-                        placeId: {
+                        estate: {
+                            props: {
+                                level: 2
+                            },
                             visibility: {
-                                visible: ['formattedAddress'],
+                                visible: ['placeId', 'estateType', 'operation', 'photos', 'placeDescription'],
                                 hidden: []
-                            }
-                        },
-                        placeDescription: {
-                            visibility: {
-                                //comentado para que funcione la búsqueda pública
-                                // visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
-                                hidden: []
+                            },
+                            fields: {
+                                placeId: {
+                                    visibility: {
+                                        visible: ['formattedAddress'],
+                                        hidden: []
+                                    }
+                                },
+                                placeDescription: {
+                                    visibility: {
+                                        //comentado para que funcione la búsqueda pública
+                                        // visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+                                        hidden: []
+                                    }
+                                }
+                                
                             }
                         }
-                        
+                    },
+                    onItemClick: (itemId, history, item) => {
+                        console.log(item)
+                        history.push(`/build/container/edit/estate/${item.estate}?shapeName=estateEdition`);
+                    }
+                },
+                fields: {
+                    operation: {
+                        render: OperationSelector
                     }
                 }
-            },
-            onItemClick: (itemId, history, item) => {
-                console.log(item)
-                history.push(`/build/container/edit/estate/${item.estate}?shapeName=estateEdition`);
-            }
-        },
-        fields: {
-            operation: {
-                render: OperationSelector
             }
         }
+        
     },
     photo: {
         fields: {
@@ -565,7 +611,10 @@ export const shapeConfigurationMap = {
                 visible: ['estate'],
                 hidden: []
             },
-
+            onItemClick: (itemId, history, item) => {
+                console.log(item)
+                history.push(`/build/container/view/estate/${item.estate}?shapeName=publicDetail`);
+            },
             fields: {
                 estate: {
                     props: {

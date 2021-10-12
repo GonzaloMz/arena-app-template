@@ -118,7 +118,6 @@ export const PhotoEditor = ({ value, update, t }) => {
     const canvas = useRef();
 
     const setEditorRef = (editor) => (canvas.current = editor)
-    console.log(value)
     return (<div>
         {
             !value && !toCrop &&

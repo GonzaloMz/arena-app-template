@@ -65,7 +65,7 @@ window.onload = function() {
 						<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />
 						<Redirect from="/pending-appointments" push={true} to="/build/listContainer/view/appointment?status=ACTIVE,:,WITHOUT_DATE" />
 						<Redirect from="/assessments" push={true} to="/build/listContainer/view/assessment?estateCreated=false" />
-						<Redirect from="/estates" push={true} to="/build/container/search/estateSearch" />
+						<Redirect from="/estates" push={true} to="/build/container/search/estateSearch?shapeName=adminEstateSearch" />
 						<Redirect from="/estate" push={true} to="/build/container/view/estate/" />
 						<Redirect from="/" exact={true} to="build/container/search/estateSearch?shapeName=publicSearch" />
 						<Redirect from="/appointment-creation-finish" push={true} to="/confirmation/appointment" />

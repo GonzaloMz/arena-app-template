@@ -508,7 +508,7 @@ input::placeholder{
 	}
 }
 
-.arena-list-view-estate-screen, .arena-search-estate-screen, .estateSearch-shape .arena-estateSearch-list-container{
+.arena-list-view-estate-screen, .arena-search-estate-screen, .adminEstateSearch-shape .arena-estateSearch-list-container{
 	.arena-field-name-operation, .arena-field-name-estateType{
 				text-align: center;
 				text-transform: uppercase;
@@ -865,7 +865,7 @@ a.logout{
 
 
 
-.estateSearch-shape .estateSearch-container{
+.adminEstateSearch-shape .estateSearch-container{
 	.arena-container-default-render{
 		@extend .mx-auto;
 		max-width: 700px;
@@ -1070,6 +1070,9 @@ a.logout{
 }
 
 .publicDetail-shape{
+	.arena-text.estate.label, .arena-text.estate.sublabel{
+		display: none;
+	}
 
 	.title{
 		@extend .mt-4, .mb-3;
