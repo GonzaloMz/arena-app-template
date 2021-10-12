@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
-import { DateDisplay, LocationMapRender, PlaceSelector, ViewPriceRender } from './utils';
+import { DateDisplay, LocationMapRender, loggedIn, PlaceSelector, RentDatePicker, ViewPriceRender } from './utils';
 import {ArenaContainerMode} from 'frontend';
 export const componentsTypeMap = {
 
@@ -119,6 +119,23 @@ export const componentsMap = {
                                 <ViewPriceRender className='d-inline' entity={entity} value={entity.sugestedValue} t={t} mode={ArenaContainerMode.VIEW}></ViewPriceRender>
                             </div>
                         }
+                    
+                    </div>)
+
+                }
+            }
+        },
+        2:{
+            render:{
+                afterRender:({entity,t, mode, history})=>{
+                    return (<div >
+                        {
+                            mode === 'EDIT' && loggedIn() && entity.operation==='RENT' &&
+                            <div>
+                                <RentDatePicker entity={{estate:entity.id}} t={t} mode={ArenaContainerMode.VIEW}></RentDatePicker>
+                                <button className='arena-full-button' onClick={()=>history.push(`/build/container/create/rent?estate=${entity.id}&shapeName=rentCreation`)}>Crear compromiso de reserva</button>
+                            </div>
+                        }
                         
                     </div>)
 
@@ -179,6 +196,13 @@ export const componentsMap = {
                     ></PlaceSelector>
                         
                 }
+            }
+        }
+    },
+    rent:{
+        default:{
+            render:{
+                afterRender: RentDatePicker
             }
         }
     }

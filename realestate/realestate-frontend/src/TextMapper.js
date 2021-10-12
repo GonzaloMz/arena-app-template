@@ -90,6 +90,11 @@ export const textMap = {
                 title:"La Propiedad fue agregada con éxito!",
                 subtitle:"Podrás verla en las Propiedades Disponibles.",
                 next: "Ir a Propiedades Disponibles"
+            },
+            rent:{
+                title:"El Compromiso de Reserva fue agregado con éxito!",
+                subtitle:"Podrás verlo en la Actividad de la Propiedad",
+                next: "Ir a Propiedades Disponibles"
             }
         },
         list: {
@@ -437,6 +442,14 @@ export const textMap = {
             dni: {
                 placeholder: "Ingrese el DNI del cliente",
                 label: "DNI"
+            },
+            search: {
+                inline:{
+                    placeholder: "Ingrese el DNI de la persona"
+                }
+            },
+            create:{
+                start: "Nuevo Usuario"
             }
         },
         administrator: {
@@ -572,6 +585,40 @@ export const textMap = {
                 label: "Ajuste del segundo año",
                 placeholder:"Ingrese el precio en ARS por mes del segundo año"
             }
+        },
+        rent:{
+            daterange:{
+                label: "Período del alquiler"
+            },
+            tenant: {
+                label: "Inquilino"
+            },
+            estate: {
+                label: "Propiedad a alquilar"
+            },
+            commission:{
+                label: "Comisión"
+            },
+            stayTotal:{
+                label: "Valor de la estadía"
+            },
+            minimumPartialPayment:{
+                label: "Reserva 40%"
+            },
+            checkInDate:{
+                label: "Check In"
+            },
+            checkOutDate:{
+                label: "Check Out"
+            },
+            total:{
+                label: "Total"
+            },
+            create:{
+                finish: "Enviar Compromiso de Reserva"
+            },
+            label:"Compromiso de",
+            sublabel: "Reserva"
         },
         java: {
             lang: {

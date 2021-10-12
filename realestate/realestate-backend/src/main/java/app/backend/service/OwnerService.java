@@ -6,12 +6,15 @@
 package app.backend.service;
 
 import app.backend.dto.OwnerDTO;
+import app.backend.dto.OwnerWithUserDTO;
 import app.backend.model.Owner;
 import app.backend.model.Place;
+import app.backend.model.User;
 import app.backend.repository.OwnerRepository;
 import arena.backend.model.extension.ShapeFactory;
 import arena.backend.service.ArenaService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,6 +40,9 @@ public class OwnerService extends ArenaService<Owner,OwnerDTO>{
 	
 	@Autowired
 	PlaceService placeService;
+	
+	@Autowired
+	UserService userService;
 
 	@Override
 	protected JpaRepository<Owner, Long> getRepository() {
@@ -44,7 +51,16 @@ public class OwnerService extends ArenaService<Owner,OwnerDTO>{
 	
 	@Override
 	public List<Owner> searchInLine(String query) {
-		return null;
+		if (StringUtils.isEmpty(query)) {
+			return new ArrayList<>();
+		}
+		Long longValueQuery =null;
+		try {
+			longValueQuery=Long.valueOf(query);
+		} catch (Exception e) {
+			return new ArrayList<>();
+		}
+		return this.ownerRepository.findByDni(longValueQuery);
 	}
 
 	@Override
@@ -64,6 +80,20 @@ public class OwnerService extends ArenaService<Owner,OwnerDTO>{
 	public
 	ShapeFactory getShapeFactory() {
 		return new ShapeFactory(Owner.class);
+	}
+
+	public Owner create(OwnerWithUserDTO tenant) {
+		if(tenant.getId()!=null) {
+			return this.get(tenant.getId());
+		}
+		OwnerDTO ownerDto = this.getMapper().convertValue(tenant, OwnerDTO.class);
+		if(tenant.getUserDTO().getId()!=null) {
+			ownerDto.setUser(tenant.getUserDTO().getId());
+		} else {
+			User user = userService.create(Optional.of(tenant.getUserDTO()));
+			ownerDto.setUser(user.getId());
+		}
+		return this.create(Optional.of(ownerDto));
 	}
 	
 }

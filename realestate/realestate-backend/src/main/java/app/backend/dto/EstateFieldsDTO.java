@@ -2,6 +2,7 @@ package app.backend.dto;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -10,6 +11,7 @@ import app.backend.model.enums.EstateStatus;
 import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
+import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Required;
 
 @MappedSuperclass
@@ -62,6 +64,12 @@ public class EstateFieldsDTO extends AbstractEntity implements AbstractDataTrans
 	}
 	public void setSalePrice(Double salePrice) {
 		this.salePrice = salePrice;
+	}
+	
+	@Hidden
+	@Transient
+	public String getCurrencySymbol() {
+		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
 	}
 	
 }

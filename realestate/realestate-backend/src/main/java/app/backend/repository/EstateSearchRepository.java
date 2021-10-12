@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import app.backend.model.EstateSearch;
 
-public interface EstateSearchRepository extends JpaRepository<EstateSearch, Long>, JpaSpecificationExecutor<EstateSearch>{
+public interface EstateSearchRepository
+//extends JpaRepository<EstateSearch, Long>, JpaSpecificationExecutor<EstateSearch>
+{
 
 }

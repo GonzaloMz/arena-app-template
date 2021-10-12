@@ -19,7 +19,7 @@ public class Owner extends OwnerFieldsDTO {
 	
 	private Long cuit;
 
-	@Key(type = User.class)
+	@Key(type = User.class, allowInLineCreate = true)
 	public Long getUser() {
 		return user;
 	}

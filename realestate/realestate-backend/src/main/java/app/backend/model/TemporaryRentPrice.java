@@ -11,11 +11,11 @@ import arena.backend.model.extension.AbstractDataTransferObject;
 @Entity
 public class TemporaryRentPrice extends AbstractEntity implements AbstractDataTransferObject {
 	
-	private static final int STAY_DURATION_IN_DAYS = 14;
+	public static final int STAY_DURATION_IN_DAYS = 14;
 	
-	private static final Double HALF_STAY_MULTIPLICATOR = 0.6;
+	public static final Double HALF_STAY_MULTIPLICATOR = 0.6;
 	
-	private static final Double DAILY_MULTIPLICATOR = 0.1;
+	public static final Double DAILY_MULTIPLICATOR = 0.1;
 	
 	private Double stayPrice;
 	

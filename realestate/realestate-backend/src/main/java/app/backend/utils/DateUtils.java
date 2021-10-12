@@ -9,15 +9,14 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
 public class DateUtils {
 	
 	private static final FastDateFormat RFC3339_DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'");
-	private static final FastDateFormat RFC3339_DATE_FORMAT_WITH_MILLISECONDS = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 	
 	public static Date addSecondsToDate(final Date date, int seconds) {
 		Calendar calendar = Calendar.getInstance();
@@ -303,6 +302,12 @@ public class DateUtils {
 		long difference = dateTo.getTime() - dateFrom.getTime();
 		long newDateInMs = dateFrom.getTime() - difference;
 		return new Date(newDateInMs);
+	}
+
+	public static Date createDate(String string) throws ParseException {
+		if(StringUtils.isBlank(string))
+			return null;
+		return new SimpleDateFormat("yyyy-MM-ddThh:mm:ss.SSSZ").parse(string);
 	}
 	
 }

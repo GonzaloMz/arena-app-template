@@ -68,12 +68,6 @@ public class Estate extends EstateFieldsDTO{
 		return filter;
 	}
 	
-	@Hidden
-	@Transient
-	public String getCurrencySymbol() {
-		return this.getOperation() != null ? this.getOperation().getCurrency() : "$";	
-	}
-	
 	@Key(type=PlaceInventory.class, allowInLineCreate = true)
 	public Long getPlaceInventory() {
 		return placeInventory;

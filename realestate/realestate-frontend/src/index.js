@@ -18,6 +18,7 @@ import { BrowserRouter as Router, Redirect, Switch, Route} from 'react-router-do
 import Menu from './Menu';
 import { ConfirmationScreen } from './screens/ConfirmationScreen';
 import InputBuilder from './InputBuilder';
+import { envConfig } from './config';
 		
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -33,9 +34,7 @@ const componentMapper = new ArenaMapper(
 	filtersMap,
 	componentsTypeMap,
 	textMap.es,
-	// "http://localhost:1312/"
-//	"http://192.168.0.14:1312/"
-	 "https://api.costoya.com.ar/"
+	envConfig.api
 );
 
 componentMapper.setInputBuilder(InputBuilder);
@@ -89,6 +88,13 @@ window.onload = function() {
 								name='estate'
 								nextUrl='/estates'
 								backUrl='/assessments'
+								componentMapper={componentMapper}>
+							</ConfirmationScreen>)}/>
+						<Route path="/confirmation/rent" strict={true} render={
+							()=>(<ConfirmationScreen 
+								name='rent'
+								nextUrl='/estates'
+								backUrl='/estates'
 								componentMapper={componentMapper}>
 							</ConfirmationScreen>)}/>
 						<Route path="/build/:description" component={()=>(<ArenaApp componentMapper={componentMapper} store={store} location={window.location}/>)}></Route>

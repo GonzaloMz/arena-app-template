@@ -85,13 +85,16 @@ html {
 .mt-4-5{
 	margin-top: 2.5rem !important;
 }
+
+.underline{
+	border-bottom:  $gray-400 1px solid;
+}
 .subtitle{
 	font-family: 'Roboto Cn';
 	// font-size: large;
-	border-bottom:  $gray-400 1px solid;
 	color: $gray-900;
 	// @extend .card-header
-	@extend .mt-4-5, .mb-3;
+	@extend .mt-4-5, .mb-3, .underline;
 }
 
 button[class^="arena-"][ class$="-button"], a.arena-button{
@@ -651,7 +654,7 @@ input::placeholder{
 		@extend .pr-1;
 	}
 }
-.list, .create, .search, div[class^="arena-"][ class$="-shape"]>.arena-container>.arena-text-list>.arena-text {
+.list, .create, .search, div[class^="arena-"][ class$="-shape"]>.arena-container>div>.arena-text-list>.arena-text {
 	@extend .title
 }
 

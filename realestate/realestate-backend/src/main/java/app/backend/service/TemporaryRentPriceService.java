@@ -41,5 +41,15 @@ public class TemporaryRentPriceService extends ArenaService<TemporaryRentPrice,T
 	ShapeFactory getShapeFactory() {
 		return new ShapeFactory(TemporaryRentPrice.class);
 	}
+
+	public Double getStayTotal(Long temporaryRentPriceId, long daysBetweenDates) {
+		TemporaryRentPrice price = this.temporaryRentPriceRepository.getOne(temporaryRentPriceId);
+		if(daysBetweenDates>=TemporaryRentPrice.STAY_DURATION_IN_DAYS)
+			return price.getStayDailyPrice()*daysBetweenDates;
+		else if(daysBetweenDates>=TemporaryRentPrice.STAY_DURATION_IN_DAYS/2)
+			return price.getHalfStayDailyPrice()*daysBetweenDates;
+		else
+			return price.getDailyPrice()*daysBetweenDates;
+	}
 	
 }

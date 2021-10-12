@@ -8,12 +8,15 @@ package app.backend.service;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
+import app.backend.model.Estate;
 import app.backend.model.EstateSearch;
+import app.backend.repository.EstateRepository;
 import app.backend.repository.EstateSearchRepository;
 import arena.backend.model.extension.Shape;
 import arena.backend.model.extension.ShapeFactory;
@@ -25,13 +28,15 @@ import arena.backend.service.ArenaService;
  */
 @Component
 public class EstateSearchService extends ArenaService<EstateSearch,EstateSearch>{
-	
+//	
+//	@Autowired
+//	EstateRepository estateSearchRepository;
 	@Autowired
-	EstateSearchRepository estateSearchRepository;
+	EstateRepository estateRepository;
 
 	@Override
 	protected JpaRepository<EstateSearch, Long> getRepository() {
-		return estateSearchRepository;
+		return null;
 	}
 	
 	@Override
@@ -41,8 +46,13 @@ public class EstateSearchService extends ArenaService<EstateSearch,EstateSearch>
 
 	@Override
 	public List<EstateSearch> searchBySpecification(Map<String, String> parameters, Shape shape) throws ParseException {
-		parameters.put("estate", "0,;,");	
-		return super.searchBySpecification(parameters, shape);
+		EstateSearch criteria = getMapper().convertValue(parameters, EstateSearch.class);
+		List<Estate> estates = estateRepository.findEstates(
+				criteria.getEnvironments(),
+				criteria.getEstateType(),
+				criteria.getOperation(),
+				criteria.getPrice());
+		return estates.stream().map(e->new EstateSearch(e)).collect(Collectors.toList());
 	}
 
 	@Override

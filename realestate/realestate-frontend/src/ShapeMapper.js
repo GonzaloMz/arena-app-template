@@ -13,8 +13,7 @@ import Carousel from 'react-elastic-carousel';
 import {faCalendarAlt} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateDisplay } from './utils';
-import AvatarEditor from 'react-avatar-editor';
-
+import {ArenaContainerMode} from 'frontend';
 registerLocale('es', es)
 
 const collapsableField = (className) =>({
@@ -350,8 +349,30 @@ export const shapeConfigurationMap = {
                         }
                     }
                 }
-            }
+            },
+            allowInLineEdit:true
         }
+    },
+    estateEdition: {
+            entityRenderConfiguration:{
+                allowInLineEdit:true,
+                shapeConfiguration: {
+                    fields:{
+                        owner:{
+                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                        },
+                        temporaryRentFacilities:{
+                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                        },
+                        temporaryRentPrice:{
+                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                        },
+                        placeInventory:{
+                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                        }
+                    }
+                }
+            },
     },
     estateSearch: {
         list: {
@@ -388,7 +409,7 @@ export const shapeConfigurationMap = {
             },
             onItemClick: (itemId, history, item) => {
                 console.log(item)
-                history.push('/build/container/view/estate/' + item.estate +'?shapeName=publicDetail');
+                history.push(`/build/container/edit/estate/${item.estate}?shapeName=estateEdition`);
             }
         },
         fields: {
@@ -662,6 +683,64 @@ export const shapeConfigurationMap = {
                 }
             }
         }
+    },
+    rentCreation:{
+        level:1,
+        onCreateFinish: (e, history) => {
+            // Swal.fire("Creación finalizada").then(() => { history.push('/build/listContainer/view/appointment') });
+            window.scrollTo(0, 0);
+            
+            history.push("/confirmation/rent");
+            return null
+        },
+        entityRenderConfiguration: {
+            allowInLineCreate: true,
+            shapeConfiguration:{
+                visibility:{
+                    visible:["tenant", "estate"],
+                    hidden:[]
+                },
+                fields:{
+                    owner:{
+                        fields:{
+                            user:{
+                                props:{
+        
+                                    entityRenderConfiguration: {
+                                        allowInLineCreate: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    estate:{
+                        visibility:{
+                            visible:["estateType", "placeId", "temporaryRentFacilities", "price"],
+                            hidden:[]
+                        },
+                        fields:{
+                            placeId:{
+                                props:{
+                                    level:1
+                                },
+                                visibility:{
+                                    visible:["locality", "formattedAddress"]
+                                }
+                            },
+                            temporaryRentFacilities:{
+                                props:{
+                                    level:1
+                                },
+                                visibility:{
+                                    visible:["numberOfOcupants"],
+                                    hidden:[]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
     }
 }
 

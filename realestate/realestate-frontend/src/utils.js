@@ -9,8 +9,11 @@ import AvatarEditor from 'react-avatar-editor';
 
 import _ from 'lodash';
 import { useSelector } from 'react-redux';
+import ReactDatePicker from 'react-datepicker';
+import {ArenaContainerMode} from 'frontend';
+import { envConfig } from './config';
 
-export const loggedIn = ()=>(localStorage.getItem("arena-administrator") === undefined || localStorage.getItem("arena-administrator") === null)
+export const loggedIn = ()=>(localStorage.getItem("arena-administrator") !== undefined && localStorage.getItem("arena-administrator") !== null)
 
 export const DateDisplay = ({ value, className }) => {
     if (!value) return <div className={className}>--/--</div>
@@ -190,4 +193,112 @@ export const LocationMapRender = ({  entity }) => {
             <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${place.payload.latitude},${place.payload.longitude}&zoom=16&size=1000x400&markers=color:red|${place.payload.latitude},${place.payload.longitude}&key=AIzaSyBYyI_5G4yLARo3fni9u2PBKePApgXhd5U`}></img>
         </div>
     );
+}
+
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+export const RentDatePicker=({entity, mode, updateEntity, error, t, history})=>{
+    const [startDate, setStartDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
+    const [notAvailableDates, setNotAvailableDates] = useState(null);
+    const [currentPrice, setCurrentPrice] = useState();
+
+    useEffect(()=>{
+        if(!notAvailableDates){
+            fetch(`${envConfig.api}/rent/notAvailableDates/${entity.estate}`)
+            .then(res=>res.json())
+            .then(json=>setNotAvailableDates(json.map(d=>new Date(d))))
+        }
+    }, [])
+    
+    const onChange = (dates) => {
+        const [start, end] = dates;
+        setStartDate(start);
+        setEndDate(end);
+        fetch(`${envConfig.api}/rent/fillPrice?estate=${entity.estate}&checkInDate=${start}&checkOutDate=${end}`)
+        .then(res=>res.json())
+            .then(json=>setCurrentPrice(json));
+        if(mode===ArenaContainerMode.VIEW)
+            return null;
+        updateEntity({
+            ...entity,
+            checkInDate:start,
+            checkOutDate:end
+        })
+
+
+    };
+    return (
+        <div>
+            <div className="subtitle">{t('rent.daterange.label')}</div>
+            {
+                currentPrice && <div className='float-right'>
+                    <div><div className='underline'>{t('rent.checkInDate.label')}</div><DateDisplay value={startDate}></DateDisplay></div>
+                    <div><div className='underline'>{t('rent.checkOutDate.label')}</div><DateDisplay value={endDate}></DateDisplay></div>
+                    <div><div className='underline'>{t('rent.stayTotal.label')}</div>ARS {currentPrice.stayTotal}</div>
+                    <div><div className='underline'>{t('rent.commission.label')}</div>ARS {currentPrice.commission}</div>
+                    <div><div className='underline'>{t('rent.total.label')}</div>ARS {currentPrice.total}</div>
+                    <div><div className='underline'>{t('rent.minimumPartialPayment.label')}</div>ARS {currentPrice.minimumPartialPayment}</div>
+                    
+                </div>
+            }
+            <div className='text-center'>
+                <ReactDatePicker
+                className="arena-edit-field"
+                selected={startDate}
+                onChange={onChange}
+                startDate={startDate}
+                endDate={endDate}
+                excludeDates={notAvailableDates}
+                selectsRange
+                inline
+                />
+            </div>
+        </div>
+    );
+
+
+    // const [selected, setSelected] =  useState(value ? new Date(value) : undefined);
+    // //if (mode === 'VIEW') return <DateDisplay value={value} className='appointment-date'></DateDisplay>;
+    // const filterPassedTime = (time) => {
+    //     const currentDate = new Date();
+    //     const selectedDate = new Date(time);
+    //     if(selectedDate.getHours()<7 || selectedDate.getHours()>21)
+    //         return false;
+
+    //     return currentDate.getTime() < selectedDate.getTime();
+    // };
+
+    // return (
+    //     <div>
+    //         <div class="date-input-label subtitle">{t('appointment.appointmentDate.label')}</div>
+    //         <DateDisplay value={value} className='appointment-date'></DateDisplay>
+    //         <div className='date-picker'>
+    //             <div className='d-inline'>
+    //                 <FontAwesomeIcon icon={faCalendarAlt} className='pt-2 gray-icon' size='2x'></FontAwesomeIcon>
+    //             </div>
+    //             <ReactDatePicker
+    //                 className="arena-edit-field"
+    //                 selected={selected}
+    //                 onChange={(date) => {
+    //                     const hours= new Date(date).getHours();
+    //                     if(hours>=7 && hours<=21)
+    //                     update(date)
+    //                     setSelected(date)
+    //                 }}
+    //                 showTimeSelect
+    //                 timeCaption='Hora'
+    //                 filterTime={filterPassedTime}
+    //                 locale="es"
+    //                 onChangeRaw={(e) => { e.preventDefault() }}
+    //                 dateFormat="MMMM d, yyyy HH:mm"
+    //                 onFocus={(e) => e.target.readOnly = true}
+    //                 />
+    //         </div>
+    //     </div>
+    // );
 }
