@@ -359,15 +359,19 @@ export const shapeConfigurationMap = {
                 shapeConfiguration: {
                     fields:{
                         owner:{
+                            ...collapsableField("estate-owner"),
                             calculateMode: ()=>(ArenaContainerMode.VIEW)
                         },
                         temporaryRentFacilities:{
+                            ...collapsableField("estate-temporaryRentFacilities"),
                             calculateMode: ()=>(ArenaContainerMode.VIEW)
                         },
                         temporaryRentPrice:{
+                            ...collapsableField("estate-temporaryRentPrice"),
                             calculateMode: ()=>(ArenaContainerMode.VIEW)
                         },
                         placeInventory:{
+                            ...collapsableField("estate-placeInventory"),
                             calculateMode: ()=>(ArenaContainerMode.VIEW)
                         }
                     }

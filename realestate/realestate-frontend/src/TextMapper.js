@@ -334,7 +334,18 @@ export const textMap = {
                     label: "Detalle de la publicación"
                 },
                 label:"Detalle de la propiedad"
-            }
+            },
+            temporaryRentPrice:{
+                label: "Precio de Alquiler Temporario"
+            },
+            temporaryRentFacilities: {
+                label: "Comodidades"
+            },
+            placeInventory:{
+                label: "Inventario"
+            },
+            label: "Detalle de",
+            sublabel: "Propiedad"
         },
         estateSearch: {
             search: {
