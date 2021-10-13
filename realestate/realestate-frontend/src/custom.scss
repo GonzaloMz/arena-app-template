@@ -1238,3 +1238,15 @@ div[class*="arena-field-type-java.lang.Boolean"][class*="arena-field-mode-CREATE
 		@extend .d-inline-block, .w-50;
 	}
 }
+
+.estate-photo-container{
+	.arena-text.estate{
+		display: none;
+	}
+}
+
+.estateEdition-shape{
+	.rec-swipable, .rec-item-wrapper img{
+		max-height: 200px;
+	}
+}

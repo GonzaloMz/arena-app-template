@@ -373,7 +373,19 @@ export const shapeConfigurationMap = {
                         placeInventory:{
                             ...collapsableField("estate-placeInventory"),
                             calculateMode: ()=>(ArenaContainerMode.VIEW)
-                        }
+                        },
+                        photos: {
+                            list: {
+                                listRender: (items) => {
+                                    // if (!items || items.length === 0) return null;
+                                    const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+                                    return <div onClick={(e)=>e.stopPropagation()}>
+                                            <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                        </div>
+                                },
+                                onItemClick: () => alert("foto maximizada")
+                            }
+                        },
                     }
                 }
             },
@@ -650,7 +662,9 @@ export const shapeConfigurationMap = {
                                 listRender: (items) => {
                                     // if (!items || items.length === 0) return null;
                                     const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
-                                    return <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                    return <div onClick={(e)=>e.stopPropagation()}>
+                                            <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                        </div>
                                 },
                                 onItemClick: () => alert("foto maximizada")
                             }
