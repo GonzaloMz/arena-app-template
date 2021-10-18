@@ -158,10 +158,13 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 			OwnerDTO owner = new OwnerDTO();
 			owner.setUser(assessmentEntity.getUserId());
 			estate.setOwner(owner);
-			PlaceInventory inventory = placeInventoryService.get(assessmentEntity.getPlaceInventory());
-			// creo la copia del place inventory
-			estate.setPlaceInventory(new PlaceInventory());
-			BeanUtils.copyProperties(inventory, estate.getPlaceInventory(),"id");
+			if(assessmentEntity.getPlaceInventory()!=null) {				
+				// creo la copia del place inventory
+				PlaceInventory inventory = placeInventoryService.get(assessmentEntity.getPlaceInventory());
+				estate.setPlaceInventory(new PlaceInventory());
+				BeanUtils.copyProperties(inventory, estate.getPlaceInventory(),"id");
+			}
+			
 			if(EstateOperations.RENT.equals(assessmentEntity.getOperation())) {
 				estate.setTemporaryRentFacilities(new TemporaryRentFacilities());
 				TemporaryRentAssessment temporaryRentSuggestedPrices = temporaryRentAssessmentService.get(assessmentEntity.getTemporaryRentAssessment());

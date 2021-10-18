@@ -27747,6 +27747,7 @@ var ArenaContainer = function ArenaContainer(_ref) {
     onCreateFinish(entityToUse);
   };
 
+  if (id && !entityFromCentralMemory) return null;
   return /*#__PURE__*/React.createElement("div", {
     className: "arena-container " + (parentController ? parentController + "-" : '') + controller + "-container"
   }, keys && /*#__PURE__*/React.createElement("div", calculatedConfiguration.shapeConfiguration.titleWrapperProps, /*#__PURE__*/React.createElement(ArenaTextList, {

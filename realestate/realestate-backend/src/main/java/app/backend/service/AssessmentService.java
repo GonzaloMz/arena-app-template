@@ -121,9 +121,10 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		}
 		PlaceDescription description = placeDescriptionService.create(
 				Optional.of(placeDescription));
-		PlaceInventory inventory = placeInventoryService.create(
-				Optional.of(placeInventory));
-		
+		PlaceInventory inventory = null;
+		if(placeInventory!=null)
+			inventory = placeInventoryService.create(
+					Optional.of(placeInventory));
 		
 		updateAppointment(assessmentDto.getPlaceId(), assessment.getOperation());
 
@@ -138,7 +139,8 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		if(assessment==null)
 			return null;
 		assessment.setPlaceDescription(description.getId());
-		assessment.setPlaceInventory(inventory.getId());
+		if(inventory!=null)
+			assessment.setPlaceInventory(inventory.getId());
 		assessment.setEstateCreated(false);
 		assessment = this.getRepository().save(assessment);
 		return assessment;
