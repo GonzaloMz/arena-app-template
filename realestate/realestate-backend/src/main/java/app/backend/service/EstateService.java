@@ -21,6 +21,7 @@ import app.backend.dto.OwnerDTO;
 import app.backend.exception.RealestateException;
 import app.backend.model.Assessment;
 import app.backend.model.Estate;
+import app.backend.model.LongRentAssessment;
 import app.backend.model.LongRentPrice;
 import app.backend.model.Owner;
 import app.backend.model.PlaceInventory;
@@ -68,6 +69,9 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 	
 	@Autowired
 	LongRentPriceService longRentPriceService;
+	
+	@Autowired
+	LongRentAssessmentService longRentAssessmentService;
 
 	@Override
 	protected JpaRepository<Estate, Long> getRepository() {
@@ -166,10 +170,19 @@ public class EstateService extends ArenaService<Estate,EstateDTO>{
 				estate.setTemporaryRentFacilities(new TemporaryRentFacilities());
 				BeanUtils.copyProperties(temporaryRentFacilities, estate.getTemporaryRentFacilities(),"id");
 			}
+			estate.setAssessmentTimestamp(assessmentEntity.getTimestamp());
+			if(EstateOperations.SALE.equals(assessmentEntity.getOperation())) {				
+				estate.setSalePrice(assessmentEntity.getSaleSuggestedValue());
+			}
+			if(EstateOperations.LONG_RENT.equals(assessmentEntity.getOperation())) {
+				LongRentPrice longRentPrice = new LongRentPrice();
+				LongRentAssessment longRentAssessment = longRentAssessmentService.get(assessmentEntity.getLongRentAssessment()); 
+				longRentPrice.setMontlyPrice(longRentAssessment.getMontlySuggestedPrice());
+				longRentPrice.setPriceAdjustment(longRentAssessment.getSuggestedPriceAdjustment());
+				estate.setLongRentPrice(longRentPrice);
+			}
+			estate.setSugestedValue(assessmentEntity.getSugestedValue());
 		}
-		estate.setAssessmentTimestamp(assessmentEntity.getTimestamp());
-		estate.setSalePrice(assessmentEntity.getSaleSuggestedValue());
-		estate.setSugestedValue(assessmentEntity.getSugestedValue());
 		return estate;
 	}
 	
