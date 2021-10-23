@@ -1,11 +1,5 @@
 package app.backend.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
-import javax.persistence.Table;
-
 import app.backend.model.enums.EstateOperations;
 import app.backend.model.enums.EstateType;
 import arena.backend.model.AbstractEntity;
