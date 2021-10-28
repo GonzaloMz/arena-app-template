@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,8 +45,8 @@ public class RentController extends ArenaController<Rent,RentDTO>{
 	
 	@GetMapping(path="/fillPrice")
 	public Rent fillPrice(@RequestParam("estate") Long estate,
-			@RequestParam("checkInDate") Date checkIn,
-			@RequestParam("checkOutDate") Date checkOut){
+			@RequestParam("checkInDate")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date checkIn,
+			@RequestParam("checkOutDate")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date checkOut){
 		return this.rentService.fillPrice(estate, checkIn, checkOut);
 	}
 }

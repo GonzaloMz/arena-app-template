@@ -1,9 +1,13 @@
 package app.backend.model;
 
+import java.util.Date;
+
 import app.backend.model.enums.EstateOperations;
 import app.backend.model.enums.EstateType;
+import app.backend.model.enums.Numeration;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
+import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Key;
 
 //@Entity
@@ -25,6 +29,13 @@ public class EstateSearch extends AbstractEntity implements AbstractDataTransfer
 	
 //	@Column(name="environments")
 	private Integer environments;
+	
+	private Numeration numberOfOcupants;
+	
+	private Date checkInDate;
+	
+	private Date checkOutDate;
+	
 
 	public EstateSearch() {
 		
@@ -74,6 +85,28 @@ public class EstateSearch extends AbstractEntity implements AbstractDataTransfer
 	public void setEnvironments(Integer environments) {
 		this.environments = environments;
 	}
+	public Numeration getNumberOfOcupants() {
+		return numberOfOcupants;
+	}
+	public void setNumberOfOcupants(Numeration numberOfOcupants) {
+		this.numberOfOcupants = numberOfOcupants;
+	}
 	
-	
+	public Date getCheckInDate() {
+		return checkInDate;
+	}
+
+	@Hidden
+	public void setCheckInDate(Date checkInDate) {
+		this.checkInDate = checkInDate;
+	}
+
+	public Date getCheckOutDate() {
+		return checkOutDate;
+	}
+
+	@Hidden
+	public void setCheckOutDate(Date checkOutDate) {
+		this.checkOutDate = checkOutDate;
+	}
 }

@@ -3,6 +3,7 @@ package app.backend.dto;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.MappedSuperclass;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,7 +12,7 @@ import arena.backend.model.extension.AbstractDataTransferObject;
 import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Required;
 
-@Entity
+@MappedSuperclass
 public class RentFieldsDTO extends AbstractEntity implements AbstractDataTransferObject {
 
 	protected static final Double MINIMUM_PARTIAL_PAYMENT_PERCENTAGE = 0.4;

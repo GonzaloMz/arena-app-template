@@ -70,6 +70,7 @@ public class DateUtils {
 	}
 	
 	public static Date getFirstMomentOfDay(final Date date) {
+		if(date==null) return null;
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(Calendar.MILLISECOND, 0);
@@ -89,6 +90,7 @@ public class DateUtils {
 	}
 
 	public static Date getLastMomentOfDay(final Date date) {
+		if(date==null) return null;
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(Calendar.MILLISECOND, 999);

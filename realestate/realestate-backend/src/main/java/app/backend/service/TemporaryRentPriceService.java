@@ -44,12 +44,14 @@ public class TemporaryRentPriceService extends ArenaService<TemporaryRentPrice,T
 
 	public Double getStayTotal(Long temporaryRentPriceId, long daysBetweenDates) {
 		TemporaryRentPrice price = this.temporaryRentPriceRepository.getOne(temporaryRentPriceId);
+		Double result =null;
 		if(daysBetweenDates>=TemporaryRentPrice.STAY_DURATION_IN_DAYS)
-			return price.getStayDailyPrice()*daysBetweenDates;
+			result= price.getStayDailyPrice()*daysBetweenDates;
 		else if(daysBetweenDates>=TemporaryRentPrice.STAY_DURATION_IN_DAYS/2)
-			return price.getHalfStayDailyPrice()*daysBetweenDates;
+			result= price.getHalfStayDailyPrice()*daysBetweenDates;
 		else
-			return price.getDailyPrice()*daysBetweenDates;
+			result= price.getDailyPrice()*daysBetweenDates;
+		return Math.ceil( result);
 	}
 	
 }
