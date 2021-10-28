@@ -4,6 +4,7 @@ import { faEye } from '@fortawesome/free-solid-svg-icons'
 import React from 'react';
 import { DateDisplay, LocationMapRender, loggedIn, PlaceSelector, RentDatePicker, ViewPriceRender } from './utils';
 import {ArenaContainerMode} from 'frontend';
+import Carousel from 'react-elastic-carousel';
 export const componentsTypeMap = {
 
 }
@@ -203,6 +204,56 @@ export const componentsMap = {
         default:{
             render:{
                 afterRender: RentDatePicker
+            }
+        }
+    },
+    estateSearch:{
+        default:{
+            render:{
+                beforeRender: ({mode})=>{
+
+                    if(mode===ArenaContainerMode.CREATE){
+
+                        // const items = [
+                        //     <div className='item'>
+                        //         <img src='/banner/es/1.jpg'></img>
+                        //     </div>,
+                        //     <div className='item'>
+                        //         <img src='/banner/es/2.jpg'></img>
+                        //     </div>,
+                        //     <div className='item'>
+                        //         <img src='/banner/es/3.jpg'></img>
+                        //     </div>
+                        // ]
+                        return <div className='estateSearch-beforeRender'>
+                            {/* <Carousel initialActiveIndex={0}showArrows={false} enableAutoPlay={true} transitionMs={1000} autoPlaySpeed={6000} itemsToShow={1} showEmptySlots={false}>
+                                {items}
+                            </Carousel> */}
+                            <div className='title text-center'>Búsqueda</div>
+                        </div>
+                    }
+                    return null;
+                },
+                afterRender:({entity = {}, updateEntity, t, mode, history})=>{
+                    if(mode===ArenaContainerMode.CREATE)
+                        return <div>
+                            {
+                                entity.operation &&
+                                <div className='text-info'>El valor del precio se encuentra expresado en {entity.operation==='SALE' ? 'USD' : 'ARS'}</div>
+                            }
+                            <span>Ordenar por: </span>
+                            <span className='btn-link' onClick={()=>updateEntity({...entity, orderDirection:"ASC"})}> Menor precio </span>
+                             - 
+                            <span className='btn-link' onClick={()=>updateEntity({...entity, orderDirection:"DESC"})}> Mayor precio </span>
+                            {
+                                entity.operation==='RENT' &&
+                                <div>
+                                    <RentDatePicker entity={entity} t={t} mode={ArenaContainerMode.EDIT} updateEntity={updateEntity}></RentDatePicker>
+                                </div>
+                            }
+                        </div>
+                    return null;
+                }
             }
         }
     }

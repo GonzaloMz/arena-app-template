@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {faCalendarAlt} from '@fortawesome/free-solid-svg-icons'
+import {faCalendarAlt, faTrashAlt} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ReactGoogleAutocomplete from 'react-google-autocomplete';
 
@@ -12,6 +12,9 @@ import { useSelector } from 'react-redux';
 import ReactDatePicker from 'react-datepicker';
 import {ArenaContainerMode} from 'frontend';
 import { envConfig } from './config';
+import inputBuilder from './InputBuilder';
+
+import Carousel from 'react-elastic-carousel';
 
 export const loggedIn = ()=>(localStorage.getItem("arena-administrator") !== undefined && localStorage.getItem("arena-administrator") !== null)
 
@@ -109,7 +112,28 @@ export const PlaceSelector = ({ update, value='', t, updateBuilder }) => {
 }
 
 
-
+export const EditablePhotoList = (items, mapper, restart) => {
+    // if (!items || items.length === 0) return null;
+    const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+    return <div onClick={(e)=>e.stopPropagation()}>
+            <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => 
+                <div>
+                    {
+                        i.id && 
+                        <span style={{top:'5px'}} className='btn position-absolute background-dark-color-ligth' onClick={()=>{
+                            return fetch(`${envConfig.api}/photo/${i.id}`, {
+                                method: 'DELETE', // or 'PUT'
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(res => restart());
+                        }}><FontAwesomeIcon icon={faTrashAlt}></FontAwesomeIcon></span>
+                    }
+                    <img className='place-photo' src={i.view}></img>
+                </div>
+                )}</Carousel>
+        </div>
+}
 
 
 export const PhotoEditor = ({ value, update, t }) => {
@@ -207,20 +231,25 @@ export const RentDatePicker=({entity, mode, updateEntity, error, t, history})=>{
     const [currentPrice, setCurrentPrice] = useState();
 
     useEffect(()=>{
-        if(!notAvailableDates){
+        if(!notAvailableDates && entity.estate){
             fetch(`${envConfig.api}/rent/notAvailableDates/${entity.estate}`)
             .then(res=>res.json())
             .then(json=>setNotAvailableDates(json.map(d=>new Date(d))))
         }
+        if(!entity.estate)
+            setNotAvailableDates([new Date()])
     }, [])
     
     const onChange = (dates) => {
         const [start, end] = dates;
         setStartDate(start);
         setEndDate(end);
-        fetch(`${envConfig.api}/rent/fillPrice?estate=${entity.estate}&checkInDate=${start}&checkOutDate=${end}`)
-        .then(res=>res.json())
-            .then(json=>setCurrentPrice(json));
+        if(!start || !end) return null;
+        if(entity.estate){
+            fetch(`${envConfig.api}/rent/fillPrice?estate=${entity.estate}&checkInDate=${parseDateAsParam(start)}&checkOutDate=${parseDateAsParam(end)}`)
+            .then(res=>res.json())
+                .then(json=>setCurrentPrice(json));
+        }
         if(mode===ArenaContainerMode.VIEW)
             return null;
         updateEntity({
@@ -260,44 +289,31 @@ export const RentDatePicker=({entity, mode, updateEntity, error, t, history})=>{
         </div>
     );
 
-
-    // const [selected, setSelected] =  useState(value ? new Date(value) : undefined);
-    // //if (mode === 'VIEW') return <DateDisplay value={value} className='appointment-date'></DateDisplay>;
-    // const filterPassedTime = (time) => {
-    //     const currentDate = new Date();
-    //     const selectedDate = new Date(time);
-    //     if(selectedDate.getHours()<7 || selectedDate.getHours()>21)
-    //         return false;
-
-    //     return currentDate.getTime() < selectedDate.getTime();
-    // };
-
-    // return (
-    //     <div>
-    //         <div class="date-input-label subtitle">{t('appointment.appointmentDate.label')}</div>
-    //         <DateDisplay value={value} className='appointment-date'></DateDisplay>
-    //         <div className='date-picker'>
-    //             <div className='d-inline'>
-    //                 <FontAwesomeIcon icon={faCalendarAlt} className='pt-2 gray-icon' size='2x'></FontAwesomeIcon>
-    //             </div>
-    //             <ReactDatePicker
-    //                 className="arena-edit-field"
-    //                 selected={selected}
-    //                 onChange={(date) => {
-    //                     const hours= new Date(date).getHours();
-    //                     if(hours>=7 && hours<=21)
-    //                     update(date)
-    //                     setSelected(date)
-    //                 }}
-    //                 showTimeSelect
-    //                 timeCaption='Hora'
-    //                 filterTime={filterPassedTime}
-    //                 locale="es"
-    //                 onChangeRaw={(e) => { e.preventDefault() }}
-    //                 dateFormat="MMMM d, yyyy HH:mm"
-    //                 onFocus={(e) => e.target.readOnly = true}
-    //                 />
-    //         </div>
-    //     </div>
-    // );
 }
+
+/**
+ * 
+ * @param {Date} date 
+ */
+export const parseDateAsParam = (date) =>{
+    return date.toISOString()
+}
+
+// export const PriceRangeSelector= ({ update, value, t, mode, entity, updateBuilder }) => {
+
+//     const options = entity.operation === 'SALE' ? 
+//         [
+//             {value:'0,;,50000', label: t('PriceRangeSelector.usd.50000')},
+//             {value:'0,;,100000', label: t('PriceRangeSelector.usd.100000')},
+//             {value:'100000,;,', label: t('PriceRangeSelector.usd.50000')},
+//         ] : 
+//         [
+//             {}
+//         ]
+
+//     const commonProps = {
+//         onBlur: update,
+//         value:value
+//     }
+//     return inputBuilder.buildSelect(commonProps, options, t('PriceRangeSelector.placeholder'))
+// }

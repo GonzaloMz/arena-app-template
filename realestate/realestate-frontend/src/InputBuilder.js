@@ -17,6 +17,10 @@ const inputBuilder = {
         return <Select value={formattedOptions.find(o=>o.value===commonProps.value) } onChange={_onChange}  classNamePrefix='arena' className=''
             menuShouldScrollIntoView={true}  
             isSearchable={false}  
+            // corrección del problema de z-index --------- 
+            menuPortalTarget={document.body} 
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            //---------------------------------------------
             theme={theme => {
                     console.log(theme);
                         return {

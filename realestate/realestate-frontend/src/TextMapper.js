@@ -439,7 +439,10 @@ export const textMap = {
             },
             price: {
                 label: "Precio",
-                placeholder: "Ingrese el valor en dólares de la propiedad"
+                placeholder: "Ingrese el valor máximo del precio"
+            },
+            numberOfOcupants:{
+                label: "Cantidad de ocupantes"
             }
         },
         owner: {

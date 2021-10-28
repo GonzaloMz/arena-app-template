@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import es from 'date-fns/locale/es';
 import Autocomplete from "react-google-autocomplete";
 import "react-datepicker/dist/react-datepicker.css";
-import {OperationSelector, PhotoEditor, ViewPriceRender} from './utils'
+import {EditablePhotoList, OperationSelector, PhotoEditor, ViewPriceRender} from './utils'
 
 import Camera, { FACING_MODES, IMAGE_TYPES } from '@rinse/react-html5-camera-photo';
 import '@rinse/react-html5-camera-photo/build/css/index.css';
@@ -14,6 +14,7 @@ import {faCalendarAlt} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateDisplay } from './utils';
 import {ArenaContainerMode} from 'frontend';
+import { envConfig } from './config';
 registerLocale('es', es)
 
 const collapsableField = (className) =>({
@@ -189,7 +190,7 @@ export const shapeConfigurationMap = {
         },
         list: {
             onItemClick: (item, history) => {
-                history.push('/build/container/view/assessment/' + item);
+                history.push('/build/container/view/assessment/' + item + '?shapeName=assessmentDetail');
             },
             visibility: {
                 visible: ['userId', 'estateType', 'operation', 'placeId', 'sugestedValue'],
@@ -296,7 +297,12 @@ export const shapeConfigurationMap = {
                             if(entity && entity.operation === 'LONG_RENT') return false;
                             return null;
                         }
-                    }
+                    },
+                    photos: {
+                        list: {
+                            listRender: EditablePhotoList
+                        }
+                    },
                 }
             }
         },
@@ -376,21 +382,29 @@ export const shapeConfigurationMap = {
                         },
                         photos: {
                             list: {
-                                listRender: (items) => {
-                                    // if (!items || items.length === 0) return null;
-                                    const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
-                                    return <div onClick={(e)=>e.stopPropagation()}>
-                                            <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
-                                        </div>
-                                },
-                                onItemClick: () => alert("foto maximizada")
+                                listRender: EditablePhotoList
                             }
                         },
                     }
                 }
             },
+        },
+    estateSearch: {
+        visibility:{
+            visible:['estateType', 'operation', 'environments', 'numberOfOcupants', 'price']
+        },
+        fields: {
+            price: {
+                render: ({entity = {}}) => entity.operation ? false : null
+            },
+            numberOfOcupants: {
+                render: ({entity = {}}) => entity.operation && entity.operation === 'RENT' ? false : null
+            },
+            environments: {
+                render: ({entity = {}}) => entity.operation && entity.operation === 'LONG_RENT' ? false : null
+            }
+        }
     },
-    // estateSearch: {
     //     list: {
     //         visibility: {
     //             visible: ['estate'],
@@ -424,11 +438,6 @@ export const shapeConfigurationMap = {
     //             }
     //         }
     //     },
-    //     fields: {
-    //         operation: {
-    //             render: OperationSelector
-    //         }
-    //     }
     // },
     adminEstateSearch:{
         entityRenderConfiguration: {
@@ -457,12 +466,21 @@ export const shapeConfigurationMap = {
                                 },
                                 placeDescription: {
                                     visibility: {
-                                        //comentado para que funcione la búsqueda pública
-                                        // visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
+                                        visible: ['environments', 'carPlaces', 'squareMeterTotal', 'toilets', 'laundry', 'squareMeterCovered', 'electricity', 'gas', 'waterNetworkConnection', 'sewerConnection'],
                                         hidden: []
                                     }
+                                },
+                                photos: {
+                                    list: {
+                                        listRender: (items) => {
+                                            // if (!items || items.length === 0) return null;
+                                            const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+                                            return <div className="adminEstateSearch-list-item">
+                                                    <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={3} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                                </div>
+                                        }
+                                    }
                                 }
-                                
                             }
                         }
                     },
@@ -615,92 +633,93 @@ export const shapeConfigurationMap = {
         entityRenderConfiguration: {
             allowInLineCreate: true,
             shapeConfiguration: {
-        visibility:{
-            visible:['estateType', 'environments', 'operation']
-        },
-        list: {
-            visibility: {
-                visible: ['estate'],
-                hidden: []
-            },
-            onItemClick: (itemId, history, item) => {
-                console.log(item)
-                history.push(`/build/container/view/estate/${item.estate}?shapeName=publicDetail`);
-            },
-            fields: {
-                estate: {
-                    props: {
-                        level: 2,
+                // visibility:{
+                //     visible:['estateType', 'environments', 'operation', 'price']
+                // },
+                list: {
+                    visibility: {
+                        visible: ['estate'],
+                        hidden: []
                     },
-                    shapeConfiguration:{
-
-                        visibility: {
-                            visible: ['price', 'photos', 'operation', 'estateType' , 'placeId', 'placeDescription'],
-                            hidden: []
-                        },
+                    onItemClick: (itemId, history, item) => {
+                        console.log(item)
+                        history.push(`/build/container/view/estate/${item.estate}?shapeName=publicDetail`);
                     },
                     fields: {
-                        price:{
-                            render: ViewPriceRender
-                        },
-                        placeId: {
+                        estate: {
+                            props: {
+                                level: 2,
+                            },
                             shapeConfiguration:{
 
                                 visibility: {
-                                    visible: ['locality'],
+                                    visible: ['price', 'photos', 'operation', 'estateType' , 'placeId', 'placeDescription'],
                                     hidden: []
-                                }
-                            }
-                        },
-                        photos: {
-                            beforeField: ({entity})=> (
-                                <div className="operation-indicator d-none">
-                                    <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
-                                </div>
-                            ),
-                            list: {
-                                listRender: (items) => {
-                                    // if (!items || items.length === 0) return null;
-                                    const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
-                                    return <div onClick={(e)=>e.stopPropagation()}>
-                                            <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
-                                        </div>
                                 },
-                                onItemClick: () => alert("foto maximizada")
-                            }
-                        },
-                        placeDescription: {
-                            props:{
-                                level:10
                             },
-                            shapeConfiguration:{
-                                visibility: {
-                                    // visible: ['environments', 'toilets', 'carPlaces', 'squareMeterTotal'],
-                                    hidden: []
+                            fields: {
+                                price:{
+                                    render: ViewPriceRender
+                                },
+                                placeId: {
+                                    shapeConfiguration:{
+
+                                        visibility: {
+                                            visible: ['locality'],
+                                            hidden: []
+                                        }
+                                    }
+                                },
+                                photos: {
+                                    beforeField: ({entity})=> (
+                                        <div className="operation-indicator d-none">
+                                            <div style={{width:'20%'}} className={`${entity.operation === 'SALE' ? 'bg-dark': 'bg-primary'}`}></div>
+                                        </div>
+                                    ),
+                                    list: {
+                                        listRender: (items) => {
+                                            // if (!items || items.length === 0) return null;
+                                            const itemsToShow = !items || items.length === 0 ? [{view:"/emptyPhoto.svg"}] : items;
+                                            return <div>
+                                                    <Carousel initialActiveIndex={0}showArrows={false}   itemsToShow={1} showEmptySlots={false}>{itemsToShow.map(i => <img className='place-photo' src={i.view}></img>)}</Carousel>
+                                                </div>
+                                        },
+                                        onItemClick: () => alert("foto maximizada")
+                                    }
+                                },
+                                placeDescription: {
+                                    props:{
+                                        level:10
+                                    },
+                                    shapeConfiguration:{
+                                        visibility: {
+                                            // visible: ['environments', 'toilets', 'carPlaces', 'squareMeterTotal'],
+                                            hidden: []
+                                        }
+                                    }
+                                },
+                                operation:{
+                                    render: ({ value="", update, t }) => {
+                                        return <div className='operation-with-background'>
+                                            <img className='operation-background position-absolute' style={{zIndex:-1}}src={`/frames/${value.toLowerCase()}.svg`}/>
+                                            <div className="operation-value">    
+                                                {t(`app.backend.model.enums.EstateOperations.${value}`)}
+                                            </div>
+                                        
+                                        </div>
+                                    }
                                 }
-                            }
-                        },
-                        operation:{
-                            render: ({ value="", update, t }) => {
-                                return <div className='operation-with-background'>
-                                    <img className='operation-background position-absolute' style={{zIndex:-1}}src={`/frames/${value.toLowerCase()}.svg`}/>
-                                    <div className="operation-value">    
-                                        {t(`app.backend.model.enums.EstateOperations.${value}`)}
-                                    </div>
-                                
-                                </div>
                             }
                         }
                     }
+                },
+                fields: {
+                    operation: {
+                        render: OperationSelector
+                    }
                 }
             }
-        },
-        fields: {
-            operation: {
-                render: OperationSelector
-            }
         }
-    }}
     },
     publicDetail:{
         level: 10,

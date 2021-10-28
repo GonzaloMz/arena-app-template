@@ -48,6 +48,19 @@ html {
 	overflow: hidden;
 	text-overflow: ellipsis !important;
 }
+
+.cursor-pointer{
+	cursor: pointer;
+}
+
+.btn-link{
+	@extend .cursor-pointer
+}
+
+.arena__control .arena__value-container .arena__placeholder{
+	 width: 200%;
+}
+
 .navbar{
 	@media screen and (min-width: 320px) {
 		a.logout{
@@ -55,14 +68,14 @@ html {
 			right: 5px;
 			top: 0px;
 		}
-	  }
-	  @media screen and (min-width: 1000px) {
+	}
+	@media screen and (min-width: 1000px) {
 		a.logout{
 			position: unset;
 			right: unset;
 			top: unset;
 		}
-	  }
+	}
 }
 
 .screen-container{
@@ -866,10 +879,15 @@ a.logout{
 
 
 .adminEstateSearch-shape .estateSearch-container{
-	.arena-container-default-render{
-		@extend .mx-auto;
-		max-width: 700px;
+
+	.estateSearch-beforeRender{
+		display: none;
 	}
+	.place-photo{
+		max-height: 100px;
+	}
+	@extend .mx-auto;
+	max-width: 700px;
 }
 
 
@@ -922,6 +940,38 @@ a.logout{
 	font-family: 'Roboto Cn';
 }
 
+.marketing-carousel{
+	height: 100%;
+	.rec{
+		@extend .m-0, .p-0;
+	}
+	.rec-carousel, .item{
+		height: 75vh;
+		width: 100%;
+	}
+	.item {
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		text-align: right;
+	}
+	.title{
+		// color: $gray-500;
+		@extend .background-dark-color-ligth, .pr-3;
+		opacity: 0.7;
+		font-weight: bolder;
+		position: absolute;
+		bottom: 0;
+		max-width: 80vw;
+
+	}
+	@media screen and (min-width: 1000px) {
+		.title{
+			max-width: 500px;
+		}
+	}
+}
+
 .publicSearch-shape {
 	@extend .screen-container;
 	.arena-photo-list-container .place-photo{
@@ -932,6 +982,11 @@ a.logout{
 		overflow: hidden;
 	}
 
+	&>.estateSearch-container>div>.arena-text-list>.arena-text.estateSearch{
+		display: none;
+	}
+
+	
 	div{
 		@extend .p-0;
 		@extend .m-0;
@@ -1245,8 +1300,30 @@ div[class*="arena-field-type-java.lang.Boolean"][class*="arena-field-mode-CREATE
 	}
 }
 
-.estateEdition-shape{
+.estateEdition-shape, .estateCreation-shape{
 	.rec-swipable, .rec-item-wrapper img{
 		max-height: 200px;
+	}
+}
+
+.assessmentDetail-shape{
+	div[class*="arena-field-type-java.lang.Boolean"]{
+		@extend .float-none, .w-100;
+	}
+
+	div[class*="arena-field-type-app.backend.model.enums.Numeration"]{
+		@extend  .w-100;
+	}
+
+	.arena-field-parentController-placeInventory{
+		.arena-text-list, .arena-text {
+			@extend .d-inline;
+		}
+	}
+}
+
+.operation-selector {
+	input{
+		min-width: 210px;
 	}
 }
