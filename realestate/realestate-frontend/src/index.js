@@ -59,7 +59,9 @@ window.onload = function() {
 							label: "Propiedades Disponibles",
 							href: "/estates"
 						}
-					]}></Menu>
+					]}
+					isPublicSearch={window.location.search && window.location.search.includes("publicSearch") }
+					></Menu>
 					<Switch>
 						<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />
 						<Redirect from="/view-users" push={true} to="/build/listcontainer/edit/user" />

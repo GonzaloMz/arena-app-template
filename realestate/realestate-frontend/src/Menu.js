@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import Carousel from 'react-elastic-carousel';
@@ -22,7 +22,8 @@ const Menu = ({options}) => {
             <div className="title">un DESCANSO para tomar IMPULSO</div>
         </div>,
     ];
-    const isPublicSearch=true;
+    const location = useLocation();
+    const isPublicSearch=location.search && location.search.includes("publicSearch") ;
     return (
         <div>
             <nav className="navbar navbar-expand-lg navbar-light bg-light navbar navbar-default navbar-fixed-top" style={{fontFamily: 'Roboto Cn'}}>
