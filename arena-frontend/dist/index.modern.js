@@ -841,7 +841,10 @@ var findEntities = function findEntities(api, controller, example) {
   var params = {};
   Object.keys(example).forEach(function (key) {
     var value = example[key];
-    if (value && typeof value !== 'object') params[key] = value;
+
+    if (value) {
+      if (value.constructor.name === "Date") params[key] = parseDateAsParam(value);else if (typeof value !== 'object') params[key] = value;
+    }
   });
   url.search = new URLSearchParams(params).toString();
   return fetch(url, {
@@ -853,6 +856,11 @@ var findEntities = function findEntities(api, controller, example) {
     return res.json();
   });
 };
+
+var parseDateAsParam = function parseDateAsParam(date) {
+  return date.toISOString();
+};
+
 var findEntitiesByText = function findEntitiesByText(api, controller, search) {
   var url = api + "/" + controller + "/search/inline?query=" + search;
   return fetch(url, {
@@ -28108,6 +28116,11 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
   var selectionFunction = useMemo(function () {
     return createListItemSelectionFunction(mode, setItems);
   }, [mode]);
+
+  var restart = function restart() {
+    setReRender(!reRender);
+  };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "arena-list-container list arena-" + controller + "-list-container"
   }, /*#__PURE__*/React.createElement(ArenaText, {
@@ -28138,7 +28151,7 @@ var ArenaListContainer = function ArenaListContainer(_ref5) {
     "class": "loader-wheel"
   }), /*#__PURE__*/React.createElement("div", {
     "class": "loader-text"
-  })), shapeConfiguration && shapeConfiguration.listRender && shapeConfiguration.listRender(fullItems, componentMapper), (!shapeConfiguration || !shapeConfiguration.listRender) && fullItems.map(function (i) {
+  })), shapeConfiguration && shapeConfiguration.listRender && shapeConfiguration.listRender(fullItems, componentMapper, restart), (!shapeConfiguration || !shapeConfiguration.listRender) && fullItems.map(function (i) {
     return /*#__PURE__*/React.createElement("div", {
       className: "arena-list-item-wrapper",
       key: i.id,
