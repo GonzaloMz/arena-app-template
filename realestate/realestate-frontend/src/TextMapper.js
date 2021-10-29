@@ -71,7 +71,9 @@ export const textMap = {
                 cuit:{
                     required: 'Debes ingresar el cuit del cliente propietario.'
                 },
-
+                address:{
+                    required: 'Debes ingresar la dirección del cliente propietario.'
+                }
             }
         },
         confirmation:{

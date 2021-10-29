@@ -7,16 +7,21 @@ package app.backend.service;
 
 import app.backend.dto.OwnerDTO;
 import app.backend.dto.OwnerWithUserDTO;
+import app.backend.exception.RealestateException;
 import app.backend.model.Owner;
 import app.backend.model.Place;
 import app.backend.model.User;
 import app.backend.repository.OwnerRepository;
+import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
+import arena.backend.service.ArenaCreateResponse;
 import arena.backend.service.ArenaService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,15 +69,23 @@ public class OwnerService extends ArenaService<Owner,OwnerDTO>{
 	}
 
 	@Override
+	@Transactional
 	public Owner create(Optional<OwnerDTO> optional) {
 		Owner o = this.ownerRepository.findByUser(optional.get().getUser());
 		if(o==null)
 			o= new Owner();
 		BeanUtils.copyProperties(optional.get(), o, "id");
-		Place p = new Place();
-		BeanUtils.copyProperties(optional.get().getAddress(), p,"id");
-		placeService.create(Optional.of(p));
-		o.setAddress(p.getId());
+		ErrorBuffer errors = new ErrorBuffer();
+		ArenaCreateResponse<Place> p = placeService.validateAndCreate(optional.get().getAddress());
+		errors.append("address", p.getErrors());
+		o.setAddress(p.getEntityId());
+		errors.append("owner", this.validate(o));
+		
+		if(errors.getErrors().length>0) {
+			throw new RealestateException(errors.getErrors());
+		}
+//		BeanUtils.copyProperties(optional.get().getAddress(), p,"id");
+//		placeService.create(Optional.of(p));
 		return this.ownerRepository.save(o);
 	}
 

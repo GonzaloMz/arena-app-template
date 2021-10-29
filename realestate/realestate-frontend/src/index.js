@@ -60,7 +60,6 @@ window.onload = function() {
 							href: "/estates"
 						}
 					]}
-					isPublicSearch={window.location.search && window.location.search.includes("publicSearch") }
 					></Menu>
 					<Switch>
 						<Redirect from="/create-appointment" push={true} to="/build/container/create/appointment" />

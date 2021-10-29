@@ -370,15 +370,18 @@ export const shapeConfigurationMap = {
                         },
                         temporaryRentFacilities:{
                             ...collapsableField("estate-temporaryRentFacilities"),
-                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                            calculateMode: ()=>(ArenaContainerMode.VIEW),
+                            render: ({entity = {}}) => entity.operation && entity.operation === 'RENT' ? false : null
                         },
                         temporaryRentPrice:{
                             ...collapsableField("estate-temporaryRentPrice"),
-                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                            calculateMode: ()=>(ArenaContainerMode.VIEW),
+                            render: ({entity = {}}) => entity.operation && entity.operation === 'RENT' ? false : null
                         },
                         placeInventory:{
                             ...collapsableField("estate-placeInventory"),
-                            calculateMode: ()=>(ArenaContainerMode.VIEW)
+                            calculateMode: ()=>(ArenaContainerMode.VIEW),
+                            render: ({entity = {}}) => entity.operation && entity.operation === 'RENT' ? false : null
                         },
                         photos: {
                             list: {

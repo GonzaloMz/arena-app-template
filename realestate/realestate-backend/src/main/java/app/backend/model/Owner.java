@@ -33,6 +33,7 @@ public class Owner extends OwnerFieldsDTO {
 		return address;
 	}
 
+	@Required
 	public void setAddress(Long address) {
 		this.address = address;
 	}

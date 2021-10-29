@@ -22,8 +22,8 @@ public interface EstateRepository extends JpaRepository<Estate, Long>, JpaSpecif
 //			+ "(e.price < :maxprice or :maxprice is null) and "
 //			+ "(e.price > :minprice or :minprice is null) and "
 			+ "(:operation is null or e.operation = :operation) and "
-			+ "exists (from PlaceDescription pd where (:environments is null or pd.environments = :environments) and pd.id = e.placeDescription) "
-			+ "and exists (from TemporaryRentFacilities trf where (:numberOfOcupants is null or trf.numberOfOcupants >= :numberOfOcupants) and trf.id = e.temporaryRentFacilities) "
+			+ "(:environments is null or exists (from PlaceDescription pd where pd.environments = :environments and pd.id = e.placeDescription)) "
+			+ "and (:numberOfOcupants is null or exists (from TemporaryRentFacilities trf where trf.numberOfOcupants >= :numberOfOcupants and trf.id = e.temporaryRentFacilities)) "
 			+ "and not exists (from Rent r where r.estate = e.id and r.checkInDate between :checkInDate and :checkOutDate or r.checkOutDate between :checkInDate and :checkOutDate or ("
 			+ "		r.checkInDate < :checkInDate and r.checkOutDate > :checkOutDate)) ")
 	List<Estate> findEstates(
