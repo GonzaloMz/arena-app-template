@@ -45,7 +45,7 @@ export const OperationSelector = ({ update, value, t, mode }) => {
                 <div className='radio' >
                     <input label='Venta' type="radio" onClick={e => update(e.target.value)} id="SALE" value="SALE" checked={value === "SALE"}></input>
                     <input label='Alquiler' type="radio" onClick={e => update(e.target.value)} id="RENT" value="RENT" checked={value === "RENT"}></input>
-                    <input label='Alquiler 24M' type="radio" onClick={e => update(e.target.value)} id="LONG_RENT" value="LONG_RENT" checked={value === "LONG_RENT"}></input>
+                    <input label='Alquiler 36M' type="radio" onClick={e => update(e.target.value)} id="LONG_RENT" value="LONG_RENT" checked={value === "LONG_RENT"}></input>
                 </div>
             </div>
         </div>)

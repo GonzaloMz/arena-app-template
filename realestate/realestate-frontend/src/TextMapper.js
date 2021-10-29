@@ -236,7 +236,7 @@ export const textMap = {
                 label: "Alquiler"
             },
             longRentAssessment:{
-                label: "Alquiler 24M"
+                label: "Alquiler 36M"
             },
             saleSuggestedValue:{
                 label: "Venta",
@@ -666,7 +666,7 @@ export const textMap = {
                         EstateOperations: {
                             SALE: 'Venta',
                             RENT: 'Alquiler',
-                            LONG_RENT: 'Alquiler 24M',
+                            LONG_RENT: 'Alquiler 36M',
                             null: 'No definido'
                         },
                         SquareMeterRange: {
