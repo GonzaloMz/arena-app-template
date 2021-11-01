@@ -22,6 +22,10 @@ $beige-2: #ccb9aa;
 $beige-3: #87786c;
 $beige-5: #594940;
 
+$brown-6: #5e4e45;
+$brown-3: #a08f7d;
+$brown-2: #ccb9aa;
+
 $input-focus-box-shadow: 0 0 0 0.2rem rgba(180, 180, 180, 0.25);
 $input-focus-border-color:   rgb(180, 180, 180);
 
@@ -62,18 +66,39 @@ html {
 }
 
 .navbar{
+	@extend .p-0;
+
+	.navbar-toggler{
+		border: 2px solid $brown-3;
+		.navbar-toggler-icon{
+			background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgb%28255, 255, 255%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+		}
+	}
+	.container{
+		background-color: $brown-6;
+		.navbar-nav .nav-link{
+			color: $brown-2;
+		}
+		@extend .mw-100;
+	}
 	@media screen and (min-width: 320px) {
 		a.logout{
-			position: absolute;
-			right: 5px;
-			top: 0px;
+			// position: absolute;
+			// right: 5px;
+			// top: 0px;
+		}
+		.navbar-brand img{
+			max-height: 50px;
 		}
 	}
 	@media screen and (min-width: 1000px) {
-		a.logout{
-			position: unset;
-			right: unset;
-			top: unset;
+		a.logout, a.login{
+			position: absolute;
+			right: 0;
+		}
+
+		.navbar-brand img{
+			max-height: 100px;
 		}
 	}
 }
@@ -848,7 +873,7 @@ a.share-button {
 }
 
 a.logout{
-	color: $gray-600;
+	color: $brown-2;
 }
 
 .arena-view-estate-screen{
@@ -957,13 +982,15 @@ a.logout{
 	}
 	.title{
 		// color: $gray-500;
-		@extend .background-dark-color-ligth, .pr-3;
-		opacity: 0.7;
+		@extend .pr-3;
 		font-weight: bolder;
 		position: absolute;
 		bottom: 0;
 		max-width: 80vw;
 
+		img{
+			max-width: 90%;
+		}
 	}
 	@media screen and (min-width: 1000px) {
 		.title{

@@ -138,10 +138,18 @@ export const EditablePhotoList = (items, mapper, restart) => {
 
 export const PhotoEditor = ({ value, update, t }) => {
     const [toCrop, setToCrop] = useState();
+    const [scale, setScale] = useState(1)
 
     const canvas = useRef();
+    const debouncedUpdate = useRef();
 
-    const setEditorRef = (editor) => (canvas.current = editor)
+    const setEditorRef = (editor) => (canvas.current = editor);
+
+    const handleScale = (e) => {
+        const newScale = parseFloat(e.target.value)
+        setScale(newScale);
+      }
+    
     return (<div>
         {
             !value && !toCrop &&
@@ -173,17 +181,33 @@ export const PhotoEditor = ({ value, update, t }) => {
                     image={toCrop}
                     width={320}
                     height={300}
-                    border={50}
+                    border={5}
                     color={[255, 255, 255, 0.6]} // RGBA
-                    scale={1.2}
+                    scale={scale}
                     rotate={0}
                     onImageReady={()=>
                         update(canvas.current.getImage().toDataURL())
                     }
-                    onImageChange={()=>
-                        update(canvas.current.getImage().toDataURL())
+                    onImageChange={()=>{
+                            debouncedUpdate.current && debouncedUpdate.current.cancel &&  debouncedUpdate.current.cancel();
+                            debouncedUpdate.current=_.debounce( ()=>update(canvas.current.getImage().toDataURL()),100)
+                        }
                     }
                 />
+                <div>
+                    <span>
+                        Zoom:
+                    </span>
+                    <input
+                        name="scale"
+                        type="range"
+                        onChange={handleScale}
+                        min="1"
+                        max="2"
+                        step="0.01"
+                        defaultValue="1"
+                    />
+                </div>
             </div>
         }
     </div>
