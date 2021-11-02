@@ -1,11 +1,10 @@
 package app.backend.model;
 
 import javax.persistence.Entity;
-import javax.persistence.Transient;
 
 import app.backend.dto.AssessmentFieldsDTO;
-import arena.backend.model.extension.Hidden;
 import arena.backend.model.extension.Key;
+import arena.backend.model.extension.Required;
 
 @Entity
 public class Assessment extends AssessmentFieldsDTO{
@@ -41,6 +40,7 @@ public class Assessment extends AssessmentFieldsDTO{
 		return placeDescription;
 	}
 
+	@Required
 	public void setPlaceDescription(Long placeDescription) {
 		this.placeDescription = placeDescription;
 	}

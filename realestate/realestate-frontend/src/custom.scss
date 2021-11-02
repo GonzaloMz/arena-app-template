@@ -65,6 +65,10 @@ html {
 	 width: 200%;
 }
 
+
+div[data-toggle="collapse"]{
+	cursor: pointer;
+}
 .navbar{
 	@extend .p-0;
 

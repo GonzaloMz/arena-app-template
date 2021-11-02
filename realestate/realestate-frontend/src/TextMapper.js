@@ -54,7 +54,11 @@ export const textMap = {
             assessment:{
                 sugestedValue:{
                     required: 'Debes ingresar un "precio sugerido".'
-                }
+                },
+                placeDescription:{
+                    required: "Debes completar la Descripción de la Propiedad."
+                },
+                operationPriceRequired: "Debes igresar el valor para al menos un tipo de operación."
             },
             estate:{
                 price:{
@@ -73,6 +77,11 @@ export const textMap = {
                 },
                 address:{
                     required: 'Debes ingresar la dirección del cliente propietario.'
+                }
+            },
+            placeDescription:{
+                squareMeterTotal: {
+                    required: "Debes ingresar la cantidad de metros cuadrados totales."
                 }
             }
         },

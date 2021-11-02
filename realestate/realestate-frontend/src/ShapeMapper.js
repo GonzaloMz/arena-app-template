@@ -215,6 +215,44 @@ export const shapeConfigurationMap = {
             }
         }
     },
+    assessmentDetail:{
+        entityRenderConfiguration: {
+            shapeConfiguration: {
+                fields:{
+                    temporaryRentAssessment:{
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'RENT') return false;
+                            return null;
+                        }
+                    },
+                    saleSuggestedValue: {
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'SALE') return false;
+                            return null;
+                        }
+                    },
+                    temporaryRentAssessment: {
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'RENT') return false;
+                            return null;
+                        }
+                    },
+                    longRentAssessment:{
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'LONG_RENT') return false;
+                            return null;
+                        }
+                    },
+                    placeInventory:{
+                        render: ({entity})=>{
+                            if(entity && entity.operation === 'LONG_RENT') return false;
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+    },
     place: {
         fields:{
             formattedAddress:{

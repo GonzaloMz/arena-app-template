@@ -3,9 +3,11 @@ package app.backend.model;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import app.backend.model.enums.Numeration;
 import app.backend.model.enums.SquareMeterRange;
 import arena.backend.model.AbstractEntity;
 import arena.backend.model.extension.AbstractDataTransferObject;
+import arena.backend.model.extension.Required;
 
 @Entity
 @Table(name="place_description")
@@ -15,13 +17,13 @@ public class PlaceDescription extends AbstractEntity  implements AbstractDataTra
 	
 	private SquareMeterRange squareMeterTotal;
 	
-	private Integer environments;
+	private Numeration environments;
 	
-	private Integer toilets;
+	private Numeration toilets;
 	
 	private Boolean toilete;
 	
-	private Integer carPlaces;
+	private Numeration carPlaces;
 	
 	private Boolean coveredGarage;
 	
@@ -49,23 +51,24 @@ public class PlaceDescription extends AbstractEntity  implements AbstractDataTra
 		return squareMeterTotal;
 	}
 
+	@Required
 	public void setSquareMeterTotal(SquareMeterRange squareMeterTotal) {
 		this.squareMeterTotal = squareMeterTotal;
 	}
 
-	public Integer getEnvironments() {
+	public Numeration getEnvironments() {
 		return environments;
 	}
 
-	public void setEnvironments(Integer environments) {
+	public void setEnvironments(Numeration environments) {
 		this.environments = environments;
 	}
 
-	public Integer getToilets() {
+	public Numeration getToilets() {
 		return toilets;
 	}
 
-	public void setToilets(Integer toilets) {
+	public void setToilets(Numeration toilets) {
 		this.toilets = toilets;
 	}
 
@@ -77,11 +80,11 @@ public class PlaceDescription extends AbstractEntity  implements AbstractDataTra
 		this.toilete = toilete;
 	}
 
-	public Integer getCarPlaces() {
+	public Numeration getCarPlaces() {
 		return carPlaces;
 	}
 
-	public void setCarPlaces(Integer carPlaces) {
+	public void setCarPlaces(Numeration carPlaces) {
 		this.carPlaces = carPlaces;
 	}
 

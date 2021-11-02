@@ -31,6 +31,7 @@ import app.backend.model.enums.EstateOperations;
 import app.backend.repository.AssessmentRepository;
 import app.backend.utils.ErrorBuffer;
 import arena.backend.model.extension.ShapeFactory;
+import arena.backend.service.ArenaCreateResponse;
 import arena.backend.service.ArenaService;
 
 /**
@@ -72,12 +73,8 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		
 		Assessment assessment =  new Assessment();
 		BeanUtils.copyProperties(assessmentDto, assessment);
-		errors.append("assessment", this.validate(assessment));
 		PlaceDescription placeDescription = assessmentDto.getPlaceDescription();
-		errors.append("placeDescription", placeDescriptionService.validate(placeDescription));
-		
 		PlaceInventory placeInventory = assessmentDto.getPlaceInventory();
-		errors.append("placeInventory", placeInventoryService.validate(placeInventory));
 		
 		
 		Assessment saleAssessment = null;
@@ -116,31 +113,40 @@ public class AssessmentService extends ArenaService<Assessment,AssessmentDTO>{
 		}
 		
 	
+		ArenaCreateResponse<PlaceDescription> description = placeDescriptionService.validateAndCreate(placeDescription);
+		errors.append("placeDescription", description.getErrors());
+		
+		ArenaCreateResponse<PlaceInventory> inventory = placeInventoryService.validateAndCreate(placeInventory);
+		errors.append("placeInventory", inventory.getErrors());
+		
+
+		saleAssessment = this.create(saleAssessment, description.getEntityId(), inventory.getEntityId());
+		longRentAssessment = this.create(longRentAssessment, description.getEntityId(), inventory.getEntityId());
+		assessmentForTemporaryRent = this.create(assessmentForTemporaryRent, description.getEntityId(), inventory.getEntityId());
+		
+		Assessment firstNonNull = ObjectUtils.firstNonNull(saleAssessment, assessmentForTemporaryRent, longRentAssessment);
+		
+		if(firstNonNull==null) {
+			errors.append("assessment.operationPriceRequired");
+		} else {
+			errors.append(this.validate(firstNonNull));			
+		}
+		
 		if(errors.getErrors().length>0) {
 			throw new RealestateException(errors.getErrors());
 		}
-		PlaceDescription description = placeDescriptionService.create(
-				Optional.of(placeDescription));
-		PlaceInventory inventory = null;
-		if(placeInventory!=null)
-			inventory = placeInventoryService.create(
-					Optional.of(placeInventory));
-		
-		updateAppointment(assessmentDto.getPlaceId(), assessment.getOperation());
 
-		saleAssessment = this.create(saleAssessment, description, inventory);
-		longRentAssessment = this.create(longRentAssessment, description, inventory);
-		assessmentForTemporaryRent = this.create(assessmentForTemporaryRent, description, inventory);
+		updateAppointment(assessmentDto.getPlaceId(), assessment.getOperation());
 		
-		return ObjectUtils.firstNonNull(saleAssessment, assessmentForTemporaryRent, longRentAssessment);
+		return firstNonNull;
 	}
 
-	private Assessment create(Assessment assessment, PlaceDescription description, PlaceInventory inventory) {
+	private Assessment create(Assessment assessment, Long description, Long inventory) {
 		if(assessment==null)
 			return null;
-		assessment.setPlaceDescription(description.getId());
+		assessment.setPlaceDescription(description);
 		if(inventory!=null)
-			assessment.setPlaceInventory(inventory.getId());
+			assessment.setPlaceInventory(inventory);
 		assessment.setEstateCreated(false);
 		assessment = this.getRepository().save(assessment);
 		return assessment;
