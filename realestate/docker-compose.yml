@@ -9,6 +9,7 @@ services:
       - "9001:9001"
     volumes:
       - ./realestate-backend:/backend-src
+      - ./realestate:/images
     working_dir: /backend-src
     command: ./start-db.sh ${ENV_NAME}
     networks:
@@ -24,6 +25,7 @@ services:
     volumes:
       - ../arena-frontend:/arena-frontend
       - ./realestate-frontend/:/frontend
+      - ./realestate:/frontend/public/images
     working_dir: /frontend
     networks:
       arena_net:
