@@ -1,6 +1,6 @@
 package app.backend.model;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 import arena.backend.model.AbstractEntity;
 
 @Entity

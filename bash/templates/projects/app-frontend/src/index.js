@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { ArenaApp, arenaReducer, ArenaMapper } from 'frontend';
+import { ArenaApp, arenaReducer, ArenaMapper } from '@gonzalomz/arena-frontend';
 import * as serviceWorker from './serviceWorker';
 import ReactDOM from 'react-dom';
 //redux
